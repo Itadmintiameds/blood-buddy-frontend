@@ -1,26 +1,692 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary: #ff3b3f;
+  --color-primary-hover: #e62f33;
+  --color-primary-hover-alt: #e93236;
+  --color-welcome-cta-hover: #ef3034;
+  --color-dashboard-cta-hover: #ed363a;
+  --color-icon-accent: #ff5a5f;
+
+  --color-dark-cta: #202020;
+  --color-dark-cta-hover: #111111;
+
+  --color-text-primary: #222222;
+  --color-text-body: #333333;
+  --color-text-secondary: #555555;
+  --color-text-muted: #777777;
+  --color-text-tertiary: #888888;
+  --color-text-quaternary: #666666;
+  --color-text-placeholder: #aaaaaa;
+  --color-text-placeholder-alt: #999999;
+  --color-input-placeholder: #a8a8a8;
+
+  --color-white: #ffffff;
+  --color-border: #d4d4d4;
+  --color-border-light: #e8e8e8;
+  --color-border-lighter: #eeeeee;
+  --color-border-table: #e2e2e2;
+  --color-border-input: #e6e6e6;
+
+  --color-icon-bg-soft: #fff0f0;
+  --color-icon-bg-soft-2: #ffeded;
+  --color-surface-hover: #f7f7f7;
+  --color-surface-alt: #f8f8f9;
+  --color-success-bg: #eafaf0;
+  --color-success: #22a35a;
+
+  --color-stat-red: #ff3b3b;
+  --color-stat-green: #378200;
+  --color-stat-yellow: #fdc000;
+
+  /* legacy aliases kept for backward compatibility */
+  --blood-red: var(--color-primary);
+  --blood-red-dark: var(--color-primary-hover);
+  --text: var(--color-text-primary);
+  --muted: #9b9b9b;
+  --border: #d8d8d8;
+
+  /* =========================
+     FONT WEIGHTS
+  ========================= */
+
+  --font-thin: 100;
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+
+  /* =========================
+     BASE COLORS
+  ========================= */
+
+  --base-white: #ffffff;
+  --base-black: #000000;
+
+  /* =========================
+     PRIMARY
+  ========================= */
+
+  --primary-100: #f8edff;
+  --primary-200: #ebceff;
+  --primary-300: #deafff;
+  --primary-400: #d290ff;
+  --primary-500: #c571ff;
+  --primary-600: #b550fa;
+  --primary-700: #8f2dd2;
+  --primary-800: #6c12a9;
+  --primary-900: #4c0080;
+  --primary-1000: #340057;
+
+  /* =========================
+     SECONDARY
+  ========================= */
+
+  --secondary-50: #f8f5ff;
+  --secondary-100: #ebe3fe;
+  --secondary-200: #ded0fe;
+  --secondary-300: #c4aafd;
+  --secondary-400: #b08dfc;
+  --secondary-500: #9f75fc;
+  --secondary-600: #9659fd;
+  --secondary-700: #7d32fc;
+  --secondary-800: #4307a9;
+  --secondary-900: #200154;
+
+  /* =========================
+     DANGER
+  ========================= */
+
+  --danger-50: #fff9e6;
+  --danger-100: #ffeeb8;
+  --danger-200: #ffe48a;
+  --danger-300: #ffd95c;
+  --danger-400: #ffce2e;
+  --danger-500: #fdc000;
+  --danger-600: #d1a000;
+  --danger-700: #a37d00;
+  --danger-800: #755a00;
+  --danger-900: #473700;
+
+  /* =========================
+     PRIMARY NEUTRAL
+  ========================= */
+
+  --pneutral-50: #f9f9f8;
+  --pneutral-100: #eaeae9;
+  --pneutral-200: #d5d5d4;
+  --pneutral-300: #c0c1be;
+  --pneutral-400: #abaca9;
+  --pneutral-500: #969793;
+  --pneutral-600: #787975;
+  --pneutral-700: #5a5b58;
+  --pneutral-800: #3c3d3a;
+  --pneutral-900: #1e1e1d;
+
+  /* =========================
+     SECONDARY NEUTRAL
+  ========================= */
+
+  --sneutral-50: #f5f5f5;
+  --sneutral-100: #e1e1e1;
+  --sneutral-200: #cccccc;
+  --sneutral-300: #b8b8b8;
+  --sneutral-400: #a3a3a3;
+  --sneutral-500: #8e8f8f;
+  --sneutral-600: #787b7b;
+  --sneutral-700: #626666;
+  --sneutral-800: #4d5252;
+  --sneutral-900: #393d3d;
+
+  /* =========================
+     SUCCESS
+  ========================= */
+
+  --success-50: #dcf7cb;
+  --success-100: #8ffc4d;
+  --success-200: #78ef2b;
+  --success-300: #69e017;
+  --success-400: #5dd101;
+  --success-500: #56c201;
+  --success-600: #4eb300;
+  --success-700: #47a400;
+  --success-800: #409600;
+  --success-900: #378200;
+
+  /* =========================
+     WARNING
+  ========================= */
+
+  --warning-50: #fdebeb;
+  --warning-100: #fbd7d7;
+  --warning-200: #f6afaf;
+  --warning-300: #f28787;
+  --warning-400: #ed5f5f;
+  --warning-500: #ff3b3b;
+  --warning-600: #ba2c2c;
+  --warning-700: #8c2121;
+  --warning-800: #5d1616;
+  --warning-900: #2f0b0b;
+
+  /* =========================
+     INFO
+  ========================= */
+
+  --info-50: #eaefff;
+  --info-100: #beccff;
+  --info-200: #9fb4ff;
+  --info-300: #7391ff;
+  --info-400: #587cff;
+  --info-500: #2e5bff;
+  --info-600: #2141b5;
+  --info-700: #19328c;
+  --info-800: #13266b;
+  --info-900: #091a7a;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  min-height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: #f2f2f2;
+  color: var(--text);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mobile-font-brand {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.mobile-frame {
+  width: 100%;
+  min-height: 100vh;
+  background: #fff;
+}
+
+@media (min-width: 768px) {
+  .mobile-frame {
+    min-height: auto;
+  }
+}
+
+/* =========================
+   TAILWIND THEME TOKENS
+========================= */
+
+@theme {
+  /* =========================
+     FONT 
+  ========================= */
+
+  --font-noto-sans: var(--font-noto);
+  --font-work-sans: var(--font-work);
+  --font-open-sans: var(--font-open-sans);
+
+  /* =========================
+     COLORS
+  ========================= */
+
+  --color-base-white: var(--base-white);
+  --color-base-black: var(--base-black);
+
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-primary-1000: var(--primary-1000);
+
+  --color-secondary-50: var(--secondary-50);
+  --color-secondary-100: var(--secondary-100);
+  --color-secondary-200: var(--secondary-200);
+  --color-secondary-300: var(--secondary-300);
+  --color-secondary-400: var(--secondary-400);
+  --color-secondary-500: var(--secondary-500);
+  --color-secondary-600: var(--secondary-600);
+  --color-secondary-700: var(--secondary-700);
+  --color-secondary-800: var(--secondary-800);
+  --color-secondary-900: var(--secondary-900);
+
+  --color-danger-50: var(--danger-50);
+  --color-danger-100: var(--danger-100);
+  --color-danger-200: var(--danger-200);
+  --color-danger-300: var(--danger-300);
+  --color-danger-400: var(--danger-400);
+  --color-danger-500: var(--danger-500);
+  --color-danger-600: var(--danger-600);
+  --color-danger-700: var(--danger-700);
+  --color-danger-800: var(--danger-800);
+  --color-danger-900: var(--danger-900);
+
+  --color-pneutral-50: var(--pneutral-50);
+  --color-pneutral-100: var(--pneutral-100);
+  --color-pneutral-200: var(--pneutral-200);
+  --color-pneutral-300: var(--pneutral-300);
+  --color-pneutral-400: var(--pneutral-400);
+  --color-pneutral-500: var(--pneutral-500);
+  --color-pneutral-600: var(--pneutral-600);
+  --color-pneutral-700: var(--pneutral-700);
+  --color-pneutral-800: var(--pneutral-800);
+  --color-pneutral-900: var(--pneutral-900);
+
+  --color-sneutral-50: var(--sneutral-50);
+  --color-sneutral-100: var(--sneutral-100);
+  --color-sneutral-200: var(--sneutral-200);
+  --color-sneutral-300: var(--sneutral-300);
+  --color-sneutral-400: var(--sneutral-400);
+  --color-sneutral-500: var(--sneutral-500);
+  --color-sneutral-600: var(--sneutral-600);
+  --color-sneutral-700: var(--sneutral-700);
+  --color-sneutral-800: var(--sneutral-800);
+  --color-sneutral-900: var(--sneutral-900);
+
+  --color-success-50: var(--success-50);
+  --color-success-100: var(--success-100);
+  --color-success-200: var(--success-200);
+  --color-success-300: var(--success-300);
+  --color-success-400: var(--success-400);
+  --color-success-500: var(--success-500);
+  --color-success-600: var(--success-600);
+  --color-success-700: var(--success-700);
+  --color-success-800: var(--success-800);
+  --color-success-900: var(--success-900);
+
+  --color-warning-50: var(--warning-50);
+  --color-warning-100: var(--warning-100);
+  --color-warning-200: var(--warning-200);
+  --color-warning-300: var(--warning-300);
+  --color-warning-400: var(--warning-400);
+  --color-warning-500: var(--warning-500);
+  --color-warning-600: var(--warning-600);
+  --color-warning-700: var(--warning-700);
+  --color-warning-800: var(--warning-800);
+  --color-warning-900: var(--warning-900);
+
+  --color-info-50: var(--info-50);
+  --color-info-100: var(--info-100);
+  --color-info-200: var(--info-200);
+  --color-info-300: var(--info-300);
+  --color-info-400: var(--info-400);
+  --color-info-500: var(--info-500);
+  --color-info-600: var(--info-600);
+  --color-info-700: var(--info-700);
+  --color-info-800: var(--info-800);
+  --color-info-900: var(--info-900);
+
+  /* =========================
+     DISPLAY
+  ========================= */
+
+  --text-display-lg: 64px;
+  --text-display-lg--line-height: 72px;
+  --text-display-lg--letter-spacing: 0;
+  --text-display-lg--font-family: var(--font-work-sans);
+
+  --text-display-md: 56px;
+  --text-display-md--line-height: 64px;
+  --text-display-md--letter-spacing: 0;
+  --text-display-md--font-family: var(--font-work-sans);
+
+  --text-display-sm: 52px;
+  --text-display-sm--line-height: 60px;
+  --text-display-sm--letter-spacing: 0;
+  --text-display-sm--font-family: var(--font-work-sans);
+
+  /* =========================
+     HEADINGS
+  ========================= */
+
+  --text-h1: 44px;
+  --text-h1--line-height: 52px;
+  --text-h1--letter-spacing: 0;
+  --text-h1--font-family: var(--font-work-sans);
+
+  --text-h2: 36px;
+  --text-h2--line-height: 44px;
+  --text-h2--letter-spacing: 0;
+  --text-h2--font-family: var(--font-work-sans);
+
+  --text-h3: 32px;
+  --text-h3--line-height: 40px;
+  --text-h3--letter-spacing: 0;
+  --text-h3--font-family: var(--font-work-sans);
+
+  --text-h4: 28px;
+  --text-h4--line-height: 36px;
+  --text-h4--letter-spacing: 0;
+  --text-h4--font-family: var(--font-work-sans);
+
+  --text-h5: 24px;
+  --text-h5--line-height: 32px;
+  --text-h5--letter-spacing: 0;
+  --text-h5--font-family: var(--font-work-sans);
+
+  --text-h6: 20px;
+  --text-h6--line-height: 28px;
+  --text-h6--letter-spacing: 0;
+  --text-h6--font-family: var(--font-work-sans);
+
+  /* =========================
+     PARAGRAPH
+  ========================= */
+
+  --text-p5: 18px;
+  --text-p5--line-height: 24px;
+  --text-p5--letter-spacing: 0;
+  --text-p5--font-family: var(--font-body);
+
+  --text-p4: 16px;
+  --text-p4--line-height: 24px;
+  --text-p4--letter-spacing: 0;
+  --text-p4--font-family: var(--font-body);
+
+  --text-p3: 14px;
+  --text-p3--line-height: 20px;
+  --text-p3--letter-spacing: 0;
+  --text-p3--font-family: var(--font-body);
+
+  --text-p2: 12px;
+  --text-p2--line-height: 18px;
+  --text-p2--letter-spacing: 0;
+  --text-p2--font-family: var(--font-body);
+
+  --text-p1: 8px;
+  --text-p1--line-height: 16px;
+  --text-p1--letter-spacing: 0;
+  --text-p1--font-family: var(--font-body);
+
+  /* =========================
+     LABELS
+  ========================= */
+
+  --text-label-l5: 18px;
+  --text-label-l5--line-height: 24px;
+  --text-label-l5--letter-spacing: 0;
+  --text-label-l5--font-family: var(--font-work-sans);
+
+  --text-label-l4: 16px;
+  --text-label-l4--line-height: 24px;
+  --text-label-l4--letter-spacing: 0;
+  --text-label-l4--font-family: var(--font-work-sans);
+
+  --text-label-l3: 14px;
+  --text-label-l3--line-height: 20px;
+  --text-label-l3--letter-spacing: 0;
+  --text-label-l3--font-family: var(--font-work-sans);
+
+  --text-label-l2: 12px;
+  --text-label-l2--line-height: 18px;
+  --text-label-l2--letter-spacing: 0;
+  --text-label-l2--font-family: var(--font-work-sans);
+
+  --text-label-l1: 8px;
+  --text-label-l1--line-height: 16px;
+  --text-label-l1--letter-spacing: 0;
+  --text-label-l1--font-family: var(--font-work-sans);
+
+  /* =========================
+     SPACING
+  ========================= */
+
+  --spacing-xxsm: 4px;
+  --spacing-xsm: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 20px;
+  --spacing-xlg: 24px;
+  --spacing-xxlg: 28px;
+  --spacing-hg: 32px;
+  --spacing-xhg: 40px;
+  --spacing-xxhg: 80px;
+
+  /* =========================
+     SHADOWS
+  ========================= */
+
+  --shadow-none: 0 0 0 0 rgb(0 0 0 / 0);
+  --shadow-xsm: 0 4px 8px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 6px 12px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 8px 16px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 20px rgb(0 0 0 / 0.1);
+  --shadow-xlg: 0 12px 24px rgb(0 0 0 / 0.1);
+
+  /* =========================
+     BORDER RADIUS
+  ========================= */
+
+  --rounded-none: 0px;
+  --rounded-xxsm: 2px;
+  --rounded-xsm: 4px;
+  --rounded-sm: 8px;
+  --rounded-md: 12px;
+  --rounded-lg: 16px;
+  --rounded-xlg: 20px;
+  --rounded-xxlg: 28px;
+  --rounded-full: 9999px;
+}
+
+/* =========================
+   FONT UTILITIES
+========================= */
+
+@utility font-body {
+  font-family: var(--font-noto);
+}
+
+@utility font-work-sans {
+  font-family: var(--font-work);
+}
+
+@utility font-open-sans {
+  font-family: var(--font-open-sans);
+}
+
+@utility font-thin {
+  font-weight: var(--font-thin);
+}
+
+@utility font-extralight {
+  font-weight: var(--font-extralight);
+}
+
+@utility font-light {
+  font-weight: var(--font-light);
+}
+
+@utility font-regular {
+  font-weight: var(--font-regular);
+}
+
+@utility font-medium {
+  font-weight: var(--font-medium);
+}
+
+@utility font-semibold {
+  font-weight: var(--font-semibold);
+}
+
+@utility font-bold {
+  font-weight: var(--font-bold);
+}
+
+@utility font-extrabold {
+  font-weight: var(--font-extrabold);
+}
+
+/* =========================
+   BASE LAYER
+========================= */
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--base-white);
+    color: var(--pneutral-900);
+    font-family: var(--font-work);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+/* =========================
+   MODAL ANIMATIONS
+========================= */
+
+/* Smooth fade + slight upward slide animation */
+@keyframes modalFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-modal {
+  animation: modalFadeSlide 0.25s ease-out forwards;
+}
+
+/* Modal fade slide animation - smoother */
+@keyframes modalFadeSlideSmooth {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-modalFadeSlide {
+  animation: modalFadeSlideSmooth 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Arrow sliding animation - smoother back and forth */
+@keyframes slideArrow {
+  0% {
+    transform: translateX(0);
+    opacity: 0.3;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  50% {
+    transform: translateX(10px);
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 0.3;
+  }
+}
+
+.animate-slideArrow {
+  animation: slideArrow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Pop animation for tick - smoother */
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop {
+  animation: pop 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Slide from left animation for button - smoother */
+@keyframes slideFromLeft {
+  0% {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+
+  60% {
+    transform: translateX(5px);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideFromLeft {
+  animation: slideFromLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
