@@ -1,3 +1,5 @@
+"use client";
+
 import { api } from "@/utils/api";
 
 export interface BloodCentreLoginPayload {
@@ -12,12 +14,11 @@ export interface BloodCentreLoginResponse {
   accessToken: string;
 }
 
-// Blood Centre Login
 export async function loginBloodCentre(
   payload: BloodCentreLoginPayload,
 ): Promise<BloodCentreLoginResponse> {
   const response = await api.post<BloodCentreLoginResponse>(
-    "/v1/login/mail-password",
+    "/login/mail-password",
     payload,
   );
 

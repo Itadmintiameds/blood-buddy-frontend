@@ -8,7 +8,7 @@ export async function registerBloodCentre(
   payload: BloodCentreRegistrationPayload,
 ): Promise<RegistrationResponse> {
   const { data } = await api.post<RegistrationResponse>(
-    "/v1/blood-centres/send-otp",
+    "/blood-centres/send-otp",
     payload,
   );
   return data;

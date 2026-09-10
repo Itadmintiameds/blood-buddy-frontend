@@ -8,7 +8,7 @@ export async function addAvailability(
   payload: AddAvailabilityPayload,
 ): Promise<BloodAvailabilityItem> {
   const { data } = await api.post<BloodAvailabilityItem>(
-    "/v1/dashboard/add_availability",
+    "/dashboard/add_availability",
     payload,
   );
   return data;

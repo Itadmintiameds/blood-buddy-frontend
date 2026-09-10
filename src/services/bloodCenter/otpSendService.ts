@@ -7,6 +7,6 @@ import type {
 export async function sendOtp(
   payload: SendOtpPayload,
 ): Promise<SendOtpResponse> {
-  const { data } = await api.post<SendOtpResponse>("/v1/otp/send", payload);
+  const { data } = await api.post<SendOtpResponse>("/otp/send", payload);
   return data;
 }

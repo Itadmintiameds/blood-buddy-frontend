@@ -1,46 +1,38 @@
 import axios, { type AxiosError } from "axios";
-import { getAccessToken } from "@/services/auth/authStorage";
 
-const baseURL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL || "/backend-api"
-).replace(/\/+$/, "");
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+if (!baseURL) {
+  throw new Error(
+    "NEXT_PUBLIC_API_BASE_URL is not configured. Please add it to your .env file.",
+  );
+}
 
 export const api = axios.create({
-  baseURL,
-
+  baseURL: baseURL.replace(/\/+$/, ""),
   timeout: 20000,
-
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
-// Request Interceptor
 api.interceptors.request.use((config) => {
-  const token = getAccessToken();
-
-  if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   if (process.env.NODE_ENV === "development") {
     console.debug("API Request:", {
       method: config.method?.toUpperCase(),
-
-      url:
-        `${config.baseURL || ""}/` +
-        `${String(config.url || "").replace(/^\/+/, "")}`,
+      url: `${config.baseURL || ""}/${String(config.url || "").replace(
+        /^\/+/,
+        "",
+      )}`,
     });
   }
 
   return config;
 });
 
-// Response Interceptor
 api.interceptors.response.use(
   (response) => response,
-
   (error: AxiosError) => {
     if (process.env.NODE_ENV === "development") {
       console.error("API Error:", {
@@ -56,7 +48,6 @@ api.interceptors.response.use(
   },
 );
 
-// API Error Message
 function readMessage(data: unknown): string | null {
   if (typeof data === "string" && data.trim()) {
     return data.trim();
@@ -114,10 +105,7 @@ export function getApiErrorMessage(
   }
 
   if (error.code === "ERR_NETWORK") {
-    return (
-      "Unable to connect to the server. " +
-      "Please make sure the Spring Boot backend is running."
-    );
+    return "Unable to connect to the server. Please make sure the backend is running and try again.";
   }
 
   if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {

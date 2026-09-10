@@ -29,38 +29,24 @@ export interface SuperAdminLoginResponse {
   accessToken: string;
 }
 
-// Super Admin Registration
 export async function registerSuperAdmin(
   payload: SuperAdminRegistrationRequest,
 ): Promise<SuperAdminRegistrationResponse> {
-  try {
-    const response = await api.post<SuperAdminRegistrationResponse>(
-      "/v1/superadmin/adduser",
-      payload,
-    );
+  const response = await api.post<SuperAdminRegistrationResponse>(
+    "/superadmin/adduser",
+    payload,
+  );
 
-    return response.data;
-  } catch (error) {
-    console.error("Super Admin Registration Error:", error);
-
-    throw error;
-  }
+  return response.data;
 }
 
-// Super Admin Login
 export async function loginSuperAdmin(
   payload: SuperAdminLoginRequest,
 ): Promise<SuperAdminLoginResponse> {
-  try {
-    const response = await api.post<SuperAdminLoginResponse>(
-      "/v1/superadmin/login",
-      payload,
-    );
+  const response = await api.post<SuperAdminLoginResponse>(
+    "/superadmin/login",
+    payload,
+  );
 
-    return response.data;
-  } catch (error) {
-    console.error("Super Admin Login Error:", error);
-
-    throw error;
-  }
+  return response.data;
 }

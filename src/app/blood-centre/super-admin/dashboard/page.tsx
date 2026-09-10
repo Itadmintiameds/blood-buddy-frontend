@@ -1,4 +1,6 @@
-import { SuperAdminAuthGuard } from "@/app/components/auth/SuperAdminAuthGuard";
+"use client";
+
+import { SuperAdminAuthGuard } from "../components/SuperAdminAuthGuard";
 import { SuperAdminDashboard } from "./components/SuperAdminDashboardScreen";
 
 export default function SuperAdminDashboardPage() {

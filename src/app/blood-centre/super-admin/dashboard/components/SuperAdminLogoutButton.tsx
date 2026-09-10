@@ -22,7 +22,7 @@ export function SuperAdminLogoutButton() {
     logout();
 
     // Always return to common Login screen
-    router.replace("/blood-centre/login");
+    router.replace("/blood-centre/super-admin/login");
   };
 
   return (

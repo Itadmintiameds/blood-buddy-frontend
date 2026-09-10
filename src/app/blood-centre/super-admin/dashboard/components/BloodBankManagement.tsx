@@ -283,18 +283,21 @@ export default function BloodBankManagement() {
           icon={Building2}
           label="Blood Banks"
           value={String(totalBloodBanks)}
+          color="warning"
         />
 
         <StatCard
           icon={Droplets}
           label="Blood Types"
           value={String(totalBloodTypes)}
+          color="success"
         />
 
         <StatCard
           icon={Droplets}
           label="Available Units"
           value={String(totalBloodUnits)}
+          color="danger"
         />
       </div>
 
@@ -486,7 +489,7 @@ export default function BloodBankManagement() {
                 className="
                   border-b
                   border-[#dedede]
-                  bg-[#fafafa]
+                  bg-[#FF3B3B]
                 "
               >
                 <th
@@ -1222,11 +1225,33 @@ function StatCard({
   icon: Icon,
   label,
   value,
+  color,
 }: {
   icon: typeof Building2;
   label: string;
   value: string;
+  color: "warning" | "success" | "danger";
 }) {
+  const colorStyles = {
+    warning: {
+      background: "#FF3B3B",
+      iconBackground: "#FF3B3B",
+      text: "#FFFFFF",
+    },
+    success: {
+      background: "#378200",
+      iconBackground: "#378200",
+      text: "#FFFFFF",
+    },
+    danger: {
+      background: "#FDC000",
+      iconBackground: "#FDC000",
+      text: "#FFFFFF",
+    },
+  };
+
+  const styles = colorStyles[color];
+
   return (
     <div
       className="
@@ -1235,17 +1260,17 @@ function StatCard({
         items-center
         gap-3
         rounded-xl
-        border
-        border-[#e9e9e9]
-        bg-white
         px-4
         py-4
-        shadow-[0_2px_10px_rgba(0,0,0,0.025)]
+        shadow-[0_2px_10px_rgba(0,0,0,0.08)]
         transition-all
         duration-200
         hover:-translate-y-[1px]
-        hover:shadow-[0_7px_20px_rgba(0,0,0,0.05)]
+        hover:shadow-[0_7px_20px_rgba(0,0,0,0.12)]
       "
+      style={{
+        backgroundColor: styles.background,
+      }}
     >
       <div
         className="
@@ -1256,10 +1281,18 @@ function StatCard({
           items-center
           justify-center
           rounded-xl
-          bg-[#fff1f1]
         "
+        style={{
+          backgroundColor: styles.iconBackground,
+        }}
       >
-        <Icon size={18} className="text-[#ff3b3f]" />
+        <Icon
+          size={18}
+          strokeWidth={2}
+          style={{
+            color: styles.text,
+          }}
+        />
       </div>
 
       <div className="min-w-0">
@@ -1270,8 +1303,10 @@ function StatCard({
             font-medium
             uppercase
             tracking-wide
-            text-[#999]
           "
+          style={{
+            color: styles.text,
+          }}
         >
           {label}
         </p>
@@ -1281,8 +1316,10 @@ function StatCard({
             mt-0.5
             text-[19px]
             font-bold
-            text-[#222]
           "
+          style={{
+            color: styles.text,
+          }}
         >
           {value}
         </p>

@@ -7,9 +7,6 @@ import type {
 export async function resetPassword(
   payload: PasswordResetPayload,
 ): Promise<ApiTextResponse> {
-  const { data } = await api.post<ApiTextResponse>(
-    "/v1/password/reset",
-    payload,
-  );
+  const { data } = await api.post<ApiTextResponse>("/password/reset", payload);
   return data;
 }

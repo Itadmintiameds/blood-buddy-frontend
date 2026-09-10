@@ -1,7 +1,7 @@
 "use client";
 
-import { LockKeyhole, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
+import { LockKeyhole, Mail } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
@@ -10,14 +10,14 @@ import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
 
 import {
-  getBloodCentreSession,
+  getSuperAdminSession,
   saveAuthSession,
 } from "@/services/auth/authStorage";
 
-import { loginBloodCentre } from "@/services/bloodCenter/loginService";
+import { loginSuperAdmin } from "@/services/bloodCenter/superAdmin/superAdminService";
 import { getApiErrorMessage } from "@/utils/api";
 
-export function BloodCentreLoginScreen() {
+export function SuperAdminLoginScreen() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
@@ -27,10 +27,10 @@ export function BloodCentreLoginScreen() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const session = getBloodCentreSession();
+    const session = getSuperAdminSession();
 
     if (session) {
-      router.replace("/blood-centre/dashboard");
+      router.replace("/blood-centre/super-admin/dashboard");
     }
   }, [router]);
 
@@ -68,32 +68,35 @@ export function BloodCentreLoginScreen() {
     setLoading(true);
 
     try {
-      const response = await loginBloodCentre({
+      const response = await loginSuperAdmin({
         email: cleanEmail,
         password,
       });
 
       if (
         !response ||
-        Number(response.id) <= 0 ||
+        !response.id ||
         !response.email ||
-        !response.accessToken
+        !response.accessToken ||
+        String(response.role).toUpperCase() !== "SUPERADMIN"
       ) {
-        throw new Error("Invalid Blood Centre login response.");
+        throw new Error("Invalid Super Admin login response.");
       }
 
       saveAuthSession({
         isLoggedIn: true,
-        userType: "BLOOD_CENTRE",
+        userType: "SUPER_ADMIN",
         id: Number(response.id),
+        name: response.name,
         email: response.email,
+        role: "SUPERADMIN",
         accessToken: response.accessToken,
         loggedInAt: new Date().toISOString(),
       });
 
-      router.replace("/blood-centre/dashboard");
+      router.replace("/blood-centre/super-admin/dashboard");
     } catch (loginError) {
-      console.error("Blood Centre Login Error:", loginError);
+      console.error("Super Admin Login Error:", loginError);
 
       setError(getApiErrorMessage(loginError, "Invalid email or password."));
     } finally {
@@ -114,17 +117,17 @@ export function BloodCentreLoginScreen() {
 
       <section className="flex min-h-[620px] flex-col items-center bg-white px-5 pt-10">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF0F0] shadow-sm">
-          <Mail size={28} strokeWidth={1.5} className="text-[#FF3B3B]" />
+          <ShieldIcon />
         </div>
 
         <h2 className="mt-3 text-[17px] font-medium text-[#222]">
-          Blood Centre Login
+          Super Admin Login
         </h2>
 
         <div className="mt-8 w-full max-w-[360px]">
           <div className="mb-2.5">
             <FormInput
-              id="bloodCentreEmail"
+              id="superAdminEmail"
               name="email"
               icon={Mail}
               label="Email"
@@ -142,7 +145,7 @@ export function BloodCentreLoginScreen() {
           </div>
 
           <FormInput
-            id="bloodCentrePassword"
+            id="superAdminPassword"
             name="password"
             icon={LockKeyhole}
             label="Password"
@@ -166,38 +169,17 @@ export function BloodCentreLoginScreen() {
             </p>
           )}
 
-          <div className="mt-3 text-center text-[11px] text-[#555]">
-            Don&apos;t have an account?{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/blood-centre/register")}
-              className="font-medium text-[#FF3B3B] underline-offset-2 hover:underline"
-            >
-              Register
-            </button>
-          </div>
-
-          <div className="mt-2 text-center text-[11px]">
-            <button
-              type="button"
-              onClick={() => router.push("/blood-centre/forgot-password")}
-              className="text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
-            >
-              Forgot your password?
-            </button>
-          </div>
-
-          <div className="mt-2 text-center text-[11px]">
+          <div className="mt-3 text-center text-[11px]">
             <button
               type="button"
               onClick={() => router.push("/welcome")}
-              className="text-[#FF3B3B] hover:underline"
+              className="text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
             >
-              Return to Welcome page
+              Back to Welcome
             </button>
           </div>
 
-          <div className="mt-24">
+          <div className="mt-28">
             <AppButton type="button" loading={loading} onClick={handleSubmit}>
               Login
             </AppButton>
@@ -205,5 +187,29 @@ export function BloodCentreLoginScreen() {
         </div>
       </section>
     </ScreenShell>
+  );
+}
+
+function ShieldIcon() {
+  return <ShieldCheckIcon />;
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg
+      width="30"
+      height="30"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-[#FF3B3B]"
+      aria-hidden="true"
+    >
+      <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
   );
 }
