@@ -163,7 +163,8 @@ export function BloodCentreLoginScreen() {
           items-center
           bg-white
           px-5
-          pt-10
+          pb-10
+          pt-12
         "
       >
         <div
@@ -179,7 +180,7 @@ export function BloodCentreLoginScreen() {
           "
         >
           <Mail
-            size={28}
+            size={26}
             strokeWidth={1.5}
             className="text-[var(--color-primary)]"
           />
@@ -187,10 +188,10 @@ export function BloodCentreLoginScreen() {
 
         <h2
           className="
-            mt-3
-            text-[17px]
-            font-medium
-            text-[#222]
+            mt-4
+            text-[20px]
+            font-semibold
+            text-[var(--color-text-primary)]
           "
         >
           Login
@@ -238,7 +239,7 @@ export function BloodCentreLoginScreen() {
               className="
                 mt-2
                 px-1
-                text-[10px]
+                text-[12px]
                 leading-4
                 text-red-500
               "
@@ -247,12 +248,18 @@ export function BloodCentreLoginScreen() {
             </p>
           )}
 
+          <div className="mt-8">
+            <AppButton type="button" loading={loading} onClick={submit}>
+              Login
+            </AppButton>
+          </div>
+
           <div
             className="
-              mt-3
+              mt-5
               text-center
-              text-[11px]
-              text-[#555]
+              text-[13px]
+              text-[var(--color-text-secondary)]
             "
           >
             Don&apos;t have an account?{" "}
@@ -261,7 +268,7 @@ export function BloodCentreLoginScreen() {
               onClick={openRegistrationModal}
               className="
                 font-medium
-                text-[#FF3B3B]
+                text-[var(--color-primary)]
                 underline-offset-2
                 transition
                 hover:underline
@@ -273,19 +280,19 @@ export function BloodCentreLoginScreen() {
 
           <div
             className="
-              mt-2
+              mt-2.5
               text-center
-              text-[11px]
+              text-[13px]
             "
           >
             <Link
               href="/blood-centre/forgot-password"
               className="
-                text-[#555]
+                text-[var(--color-text-secondary)]
                 underline
                 underline-offset-2
                 transition
-                hover:text-[#FF3B3B]
+                hover:text-[var(--color-primary)]
               "
             >
               Forgot your password?
@@ -294,9 +301,9 @@ export function BloodCentreLoginScreen() {
 
           <div
             className="
-              mt-2
+              mt-2.5
               text-center
-              text-[11px]
+              text-[13px]
             "
           >
             <Link
@@ -309,12 +316,6 @@ export function BloodCentreLoginScreen() {
             >
               Return to Welcome page
             </Link>
-          </div>
-
-          <div className="mt-28">
-            <AppButton type="button" loading={loading} onClick={submit}>
-              Login
-            </AppButton>
           </div>
         </div>
       </section>

@@ -138,10 +138,10 @@ export function BloodCentreRegistrationForm() {
             grid
             grid-cols-1
             gap-x-8
-            gap-y-4
+            gap-y-5
             md:grid-cols-2
             md:gap-x-10
-            md:gap-y-4
+            md:gap-y-5
           "
         >
           <FormInput
@@ -172,7 +172,7 @@ export function BloodCentreRegistrationForm() {
               className="
                 mb-1.5
                 block
-                text-[12px]
+                text-[13px]
                 font-medium
                 leading-4
                 text-[var(--color-text-body)]
@@ -183,12 +183,12 @@ export function BloodCentreRegistrationForm() {
 
             <div className="relative">
               <Tags
-                size={17}
+                size={18}
                 strokeWidth={1.5}
                 className="
                   pointer-events-none
                   absolute
-                  left-3
+                  left-3.5
                   top-1/2
                   z-10
                   -translate-y-1/2
@@ -207,15 +207,15 @@ export function BloodCentreRegistrationForm() {
                   },
                 })}
                 className={`
-                  h-[38px]
+                  h-11
                   w-full
                   appearance-none
-                  rounded-[6px]
+                  rounded-lg
                   border
                   bg-[var(--color-white)]
                   pl-10
                   pr-10
-                  text-[12px]
+                  text-[14px]
                   font-normal
                   outline-none
                   transition-all
@@ -226,13 +226,14 @@ export function BloodCentreRegistrationForm() {
                       ? `
                         border-red-400
                         focus:border-red-500
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-red-500/10
                       `
                       : `
                         border-[var(--color-border)]
+                        hover:border-[#c7c7c7]
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/15
                       `
                   }
@@ -303,10 +304,10 @@ export function BloodCentreRegistrationForm() {
               <p
                 role="alert"
                 className="
-                  mt-1
+                  mt-1.5
                   px-1
-                  text-[10px]
-                  leading-3
+                  text-[12px]
+                  leading-4
                   text-red-500
                 "
               >
@@ -440,16 +441,16 @@ export function BloodCentreRegistrationForm() {
             role="alert"
             className="
               mx-auto
-              mt-4
+              mt-5
               w-full
-              rounded-md
+              rounded-lg
               border
               border-red-200
               bg-red-50
-              px-3
-              py-2
-              text-[11px]
-              leading-4
+              px-4
+              py-3
+              text-[13px]
+              leading-5
               text-red-600
               md:max-w-[500px]
             "
@@ -460,7 +461,7 @@ export function BloodCentreRegistrationForm() {
 
         <div
           className="
-            mt-[22px]
+            mt-7
             flex
             w-full
             justify-center
@@ -469,7 +470,7 @@ export function BloodCentreRegistrationForm() {
           <div
             className="
               w-full
-              md:w-[220px]
+              md:w-[240px]
             "
           >
             <AppButton type="submit" loading={isSubmitting}>

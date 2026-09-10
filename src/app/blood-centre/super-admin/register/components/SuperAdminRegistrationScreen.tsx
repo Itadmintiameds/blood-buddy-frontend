@@ -108,8 +108,8 @@ export function SuperAdminRegistrationScreen() {
           items-center
           bg-white
           px-5
-          pt-8
           pb-10
+          pt-10
         "
       >
         <div
@@ -121,10 +121,11 @@ export function SuperAdminRegistrationScreen() {
             justify-center
             rounded-full
             bg-[var(--color-icon-bg-soft)]
+            shadow-sm
           "
         >
           <ShieldCheck
-            size={28}
+            size={26}
             strokeWidth={1.5}
             className="text-[var(--color-primary)]"
           />
@@ -132,10 +133,10 @@ export function SuperAdminRegistrationScreen() {
 
         <h1
           className="
-            mt-3
-            text-[17px]
-            font-medium
-            text-[#222]
+            mt-4
+            text-[20px]
+            font-semibold
+            text-[var(--color-text-primary)]
           "
         >
           Super Admin Registration
@@ -143,10 +144,10 @@ export function SuperAdminRegistrationScreen() {
 
         <p
           className="
-            mt-1
+            mt-1.5
             text-center
-            text-[10px]
-            text-[#999]
+            text-[13px]
+            text-[var(--color-text-tertiary)]
           "
         >
           Create your Super Admin account
@@ -154,7 +155,7 @@ export function SuperAdminRegistrationScreen() {
 
         <div
           className="
-            mt-7
+            mt-8
             w-full
             max-w-[360px]
           "
@@ -265,19 +266,19 @@ export function SuperAdminRegistrationScreen() {
 
           <div
             className="
-              mb-3
+              mb-4
               flex
-              h-[38px]
+              h-11
               items-center
-              rounded-[6px]
+              rounded-lg
               border
               border-[var(--color-border)]
-              bg-[#fafafa]
-              px-3
+              bg-[var(--color-surface-alt)]
+              px-3.5
             "
           >
             <ShieldCheck
-              size={17}
+              size={18}
               strokeWidth={1.5}
               className="
                 mr-3
@@ -288,8 +289,8 @@ export function SuperAdminRegistrationScreen() {
 
             <span
               className="
-                text-[12px]
-                text-[#999]
+                text-[13px]
+                text-[var(--color-text-placeholder-alt)]
               "
             >
               Role: Super Admin
@@ -302,7 +303,7 @@ export function SuperAdminRegistrationScreen() {
               className="
                 mb-3
                 px-1
-                text-[10px]
+                text-[12px]
                 leading-4
                 text-red-500
               "
@@ -319,11 +320,12 @@ export function SuperAdminRegistrationScreen() {
             type="button"
             onClick={() => router.replace("/blood-centre/login")}
             className="
-              mt-3
+              mt-4
               w-full
               text-center
-              text-[11px]
+              text-[13px]
               text-[var(--color-primary)]
+              transition
               hover:underline
             "
           >

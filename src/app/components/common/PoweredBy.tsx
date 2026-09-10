@@ -2,8 +2,8 @@ import Image from "next/image";
 
 export function PoweredBy() {
   return (
-    <div className="mt-10 flex items-center justify-center gap-1 text-center">
-      <span className="text-[9px] font-medium text-[#3B0B85]">Powered by</span>
+    <div className="mt-10 flex items-center justify-center gap-1.5 text-center">
+      <span className="text-[11px] font-medium text-[#3B0B85]">Powered by</span>
       <Image
         src="/images/tiameds-logo.png"
         alt="TiaMeds"

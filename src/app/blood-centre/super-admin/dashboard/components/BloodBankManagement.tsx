@@ -226,30 +226,30 @@ export default function BloodBankManagement() {
     <section className="w-full min-w-0">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div
               className="
                 flex
-                h-9
-                w-9
+                h-10
+                w-10
                 shrink-0
                 items-center
                 justify-center
                 rounded-xl
-                bg-[#fff0f0]
+                bg-[var(--color-icon-bg-soft)]
               "
             >
-              <Building2 size={18} className="text-[#ff3b3f]" />
+              <Building2 size={19} className="text-[var(--color-primary)]" />
             </div>
 
             <div className="min-w-0">
               <h2
                 className="
                   truncate
-                  text-[18px]
+                  text-[19px]
                   font-bold
-                  text-[#222]
-                  sm:text-[21px]
+                  text-[var(--color-text-primary)]
+                  sm:text-[22px]
                 "
               >
                 Blood Bank Management
@@ -258,9 +258,9 @@ export default function BloodBankManagement() {
               <p
                 className="
                   mt-0.5
-                  text-[10px]
-                  text-[#888]
-                  sm:text-[11px]
+                  text-[12px]
+                  text-[var(--color-text-placeholder-alt)]
+                  sm:text-[13px]
                 "
               >
                 Manage registered blood banks and blood availability.
@@ -308,7 +308,7 @@ export default function BloodBankManagement() {
           gap-3
           rounded-xl
           border
-          border-[#e8e8e8]
+          border-[var(--color-border-lighter)]
           bg-white
           p-3
           shadow-[0_2px_12px_rgba(0,0,0,0.025)]
@@ -329,14 +329,14 @@ export default function BloodBankManagement() {
           "
         >
           <Search
-            size={16}
+            size={17}
             className="
               pointer-events-none
               absolute
-              left-3
+              left-3.5
               top-1/2
               -translate-y-1/2
-              text-[#999]
+              text-[var(--color-text-placeholder-alt)]
             "
           />
 
@@ -346,23 +346,25 @@ export default function BloodBankManagement() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search blood centre..."
             className="
-              h-[40px]
+              h-11
               w-full
               min-w-0
               rounded-lg
               border
-              border-[#dddddd]
+              border-[var(--color-border)]
               bg-white
               pl-10
               pr-9
-              text-[11px]
-              text-[#333]
+              text-[14px]
+              text-[var(--color-text-body)]
               outline-none
-              transition
-              placeholder:text-[#aaa]
-              focus:border-[#ff3b3f]
+              transition-all
+              duration-200
+              placeholder:text-[var(--color-text-placeholder)]
+              hover:border-[#c7c7c7]
+              focus:border-[var(--color-primary)]
               focus:ring-2
-              focus:ring-[#ff3b3f]/10
+              focus:ring-[var(--color-primary)]/10
             "
           />
 
@@ -381,10 +383,10 @@ export default function BloodBankManagement() {
                 items-center
                 justify-center
                 rounded-md
-                text-[#999]
+                text-[var(--color-text-placeholder-alt)]
                 transition
-                hover:bg-[#f5f5f5]
-                hover:text-[#555]
+                hover:bg-[var(--color-surface-hover)]
+                hover:text-[var(--color-text-secondary)]
               "
               aria-label="Clear search"
             >
@@ -400,27 +402,30 @@ export default function BloodBankManagement() {
           onClick={() => router.push("/blood-centre/register")}
           className="
             flex
-            h-[40px]
+            h-11
             w-full
             shrink-0
             items-center
             justify-center
             gap-2
             rounded-lg
-            bg-[#ff3b3f]
+            bg-[var(--color-primary)]
             px-4
-            text-[11px]
+            text-[13px]
             font-semibold
             text-white
             shadow-[0_5px_15px_rgba(255,59,63,0.18)]
             transition-all
             duration-200
-            hover:-translate-y-[1px]
-            hover:bg-[#ed3539]
+            hover:-translate-y-px
+            hover:bg-[var(--color-dashboard-cta-hover)]
             active:translate-y-0
-            sm:h-[42px]
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-[var(--color-primary)]
+            focus-visible:ring-offset-2
             sm:w-auto
-            sm:text-[12px]
+            sm:text-[14px]
           "
         >
           <Plus size={16} />
@@ -443,27 +448,30 @@ export default function BloodBankManagement() {
             bg-red-50
             px-4
             py-3
-            text-[11px]
+            text-[13px]
             text-red-600
           "
         >
-          <AlertCircle size={15} className="shrink-0" />
+          <AlertCircle size={16} className="shrink-0" />
 
           <span className="min-w-0">{error}</span>
         </div>
       )}
 
+      {/* DESKTOP TABLE */}
       <div
         className="
           mt-5
+          hidden
           w-full
           min-w-0
           overflow-hidden
           rounded-xl
           border
-          border-[#e5e5e5]
+          border-[var(--color-border-light)]
           bg-white
           shadow-[0_4px_20px_rgba(0,0,0,0.035)]
+          lg:block
         "
       >
         <div
@@ -485,8 +493,8 @@ export default function BloodBankManagement() {
               <tr
                 className="
                   border-b
-                  border-[#dedede]
-                  bg-[#fafafa]
+                  border-[var(--color-border-table)]
+                  bg-[var(--color-surface-alt)]
                 "
               >
                 <th
@@ -495,14 +503,14 @@ export default function BloodBankManagement() {
                     px-1
                     py-3
                     text-center
-                    text-[9px]
+                    text-[12px]
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[#444]
+                    text-[var(--color-text-secondary)]
                     sm:px-2
                     sm:py-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   S.No
@@ -514,14 +522,14 @@ export default function BloodBankManagement() {
                     px-1
                     py-3
                     text-left
-                    text-[9px]
+                    text-[12px]
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[#444]
+                    text-[var(--color-text-secondary)]
                     sm:px-3
                     sm:py-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   Blood Bank
@@ -533,14 +541,14 @@ export default function BloodBankManagement() {
                     px-1
                     py-3
                     text-left
-                    text-[9px]
+                    text-[12px]
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[#444]
+                    text-[var(--color-text-secondary)]
                     sm:px-2
                     sm:py-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   Category
@@ -552,14 +560,14 @@ export default function BloodBankManagement() {
                     px-1
                     py-3
                     text-left
-                    text-[9px]
+                    text-[12px]
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[#444]
+                    text-[var(--color-text-secondary)]
                     sm:px-2
                     sm:py-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   Address
@@ -571,14 +579,14 @@ export default function BloodBankManagement() {
                     px-1
                     py-3
                     text-left
-                    text-[9px]
+                    text-[12px]
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[#444]
+                    text-[var(--color-text-secondary)]
                     sm:px-2
                     sm:py-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   City
@@ -590,14 +598,14 @@ export default function BloodBankManagement() {
                     px-1
                     py-3
                     text-left
-                    text-[9px]
+                    text-[12px]
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[#444]
+                    text-[var(--color-text-secondary)]
                     sm:px-2
                     sm:py-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   Phone
@@ -614,7 +622,7 @@ export default function BloodBankManagement() {
                         size={24}
                         className="
                           animate-spin
-                          text-[#ff3b3f]
+                          text-[var(--color-primary)]
                         "
                       />
 
@@ -622,7 +630,7 @@ export default function BloodBankManagement() {
                         className="
                           mt-3
                           text-[11px]
-                          text-[#888]
+                          text-[var(--color-text-tertiary)]
                         "
                       >
                         Loading blood banks...
@@ -637,14 +645,14 @@ export default function BloodBankManagement() {
                 <tr>
                   <td colSpan={6} className="py-16 text-center">
                     <div className="flex flex-col items-center">
-                      <Building2 size={28} className="text-[#ccc]" />
+                      <Building2 size={28} className="text-[var(--color-border)]" />
 
                       <p
                         className="
                             mt-3
                             text-[12px]
                             font-semibold
-                            text-[#666]
+                            text-[var(--color-text-quaternary)]
                           "
                       >
                         No blood banks found
@@ -654,7 +662,7 @@ export default function BloodBankManagement() {
                         className="
                             mt-1
                             text-[10px]
-                            text-[#aaa]
+                            text-[var(--color-text-placeholder)]
                           "
                       >
                         Try changing your search.
@@ -685,6 +693,74 @@ export default function BloodBankManagement() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* MOBILE / TABLET CARDS */}
+      <div className="mt-5 space-y-3 lg:hidden">
+        {loading && (
+          <div
+            className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-[var(--color-border-lighter)]
+              bg-white
+              py-14
+            "
+          >
+            <Loader2
+              size={24}
+              className="animate-spin text-[var(--color-primary)]"
+            />
+
+            <p className="mt-3 text-[13px] text-[var(--color-text-placeholder-alt)]">
+              Loading blood banks...
+            </p>
+          </div>
+        )}
+
+        {!loading && filteredBloodBanks.length === 0 && (
+          <div
+            className="
+              flex
+              flex-col
+              items-center
+              justify-center
+              rounded-xl
+              border
+              border-[var(--color-border-lighter)]
+              bg-white
+              px-5
+              py-14
+              text-center
+            "
+          >
+            <Building2 size={28} className="text-[var(--color-border)]" />
+
+            <p className="mt-3 text-[14px] font-semibold text-[var(--color-text-quaternary)]">
+              No blood banks found
+            </p>
+
+            <p className="mt-1 text-[12px] text-[var(--color-text-placeholder)]">
+              Try changing your search.
+            </p>
+          </div>
+        )}
+
+        {!loading &&
+          filteredBloodBanks.map((bank, index) => (
+            <BloodBankCard
+              key={bank.id}
+              bank={bank}
+              index={index}
+              expanded={expandedBankId === bank.id}
+              onToggle={() => toggleBank(bank.id)}
+              onUpdate={(availabilityId) => openUpdateModal(bank, availabilityId)}
+            />
+          ))}
       </div>
 
       {/* UPDATE MODAL */}
@@ -727,12 +803,12 @@ function BloodBankTableSection({
           group
           cursor-pointer
           border-b
-          border-[#eeeeee]
+          border-[var(--color-border-lighter)]
           bg-white
           transition-all
           duration-200
           hover:bg-[#fffafa]
-          hover:shadow-[inset_4px_0_0_#ff3b3f]
+          hover:shadow-[inset_4px_0_0_var(--color-primary)]
         "
       >
         {/* S.NO */}
@@ -751,8 +827,8 @@ function BloodBankTableSection({
 
               ${
                 expanded
-                  ? "bg-[#fff0f0] text-[#ff3b3f]"
-                  : "bg-[#f6f6f6] text-[#777]"
+                  ? "bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
+                  : "bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]"
               }
             `}
           >
@@ -772,12 +848,12 @@ function BloodBankTableSection({
                 items-center
                 justify-center
                 rounded-lg
-                bg-[#fff1f1]
+                bg-[var(--color-icon-bg-soft)]
                 sm:h-9
                 sm:w-9
               "
             >
-              <Building2 size={15} className="text-[#ff3b3f]" />
+              <Building2 size={15} className="text-[var(--color-primary)]" />
             </div>
 
             <div className="min-w-0">
@@ -787,7 +863,7 @@ function BloodBankTableSection({
                   text-[10px]
                   font-bold
                   leading-4
-                  text-[#333]
+                  text-[var(--color-text-body)]
                   sm:text-[12px]
                 "
               >
@@ -797,9 +873,9 @@ function BloodBankTableSection({
               <p
                 className="
                   mt-0.5
-                  text-[8px]
-                  text-[#999]
-                  sm:text-[9px]
+                  text-[11px]
+                  text-[var(--color-text-placeholder-alt)]
+                  sm:text-[12px]
                 "
               >
                 {bank?.availability?.length} blood types
@@ -818,16 +894,16 @@ function BloodBankTableSection({
               break-words
               rounded-full
               border
-              border-[#eeeeee]
-              bg-[#fafafa]
+              border-[var(--color-border-lighter)]
+              bg-[var(--color-surface-alt)]
               px-2
               py-1
-              text-[8px]
+              text-[11px]
               font-semibold
               leading-3
-              text-[#555]
+              text-[var(--color-text-secondary)]
               sm:px-2.5
-              sm:text-[9px]
+              sm:text-[12px]
             "
           >
             {bank?.category}
@@ -840,12 +916,12 @@ function BloodBankTableSection({
             break-words
             px-1
             py-4
-            text-[8px]
+            text-[11px]
             leading-4
-            text-[#666]
+            text-[var(--color-text-quaternary)]
             sm:px-2
             sm:py-5
-            sm:text-[10px]
+            sm:text-[13px]
           "
         >
           {bank?.address}
@@ -857,13 +933,13 @@ function BloodBankTableSection({
             break-words
             px-1
             py-4
-            text-[8px]
+            text-[11px]
             font-medium
             leading-4
-            text-[#555]
+            text-[var(--color-text-secondary)]
             sm:px-2
             sm:py-5
-            sm:text-[10px]
+            sm:text-[13px]
           "
         >
           {bank?.city}
@@ -875,12 +951,12 @@ function BloodBankTableSection({
             break-words
             px-1
             py-4
-            text-[8px]
+            text-[11px]
             leading-4
-            text-[#666]
+            text-[var(--color-text-quaternary)]
             sm:px-2
             sm:py-5
-            sm:text-[10px]
+            sm:text-[13px]
           "
         >
           {bank?.phoneNumber}
@@ -893,7 +969,7 @@ function BloodBankTableSection({
           <td
             colSpan={6}
             className="
-              bg-[#fafafa]
+              bg-[var(--color-surface-alt)]
               p-0
             "
           >
@@ -902,8 +978,8 @@ function BloodBankTableSection({
                 w-full
                 min-w-0
                 border-b
-                border-[#e5e5e5]
-                bg-[#fafafa]
+                border-[var(--color-border-light)]
+                bg-[var(--color-surface-alt)]
                 px-2
                 py-4
                 sm:px-4
@@ -917,7 +993,7 @@ function BloodBankTableSection({
                   overflow-hidden
                   rounded-lg
                   border
-                  border-[#e4e4e4]
+                  border-[var(--color-border-light)]
                   bg-white
                 "
               >
@@ -930,7 +1006,7 @@ function BloodBankTableSection({
                     justify-between
                     gap-2
                     border-b
-                    border-[#e7e7e7]
+                    border-[var(--color-border-light)]
                     bg-[#fffafa]
                     px-3
                     py-3
@@ -938,14 +1014,14 @@ function BloodBankTableSection({
                   "
                 >
                   <div className="flex min-w-0 items-center gap-2">
-                    <Droplets size={15} className="shrink-0 text-[#ff3b3f]" />
+                    <Droplets size={15} className="shrink-0 text-[var(--color-primary)]" />
 
                     <span
                       className="
                         truncate
                         text-[10px]
                         font-bold
-                        text-[#333]
+                        text-[var(--color-text-body)]
                         sm:text-[11px]
                       "
                     >
@@ -957,9 +1033,9 @@ function BloodBankTableSection({
                     className="
                       max-w-[45%]
                       truncate
-                      text-[8px]
-                      text-[#999]
-                      sm:text-[9px]
+                      text-[11px]
+                      text-[var(--color-text-placeholder-alt)]
+                      sm:text-[12px]
                     "
                   >
                     {bank.bloodBankName}
@@ -985,8 +1061,8 @@ function BloodBankTableSection({
                       <tr
                         className="
                           border-b
-                          border-[#e5e5e5]
-                          bg-[#f8f8f9]
+                          border-[var(--color-border-light)]
+                          bg-[var(--color-surface-alt)]
                         "
                       >
                         <th
@@ -997,13 +1073,13 @@ function BloodBankTableSection({
                             px-2
                             py-3
                             text-left
-                            text-[8px]
+                            text-[11px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555]
+                            text-[var(--color-text-secondary)]
                             sm:px-4
-                            sm:text-[10px]
+                            sm:text-[13px]
                           "
                         >
                           Blood Group
@@ -1017,13 +1093,13 @@ function BloodBankTableSection({
                             px-2
                             py-3
                             text-left
-                            text-[8px]
+                            text-[11px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555]
+                            text-[var(--color-text-secondary)]
                             sm:px-4
-                            sm:text-[10px]
+                            sm:text-[13px]
                           "
                         >
                           Blood Type
@@ -1037,13 +1113,13 @@ function BloodBankTableSection({
                             px-1
                             py-3
                             text-center
-                            text-[8px]
+                            text-[11px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555]
+                            text-[var(--color-text-secondary)]
                             sm:px-3
-                            sm:text-[10px]
+                            sm:text-[13px]
                           "
                         >
                           Units
@@ -1057,13 +1133,13 @@ function BloodBankTableSection({
                             px-1
                             py-3
                             text-center
-                            text-[8px]
+                            text-[11px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555]
+                            text-[var(--color-text-secondary)]
                             sm:px-3
-                            sm:text-[10px]
+                            sm:text-[13px]
                           "
                         >
                           Update
@@ -1077,7 +1153,7 @@ function BloodBankTableSection({
                           key={availability.id}
                           className="
                               border-b
-                              border-[#eeeeee]
+                              border-[var(--color-border-lighter)]
                               last:border-b-0
                               transition-all
                               duration-200
@@ -1093,13 +1169,13 @@ function BloodBankTableSection({
                                   items-center
                                   justify-center
                                   rounded-md
-                                  bg-[#fff0f0]
+                                  bg-[var(--color-icon-bg-soft)]
                                   px-2
                                   py-1
-                                  text-[8px]
+                                  text-[11px]
                                   font-bold
-                                  text-[#ff3b3f]
-                                  sm:text-[10px]
+                                  text-[var(--color-primary)]
+                                  sm:text-[13px]
                                 "
                             >
                               {availability?.bloodGroup}
@@ -1112,13 +1188,13 @@ function BloodBankTableSection({
                                 break-words
                                 px-2
                                 py-3
-                                text-[8px]
+                                text-[11px]
                                 font-medium
                                 uppercase
                                 leading-4
-                                text-[#555]
+                                text-[var(--color-text-secondary)]
                                 sm:px-4
-                                sm:text-[10px]
+                                sm:text-[13px]
                               "
                           >
                             {availability?.bloodType}
@@ -1131,7 +1207,7 @@ function BloodBankTableSection({
                                 className="
                                     text-[10px]
                                     font-bold
-                                    text-[#333]
+                                    text-[var(--color-text-body)]
                                     sm:text-[12px]
                                   "
                               >
@@ -1140,9 +1216,9 @@ function BloodBankTableSection({
 
                               <span
                                 className="
-                                    text-[7px]
-                                    text-[#999]
-                                    sm:text-[9px]
+                                    text-[11px]
+                                    text-[var(--color-text-placeholder-alt)]
+                                    sm:text-[12px]
                                   "
                               >
                                 Units
@@ -1167,16 +1243,16 @@ function BloodBankTableSection({
                                   justify-center
                                   rounded-lg
                                   border
-                                  border-[#eeeeee]
+                                  border-[var(--color-border-lighter)]
                                   bg-white
-                                  text-[#777]
+                                  text-[var(--color-text-muted)]
                                   shadow-sm
                                   transition-all
                                   duration-200
                                   hover:-translate-y-[1px]
                                   hover:border-[#ffcccc]
-                                  hover:bg-[#fff2f2]
-                                  hover:text-[#ff3b3f]
+                                  hover:bg-[var(--color-icon-bg-soft)]
+                                  hover:text-[var(--color-primary)]
                                   active:translate-y-0
                                   sm:h-8
                                   sm:w-8
@@ -1198,7 +1274,7 @@ function BloodBankTableSection({
                               py-8
                               text-center
                               text-[10px]
-                              text-[#999]
+                              text-[var(--color-text-placeholder-alt)]
                             "
                           >
                             No blood availability found.
@@ -1214,6 +1290,245 @@ function BloodBankTableSection({
         </tr>
       )}
     </>
+  );
+}
+
+// BLOOD BANK CARD (mobile / tablet)
+function BloodBankCard({
+  bank,
+  index,
+  expanded,
+  onToggle,
+  onUpdate,
+}: {
+  bank: SuperAdminBloodBank;
+  index: number;
+  expanded: boolean;
+  onToggle: () => void;
+  onUpdate: (availabilityId: number) => void;
+}) {
+  return (
+    <div
+      className="
+        overflow-hidden
+        rounded-xl
+        border
+        border-[var(--color-border-lighter)]
+        bg-white
+        shadow-[0_2px_12px_rgba(0,0,0,0.025)]
+      "
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        className="
+          flex
+          w-full
+          items-start
+          justify-between
+          gap-3
+          p-4
+          text-left
+          transition-colors
+          duration-200
+          hover:bg-[var(--color-surface-hover)]
+        "
+      >
+        <div className="flex min-w-0 items-start gap-3">
+          <div
+            className="
+              flex
+              h-10
+              w-10
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              bg-[var(--color-icon-bg-soft)]
+            "
+          >
+            <Building2 size={17} className="text-[var(--color-primary)]" />
+          </div>
+
+          <div className="min-w-0">
+            <p className="text-[10px] text-[var(--color-text-placeholder)]">
+              S.No {index + 1}
+            </p>
+
+            <p className="mt-0.5 break-words text-[14px] font-bold leading-5 text-[var(--color-text-body)]">
+              {bank?.bloodBankName}
+            </p>
+
+            <span
+              className="
+                mt-1.5
+                inline-flex
+                rounded-full
+                border
+                border-[var(--color-border-lighter)]
+                bg-[var(--color-surface-alt)]
+                px-2.5
+                py-0.5
+                text-[11px]
+                font-semibold
+                text-[var(--color-text-secondary)]
+              "
+            >
+              {bank?.category}
+            </span>
+          </div>
+        </div>
+
+        <div
+          className={`
+            mt-1
+            flex
+            h-7
+            w-7
+            shrink-0
+            items-center
+            justify-center
+            rounded-lg
+            transition-all
+            duration-200
+
+            ${
+              expanded
+                ? "bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
+                : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
+            }
+          `}
+        >
+          {expanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+        </div>
+      </button>
+
+      <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border-lighter)] px-4 py-3.5 sm:grid-cols-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+            Address
+          </p>
+          <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
+            {bank?.address}
+          </p>
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+            City
+          </p>
+          <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
+            {bank?.city}
+          </p>
+        </div>
+
+        <div className="min-w-0 sm:col-span-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+            Phone
+          </p>
+          <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
+            {bank?.phoneNumber}
+          </p>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Droplets size={15} className="text-[var(--color-primary)]" />
+            <span className="text-[12px] font-bold text-[var(--color-text-body)]">
+              Blood Availability
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {bank?.availability.map((availability) => (
+              <div
+                key={availability.id}
+                className="
+                  flex
+                  items-center
+                  justify-between
+                  gap-3
+                  rounded-lg
+                  border
+                  border-[var(--color-border-lighter)]
+                  bg-white
+                  px-3.5
+                  py-3
+                "
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <span
+                    className="
+                      inline-flex
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-md
+                      bg-[var(--color-icon-bg-soft)]
+                      px-2
+                      py-1
+                      text-[11px]
+                      font-bold
+                      text-[var(--color-primary)]
+                    "
+                  >
+                    {availability?.bloodGroup}
+                  </span>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-[11px] font-medium uppercase text-[var(--color-text-secondary)]">
+                      {availability?.bloodType}
+                    </p>
+                    <p className="text-[12px] font-bold text-[var(--color-text-body)]">
+                      {availability?.units} Units
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onUpdate(availability.id)}
+                  className="
+                    flex
+                    h-9
+                    w-9
+                    shrink-0
+                    items-center
+                    justify-center
+                    rounded-lg
+                    border
+                    border-[var(--color-border-lighter)]
+                    bg-white
+                    text-[var(--color-text-tertiary)]
+                    shadow-sm
+                    transition-all
+                    duration-200
+                    hover:border-[#ffcccc]
+                    hover:bg-[var(--color-icon-bg-soft)]
+                    hover:text-[var(--color-primary)]
+                    focus-visible:outline-none
+                    focus-visible:ring-2
+                    focus-visible:ring-[var(--color-primary)]
+                  "
+                  aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
+                >
+                  <Pencil size={14} />
+                </button>
+              </div>
+            ))}
+
+            {bank?.availability?.length === 0 && (
+              <p className="px-2 py-4 text-center text-[12px] text-[var(--color-text-placeholder)]">
+                No blood availability found.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1236,7 +1551,7 @@ function StatCard({
         gap-3
         rounded-xl
         border
-        border-[#e9e9e9]
+        border-[var(--color-border-light)]
         bg-white
         px-4
         py-4
@@ -1256,21 +1571,21 @@ function StatCard({
           items-center
           justify-center
           rounded-xl
-          bg-[#fff1f1]
+          bg-[var(--color-icon-bg-soft)]
         "
       >
-        <Icon size={18} className="text-[#ff3b3f]" />
+        <Icon size={18} className="text-[var(--color-primary)]" />
       </div>
 
       <div className="min-w-0">
         <p
           className="
             truncate
-            text-[9px]
+            text-[12px]
             font-medium
             uppercase
             tracking-wide
-            text-[#999]
+            text-[var(--color-text-placeholder-alt)]
           "
         >
           {label}
@@ -1281,7 +1596,7 @@ function StatCard({
             mt-0.5
             text-[19px]
             font-bold
-            text-[#222]
+            text-[var(--color-text-primary)]
           "
         >
           {value}
@@ -1338,8 +1653,12 @@ function UpdateUnitsModal({
     >
       <div
         className="
+          animate-modalFadeSlide
+          flex
+          max-h-[90vh]
           w-full
           max-w-[430px]
+          flex-col
           overflow-hidden
           rounded-2xl
           bg-white
@@ -1349,10 +1668,11 @@ function UpdateUnitsModal({
         <div
           className="
             flex
+            shrink-0
             items-start
             justify-between
             border-b
-            border-[#eeeeee]
+            border-[var(--color-border-lighter)]
             px-5
             py-5
           "
@@ -1368,10 +1688,10 @@ function UpdateUnitsModal({
                   items-center
                   justify-center
                   rounded-lg
-                  bg-[#fff0f0]
+                  bg-[var(--color-icon-bg-soft)]
                 "
               >
-                <Droplets size={17} className="text-[#ff3b3f]" />
+                <Droplets size={17} className="text-[var(--color-primary)]" />
               </div>
 
               <div className="min-w-0">
@@ -1380,7 +1700,7 @@ function UpdateUnitsModal({
                   className="
                     text-[14px]
                     font-bold
-                    text-[#222]
+                    text-[var(--color-text-primary)]
                   "
                 >
                   Update Blood Units
@@ -1389,8 +1709,8 @@ function UpdateUnitsModal({
                 <p
                   className="
                     mt-0.5
-                    text-[9px]
-                    text-[#999]
+                    text-[12px]
+                    text-[var(--color-text-placeholder-alt)]
                   "
                 >
                   Update current availability
@@ -1411,10 +1731,10 @@ function UpdateUnitsModal({
               items-center
               justify-center
               rounded-lg
-              text-[#999]
+              text-[var(--color-text-placeholder-alt)]
               transition
-              hover:bg-[#f5f5f5]
-              hover:text-[#555]
+              hover:bg-[var(--color-surface-hover)]
+              hover:text-[var(--color-text-secondary)]
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
@@ -1424,24 +1744,24 @@ function UpdateUnitsModal({
           </button>
         </div>
 
-        <div className="px-5 py-5">
+        <div className="overflow-y-auto px-5 py-5">
           {/* BLOOD BANK */}
           <div
             className="
               rounded-xl
               border
-              border-[#eeeeee]
-              bg-[#fafafa]
+              border-[var(--color-border-lighter)]
+              bg-[var(--color-surface-alt)]
               p-4
             "
           >
             <p
               className="
-                text-[9px]
+                text-[12px]
                 font-medium
                 uppercase
                 tracking-wide
-                text-[#999]
+                text-[var(--color-text-placeholder-alt)]
               "
             >
               Blood Bank
@@ -1453,7 +1773,7 @@ function UpdateUnitsModal({
                 break-words
                 text-[12px]
                 font-bold
-                text-[#333]
+                text-[var(--color-text-body)]
               "
             >
               {bank.bloodBankName}
@@ -1467,18 +1787,18 @@ function UpdateUnitsModal({
                 min-w-0
                 rounded-lg
                 border
-                border-[#eeeeee]
+                border-[var(--color-border-lighter)]
                 p-3
               "
             >
-              <p className="text-[9px] text-[#999]">Blood Group</p>
+              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">Blood Group</p>
 
               <p
                 className="
                   mt-1
                   text-[13px]
                   font-bold
-                  text-[#ff3b3f]
+                  text-[var(--color-primary)]
                 "
               >
                 {availability?.bloodGroup}
@@ -1490,11 +1810,11 @@ function UpdateUnitsModal({
                 min-w-0
                 rounded-lg
                 border
-                border-[#eeeeee]
+                border-[var(--color-border-lighter)]
                 p-3
               "
             >
-              <p className="text-[9px] text-[#999]">Blood Type</p>
+              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">Blood Type</p>
 
               <p
                 className="
@@ -1504,7 +1824,7 @@ function UpdateUnitsModal({
                   font-bold
                   uppercase
                   leading-4
-                  text-[#444]
+                  text-[var(--color-text-secondary)]
                 "
               >
                 {availability?.bloodType}
@@ -1521,7 +1841,7 @@ function UpdateUnitsModal({
                 block
                 text-[10px]
                 font-semibold
-                text-[#444]
+                text-[var(--color-text-secondary)]
               "
             >
               Available Units
@@ -1552,14 +1872,14 @@ function UpdateUnitsModal({
                   pr-16
                   text-[13px]
                   font-semibold
-                  text-[#333]
+                  text-[var(--color-text-body)]
                   outline-none
                   transition
-                  focus:border-[#ff3b3f]
+                  focus:border-[var(--color-primary)]
                   focus:ring-2
-                  focus:ring-[#ff3b3f]/10
+                  focus:ring-[var(--color-primary)]/10
 
-                  ${error ? "border-red-400" : "border-[#d8d8d8]"}
+                  ${error ? "border-red-400" : "border-[var(--color-border)]"}
                 `}
               />
 
@@ -1571,7 +1891,7 @@ function UpdateUnitsModal({
                   top-1/2
                   -translate-y-1/2
                   text-[10px]
-                  text-[#999]
+                  text-[var(--color-text-placeholder-alt)]
                 "
               >
                 Units
@@ -1583,7 +1903,7 @@ function UpdateUnitsModal({
                 role="alert"
                 className="
                   mt-2
-                  text-[10px]
+                  text-[12px]
                   text-red-500
                 "
               >
@@ -1596,10 +1916,11 @@ function UpdateUnitsModal({
         <div
           className="
             flex
+            shrink-0
             gap-2
             border-t
-            border-[#eeeeee]
-            bg-[#fafafa]
+            border-[var(--color-border-lighter)]
+            bg-[var(--color-surface-alt)]
             px-5
             py-4
           "
@@ -1613,13 +1934,13 @@ function UpdateUnitsModal({
               flex-1
               rounded-lg
               border
-              border-[#dddddd]
+              border-[var(--color-border)]
               bg-white
               text-[11px]
               font-semibold
-              text-[#666]
+              text-[var(--color-text-quaternary)]
               transition
-              hover:bg-[#f5f5f5]
+              hover:bg-[var(--color-surface-hover)]
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
@@ -1639,13 +1960,13 @@ function UpdateUnitsModal({
               justify-center
               gap-2
               rounded-lg
-              bg-[#ff3b3f]
+              bg-[var(--color-primary)]
               text-[11px]
               font-semibold
               text-white
               shadow-[0_5px_15px_rgba(255,59,63,0.18)]
               transition-all
-              hover:bg-[#ed3539]
+              hover:bg-[var(--color-dashboard-cta-hover)]
               disabled:cursor-not-allowed
               disabled:opacity-60
             "

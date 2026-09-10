@@ -31,14 +31,17 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
     >
       <div
         className="
+          animate-modalFadeSlide
+          max-h-[90vh]
           w-full
           max-w-[340px]
-          rounded-[10px]
+          overflow-y-auto
+          rounded-2xl
           bg-white
           px-5
-          py-6
+          py-7
           text-center
-          shadow-xl
+          shadow-[0_25px_70px_rgba(0,0,0,0.2)]
           sm:max-w-[380px]
           sm:px-7
         "
@@ -48,8 +51,8 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
           <div
             className="
               flex
-              h-[52px]
-              w-[52px]
+              h-14
+              w-14
               items-center
               justify-center
               rounded-full
@@ -68,7 +71,7 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
         <h2
           id="login-success-title"
           className="
-            text-[16px]
+            text-[18px]
             font-semibold
             leading-6
             text-[var(--color-text-primary)]
@@ -81,7 +84,7 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
         <p
           className="
             mt-2
-            text-[12px]
+            text-[13px]
             leading-5
             text-[var(--color-text-muted)]
           "
@@ -92,7 +95,7 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
         <p
           className="
             mt-1
-            text-[12px]
+            text-[13px]
             leading-5
             text-[var(--color-text-muted)]
           "
@@ -105,18 +108,20 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
           type="button"
           onClick={onConfirm}
           className="
-            mt-5
+            mt-6
             flex
-            h-[40px]
+            h-11
             w-full
             items-center
             justify-center
-            rounded-[6px]
+            rounded-lg
             bg-[var(--color-primary)]
-            text-[12px]
-            font-medium
+            text-[14px]
+            font-semibold
             text-white
-            transition
+            shadow-[0_4px_14px_rgba(255,59,63,0.22)]
+            transition-all
+            duration-200
             hover:bg-[var(--color-primary-hover-alt)]
             active:scale-[0.98]
             focus:outline-none

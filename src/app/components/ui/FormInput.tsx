@@ -51,7 +51,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             className="
               mb-1.5
               block
-              text-[12px]
+              text-[13px]
               font-medium
               leading-4
               text-[var(--color-text-body)]
@@ -66,13 +66,13 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           className={`
             relative
             flex
-            h-[38px]
+            h-11
             w-full
             items-center
-            rounded-[6px]
+            rounded-lg
             border
             bg-[var(--color-white)]
-            px-3
+            px-3.5
             transition-all
             duration-200
 
@@ -81,13 +81,14 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                 ? `
                   border-red-400
                   focus-within:border-red-500
-                  focus-within:ring-1
+                  focus-within:ring-2
                   focus-within:ring-red-500/10
                 `
                 : `
                   border-[var(--color-border)]
+                  hover:border-[#c7c7c7]
                   focus-within:border-[var(--color-primary)]
-                  focus-within:ring-1
+                  focus-within:ring-2
                   focus-within:ring-[var(--color-primary)]/15
                 `
             }
@@ -95,10 +96,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
         >
           {/* ICON */}
           <Icon
-            size={17}
+            size={18}
             strokeWidth={1.5}
             className="
-              mr-3
+              mr-2.5
               shrink-0
               text-[var(--color-primary)]
             "
@@ -118,7 +119,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               flex-1
               border-0
               bg-transparent
-              text-[12px]
+              text-[14px]
               font-normal
               text-[var(--color-text-body)]
               outline-none
@@ -144,17 +145,18 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               className="
                 ml-2
                 flex
-                h-6
-                w-6
+                h-7
+                w-7
                 shrink-0
                 items-center
                 justify-center
+                rounded-md
                 text-[var(--color-primary)]
                 transition-colors
-                hover:opacity-80
+                hover:bg-[var(--color-icon-bg-soft)]
               "
             >
-              {showPassword ? <Eye size={17} /> : <EyeOff size={17} />}
+              {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
             </button>
           )}
         </div>
@@ -164,10 +166,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
           <p
             role="alert"
             className="
-              mt-1
+              mt-1.5
               px-1
-              text-[10px]
-              leading-3
+              text-[12px]
+              leading-4
               text-red-500
             "
           >

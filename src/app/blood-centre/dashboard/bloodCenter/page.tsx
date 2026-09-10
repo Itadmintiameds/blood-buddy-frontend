@@ -69,26 +69,26 @@ export function BloodCentreDashboardScreen() {
       <section
         className="
           w-full
-          bg-white
+          bg-[var(--color-surface-alt)]
           px-4
-          pb-7
-          pt-5
+          pb-8
+          pt-6
           sm:px-5
           md:px-8
-          md:pb-10
-          md:pt-8
+          md:pb-12
+          md:pt-9
         "
       >
         <div className="mx-auto w-full max-w-[720px]">
           <div className="flex items-start justify-between gap-3">
-            <div>
+            <div className="min-w-0">
               <h1
                 className="
-                  text-[14px]
-                  font-medium
+                  text-[17px]
+                  font-semibold
                   text-[var(--color-text-primary)]
-                  sm:text-[15px]
-                  md:text-[17px]
+                  sm:text-[19px]
+                  md:text-[22px]
                 "
               >
                 Blood Centre Dashboard
@@ -97,10 +97,10 @@ export function BloodCentreDashboardScreen() {
               <p
                 className="
                   mt-1
-                  text-[9px]
+                  truncate
+                  text-[12px]
                   text-[var(--color-text-muted)]
-                  sm:text-[10px]
-                  md:text-[11px]
+                  sm:text-[13px]
                 "
               >
                 Welcome{session?.email ? `, ${session?.email}` : ""}
@@ -112,12 +112,12 @@ export function BloodCentreDashboardScreen() {
 
           <div
             className="
-              mt-5
+              mt-6
               grid
               grid-cols-3
-              gap-2
-              sm:gap-3
-              md:mt-6
+              gap-2.5
+              sm:gap-3.5
+              md:mt-7
               md:gap-4
             "
           >
@@ -146,26 +146,27 @@ export function BloodCentreDashboardScreen() {
           {/* BLOOD AVAILABILITY OVERVIEW */}
           <div
             className="
-              mt-5
+              mt-6
               overflow-hidden
-              rounded-[6px]
+              rounded-xl
               border
               border-[var(--color-border-table)]
-              md:mt-6
+              bg-white
+              shadow-[0_2px_12px_rgba(0,0,0,0.03)]
+              md:mt-7
             "
           >
             <div
               className="
                 bg-white
-                px-3
-                py-2
-                text-[10px]
-                font-medium
+                px-4
+                py-3
+                text-[13px]
+                font-semibold
                 text-[var(--color-text-primary)]
-                sm:text-[11px]
-                md:px-4
-                md:py-2.5
-                md:text-[12px]
+                md:px-5
+                md:py-3.5
+                md:text-[14px]
               "
             >
               Blood Availability Overview
@@ -179,16 +180,16 @@ export function BloodCentreDashboardScreen() {
                 border-t
                 border-[var(--color-border-light)]
                 bg-[var(--color-surface-alt)]
-                px-3
-                py-2
-                text-[8px]
+                px-4
+                py-2.5
+                text-[11px]
                 font-semibold
+                uppercase
+                tracking-wide
                 text-[var(--color-text-secondary)]
-                sm:px-4
-                sm:text-[9px]
-                md:px-4
-                md:py-2.5
-                md:text-[10px]
+                md:px-5
+                md:py-3
+                md:text-[12px]
               "
             >
               <div className="text-left">Blood Group</div>
@@ -197,7 +198,7 @@ export function BloodCentreDashboardScreen() {
             </div>
 
             {loading && (
-              <div className="px-3 py-4 text-center text-[10px] text-[var(--color-text-muted)]">
+              <div className="px-4 py-6 text-center text-[13px] text-[var(--color-text-muted)]">
                 Loading availability...
               </div>
             )}
@@ -205,14 +206,14 @@ export function BloodCentreDashboardScreen() {
             {!loading && error && (
               <div
                 role="alert"
-                className="px-3 py-4 text-center text-[10px] text-red-500"
+                className="px-4 py-6 text-center text-[13px] text-red-500"
               >
                 {error}
               </div>
             )}
 
             {!loading && !error && rows.length === 0 && (
-              <div className="px-3 py-4 text-center text-[10px] text-[var(--color-text-muted)]">
+              <div className="px-4 py-6 text-center text-[13px] text-[var(--color-text-muted)]">
                 No availability added yet.
               </div>
             )}
@@ -224,20 +225,17 @@ export function BloodCentreDashboardScreen() {
                   key={`${row.bloodGroup}-${row.bloodType}`}
                   className="
                     grid
-                    min-h-[36px]
+                    min-h-[44px]
                     grid-cols-[1fr_1.5fr_1fr]
                     items-center
                     border-t
                     border-[var(--color-border-light)]
-                    px-3
-                    text-[9px]
+                    px-4
+                    text-[12px]
                     text-[var(--color-text-body)]
-                    sm:min-h-[38px]
-                    sm:px-4
-                    sm:text-[10px]
-                    md:min-h-[42px]
-                    md:px-4
-                    md:text-[11px]
+                    md:min-h-[48px]
+                    md:px-5
+                    md:text-[13px]
                   "
                   style={{
                     backgroundColor:
@@ -248,7 +246,7 @@ export function BloodCentreDashboardScreen() {
                 >
                   <div className="flex min-w-0 items-center justify-start">
                     <Droplets
-                      size={11}
+                      size={13}
                       strokeWidth={1.8}
                       className="mr-2 shrink-0 text-[var(--color-stat-red)] sm:mr-2.5 md:mr-3"
                     />
@@ -272,28 +270,35 @@ export function BloodCentreDashboardScreen() {
           <Link
             href={routes.addAvailability}
             className="
-              mt-7
+              mt-8
               flex
-              h-[38px]
+              h-11
               w-full
               items-center
               justify-center
-              gap-1
-              rounded-[6px]
+              gap-1.5
+              rounded-lg
               bg-[var(--color-primary)]
-              text-[11px]
+              text-[14px]
+              font-semibold
               text-white
-              transition
+              shadow-[0_4px_14px_rgba(255,59,63,0.22)]
+              transition-all
+              duration-200
+              hover:-translate-y-px
               hover:bg-[var(--color-dashboard-cta-hover)]
+              active:translate-y-0
               active:scale-[0.99]
-              sm:h-[40px]
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-[var(--color-primary)]
+              focus-visible:ring-offset-2
               md:mx-auto
-              md:mt-8
+              md:mt-9
               md:w-[300px]
-              md:text-[12px]
             "
           >
-            <Plus size={14} />
+            <Plus size={16} />
             Add Availability
           </Link>
         </div>
@@ -319,33 +324,36 @@ function Stat({
     <div
       className="
         flex
-        min-h-[78px]
+        min-h-[88px]
         flex-col
         items-center
         justify-center
-        rounded-[7px]
+        gap-1
+        rounded-xl
         px-2
-        py-3
+        py-3.5
         text-center
         text-white
-        sm:min-h-[82px]
-        md:min-h-[95px]
-        md:rounded-[8px]
+        shadow-[0_6px_16px_rgba(0,0,0,0.08)]
+        transition-transform
+        duration-200
+        hover:-translate-y-px
+        sm:min-h-[96px]
+        md:min-h-[104px]
       "
       style={{
         backgroundColor: color,
       }}
     >
-      <Icon size={17} strokeWidth={1.8} className="sm:h-[18px] sm:w-[18px]" />
+      <Icon size={18} strokeWidth={1.8} className="sm:h-5 sm:w-5" />
 
       <div
         className="
-          mt-1
-          text-[17px]
-          font-semibold
-          leading-5
-          sm:text-[18px]
-          md:text-[20px]
+          text-[18px]
+          font-bold
+          leading-6
+          sm:text-[20px]
+          md:text-[22px]
         "
       >
         {value}
@@ -353,11 +361,11 @@ function Stat({
 
       <div
         className="
-          mt-0.5
-          text-[7px]
-          leading-3
-          sm:text-[8px]
-          md:text-[9px]
+          text-[10px]
+          font-medium
+          leading-4
+          opacity-90
+          sm:text-[11px]
         "
       >
         {label}

@@ -38,11 +38,16 @@ export function SuperAdminLogoutButton() {
         rounded-lg
         px-4
         py-3
-        text-sm
-        text-gray-600
-        transition
-        hover:bg-red-50
-        hover:text-[#FF3B3B]
+        text-[13px]
+        font-medium
+        text-[var(--color-text-quaternary)]
+        transition-colors
+        duration-200
+        hover:bg-[var(--color-icon-bg-soft)]
+        hover:text-[var(--color-primary)]
+        focus-visible:outline-none
+        focus-visible:ring-2
+        focus-visible:ring-[var(--color-primary)]
         disabled:cursor-not-allowed
         disabled:opacity-60
       "

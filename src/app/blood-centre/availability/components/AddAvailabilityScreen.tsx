@@ -104,7 +104,7 @@ export function AddAvailabilityScreen() {
           backHref="/blood-centre/dashboard"
         />
 
-        <main className="w-full bg-white">
+        <main className="w-full bg-[var(--color-surface-alt)] md:bg-[var(--color-surface-alt)]">
           <section
             className="
               mx-auto
@@ -132,11 +132,15 @@ export function AddAvailabilityScreen() {
             >
               <div
                 className="
-                  rounded-none
+                  rounded-2xl
+                  border
+                  border-[var(--color-border-lighter)]
                   bg-white
-                  md:rounded-[12px]
-                  md:border
-                  md:border-[var(--color-border-lighter)]
+                  px-4
+                  py-6
+                  shadow-[0_2px_12px_rgba(0,0,0,0.04)]
+                  sm:px-6
+                  sm:py-7
                   md:px-8
                   md:py-8
                   md:shadow-[0_4px_20px_rgba(0,0,0,0.05)]
@@ -144,13 +148,13 @@ export function AddAvailabilityScreen() {
                   lg:py-9
                 "
               >
-                <div className="mb-6 md:mb-8">
-                  <div className="flex items-center gap-3">
+                <div className="mb-7 md:mb-9">
+                  <div className="flex items-center gap-3.5">
                     <div
                       className="
                         flex
-                        h-10
-                        w-10
+                        h-11
+                        w-11
                         shrink-0
                         items-center
                         justify-center
@@ -159,7 +163,7 @@ export function AddAvailabilityScreen() {
                       "
                     >
                       <Droplets
-                        size={21}
+                        size={22}
                         strokeWidth={1.8}
                         className="text-[var(--color-primary)]"
                       />
@@ -168,11 +172,11 @@ export function AddAvailabilityScreen() {
                     <div>
                       <h1
                         className="
-                          text-[16px]
+                          text-[18px]
                           font-semibold
-                          leading-5
+                          leading-6
                           text-[var(--color-text-primary)]
-                          md:text-[19px]
+                          md:text-[20px]
                         "
                       >
                         Blood Availability
@@ -181,10 +185,10 @@ export function AddAvailabilityScreen() {
                       <p
                         className="
                           mt-1
-                          text-[10px]
+                          text-[12px]
                           leading-4
                           text-[var(--color-text-tertiary)]
-                          md:text-[12px]
+                          md:text-[13px]
                         "
                       >
                         Add the currently available blood units.
@@ -198,10 +202,9 @@ export function AddAvailabilityScreen() {
                     htmlFor="bloodGroup"
                     className="
                       block
-                      text-[11px]
+                      text-[13px]
                       font-medium
                       text-[var(--color-text-body)]
-                      md:text-[12px]
                     "
                   >
                     Blood Group
@@ -230,26 +233,27 @@ export function AddAvailabilityScreen() {
                         clearError();
                       }}
                       className={`
-                        h-[40px]
+                        h-11
                         w-full
                         appearance-none
-                        rounded-[6px]
+                        rounded-lg
                         border
                         bg-white
                         pl-10
                         pr-10
-                        text-[12px]
+                        text-[14px]
                         outline-none
-                        transition
+                        transition-all
+                        duration-200
 
                         ${
                           error && !bloodGroup
                             ? "border-red-400"
-                            : "border-[var(--color-border)]"
+                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
                         }
 
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/20
 
                         ${bloodGroup ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
@@ -284,10 +288,9 @@ export function AddAvailabilityScreen() {
                     htmlFor="bloodType"
                     className="
                       block
-                      text-[11px]
+                      text-[13px]
                       font-medium
                       text-[var(--color-text-body)]
-                      md:text-[12px]
                     "
                   >
                     Blood Type
@@ -317,26 +320,27 @@ export function AddAvailabilityScreen() {
                         clearError();
                       }}
                       className={`
-                        h-[40px]
+                        h-11
                         w-full
                         appearance-none
-                        rounded-[6px]
+                        rounded-lg
                         border
                         bg-white
                         pl-10
                         pr-10
-                        text-[12px]
+                        text-[14px]
                         outline-none
-                        transition
+                        transition-all
+                        duration-200
 
                         ${
                           error && !bloodType
                             ? "border-red-400"
-                            : "border-[var(--color-border)]"
+                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
                         }
 
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/20
 
                         ${bloodType ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
@@ -371,10 +375,9 @@ export function AddAvailabilityScreen() {
                     htmlFor="units"
                     className="
                       block
-                      text-[11px]
+                      text-[13px]
                       font-medium
                       text-[var(--color-text-body)]
-                      md:text-[12px]
                     "
                   >
                     Units Available
@@ -413,21 +416,23 @@ export function AddAvailabilityScreen() {
                       placeholder="Enter units"
                       autoComplete="off"
                       className="
-                        h-[40px]
+                        h-11
                         w-full
-                        rounded-[6px]
+                        rounded-lg
                         border
                         border-[var(--color-border)]
                         bg-white
                         pl-10
                         pr-3
-                        text-[12px]
+                        text-[14px]
                         text-[var(--color-text-body)]
                         outline-none
-                        transition
+                        transition-all
+                        duration-200
                         placeholder:text-[var(--color-text-placeholder)]
+                        hover:border-[#c7c7c7]
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/20
                       "
                     />
@@ -439,10 +444,9 @@ export function AddAvailabilityScreen() {
                     role="alert"
                     className="
                       mt-2
-                      text-[10px]
+                      text-[12px]
                       leading-4
                       text-red-500
-                      md:text-[11px]
                     "
                   >
                     {error}
@@ -494,14 +498,17 @@ export function AddAvailabilityScreen() {
         >
           <div
             className="
+              animate-modalFadeSlide
+              max-h-[90vh]
               w-full
               max-w-[340px]
-              rounded-[10px]
+              overflow-y-auto
+              rounded-2xl
               bg-white
               px-5
-              py-6
+              py-7
               text-center
-              shadow-xl
+              shadow-[0_25px_70px_rgba(0,0,0,0.2)]
               sm:max-w-[380px]
               sm:px-7
             "
@@ -510,8 +517,8 @@ export function AddAvailabilityScreen() {
               <div
                 className="
                   flex
-                  h-[52px]
-                  w-[52px]
+                  h-14
+                  w-14
                   items-center
                   justify-center
                   rounded-full
@@ -529,7 +536,7 @@ export function AddAvailabilityScreen() {
             <h2
               id="availability-success-title"
               className="
-                text-[16px]
+                text-[18px]
                 font-semibold
                 leading-6
                 text-[var(--color-text-primary)]
@@ -541,7 +548,7 @@ export function AddAvailabilityScreen() {
             <p
               className="
                 mt-2
-                text-[12px]
+                text-[13px]
                 leading-5
                 text-[var(--color-text-muted)]
               "
@@ -553,18 +560,20 @@ export function AddAvailabilityScreen() {
               type="button"
               onClick={handleSuccess}
               className="
-                mt-5
+                mt-6
                 flex
-                h-[40px]
+                h-11
                 w-full
                 items-center
                 justify-center
-                rounded-[6px]
+                rounded-lg
                 bg-[var(--color-primary)]
-                text-[12px]
-                font-medium
+                text-[14px]
+                font-semibold
                 text-white
-                transition
+                shadow-[0_4px_14px_rgba(255,59,63,0.22)]
+                transition-all
+                duration-200
                 hover:bg-[var(--color-primary-hover-alt)]
                 active:scale-[0.98]
                 focus:outline-none

@@ -16,7 +16,7 @@ export function WelcomeScreen() {
     <ScreenShell>
       <BrandHeader />
 
-      <section className="w-full bg-white px-5 py-7 md:min-h-[100px] md:px-8 md:py-5">
+      <section className="w-full bg-[var(--color-surface-alt)] px-5 py-10 md:min-h-[100px] md:px-8 md:py-14">
         <div
           className="
             mx-auto
@@ -24,11 +24,11 @@ export function WelcomeScreen() {
             w-full
             max-w-[1000px]
             overflow-hidden
-            rounded-[12px]
+            rounded-2xl
             border
             border-[var(--color-border-lighter)]
             bg-white
-            shadow-[0_8px_30px_rgba(0,0,0,0.08)]
+            shadow-[0_20px_50px_rgba(0,0,0,0.07)]
             md:grid
             md:grid-cols-[1fr_1px_1fr]
             lg:min-h-[520px]
@@ -81,8 +81,10 @@ export function WelcomeScreen() {
               <h1
                 className="
                   text-center
-                  text-[20px]
+                  font-work-sans
+                  text-[24px]
                   font-semibold
+                  tracking-[-0.01em]
                   text-[var(--color-text-primary)]
                 "
               >
@@ -91,9 +93,9 @@ export function WelcomeScreen() {
 
               <p
                 className="
-                  mt-2
+                  mt-2.5
                   text-center
-                  text-[11px]
+                  text-[13px]
                   leading-5
                   text-[var(--color-text-tertiary)]
                 "
@@ -107,19 +109,24 @@ export function WelcomeScreen() {
                 className="
                   relative
                   z-10
-                  mt-7
+                  mt-8
                   flex
-                  h-[42px]
+                  h-11
                   w-full
                   items-center
                   justify-center
-                  rounded-[6px]
+                  rounded-lg
                   bg-[var(--color-dark-cta)]
                   px-4
                   no-underline
                   opacity-100
-                  transition
+                  shadow-[0_4px_14px_rgba(0,0,0,0.14)]
+                  transition-all
+                  duration-200
+                  hover:-translate-y-px
                   hover:bg-[var(--color-dark-cta-hover)]
+                  hover:shadow-[0_6px_18px_rgba(0,0,0,0.18)]
+                  active:translate-y-0
                   focus:outline-none
                   focus:ring-2
                   focus:ring-[var(--color-dark-cta)]
@@ -137,7 +144,7 @@ export function WelcomeScreen() {
                     block
                     w-full
                     text-center
-                    text-[12px]
+                    text-[14px]
                     font-medium
                     leading-none
                     text-[var(--color-white)]
@@ -161,17 +168,22 @@ export function WelcomeScreen() {
                   z-10
                   mt-3
                   flex
-                  h-[42px]
+                  h-11
                   w-full
                   items-center
                   justify-center
-                  rounded-[6px]
+                  rounded-lg
                   bg-[var(--color-primary)]
                   px-4
                   no-underline
                   opacity-100
-                  transition
+                  shadow-[0_4px_14px_rgba(255,59,63,0.2)]
+                  transition-all
+                  duration-200
+                  hover:-translate-y-px
                   hover:bg-[var(--color-welcome-cta-hover)]
+                  hover:shadow-[0_6px_18px_rgba(255,59,63,0.26)]
+                  active:translate-y-0
                   focus:outline-none
                   focus:ring-2
                   focus:ring-[var(--color-primary)]
@@ -189,7 +201,7 @@ export function WelcomeScreen() {
                     block
                     w-full
                     text-center
-                    text-[12px]
+                    text-[14px]
                     font-medium
                     leading-none
                     text-white
@@ -213,19 +225,22 @@ export function WelcomeScreen() {
                   z-10
                   mt-3
                   flex
-                  h-[42px]
+                  h-11
                   w-full
                   items-center
                   justify-center
-                  rounded-[6px]
+                  rounded-lg
                   border
                   border-[var(--color-text-primary)]
                   bg-white
                   px-4
                   no-underline
                   opacity-100
-                  transition
+                  transition-all
+                  duration-200
+                  hover:-translate-y-px
                   hover:bg-[var(--color-surface-hover)]
+                  active:translate-y-0
                   focus:outline-none
                   focus:ring-2
                   focus:ring-[var(--color-text-primary)]
@@ -243,7 +258,7 @@ export function WelcomeScreen() {
                     block
                     w-full
                     text-center
-                    text-[12px]
+                    text-[14px]
                     font-medium
                     leading-none
                     text-[var(--color-text-primary)]
@@ -304,14 +319,22 @@ export function WelcomeScreen() {
                 relative
                 z-10
                 flex
-                h-[38px]
+                h-11
                 w-full
                 items-center
                 justify-center
-                rounded-[6px]
+                rounded-lg
                 bg-[var(--color-dark-cta)]
                 px-4
                 no-underline
+                shadow-[0_4px_14px_rgba(0,0,0,0.14)]
+                transition-all
+                duration-200
+                active:scale-[0.98]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[var(--color-dark-cta)]
+                focus-visible:ring-offset-2
               "
               style={{
                 backgroundColor: "var(--color-dark-cta)",
@@ -325,8 +348,8 @@ export function WelcomeScreen() {
                   block
                   w-full
                   text-center
-                  text-[12px]
-                  font-normal
+                  text-[14px]
+                  font-medium
                   leading-none
                   text-white
                 "
@@ -347,16 +370,24 @@ export function WelcomeScreen() {
               className="
                 relative
                 z-10
-                mt-[10px]
+                mt-3
                 flex
-                h-[38px]
+                h-11
                 w-full
                 items-center
                 justify-center
-                rounded-[6px]
+                rounded-lg
                 bg-[var(--color-primary)]
                 px-4
                 no-underline
+                shadow-[0_4px_14px_rgba(255,59,63,0.2)]
+                transition-all
+                duration-200
+                active:scale-[0.98]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[var(--color-primary)]
+                focus-visible:ring-offset-2
               "
               style={{
                 backgroundColor: "var(--color-primary)",
@@ -370,8 +401,8 @@ export function WelcomeScreen() {
                   block
                   w-full
                   text-center
-                  text-[12px]
-                  font-normal
+                  text-[14px]
+                  font-medium
                   leading-none
                   text-white
                 "
@@ -392,18 +423,25 @@ export function WelcomeScreen() {
               className="
                 relative
                 z-10
-                mt-[10px]
+                mt-3
                 flex
-                h-[38px]
+                h-11
                 w-full
                 items-center
                 justify-center
-                rounded-[6px]
+                rounded-lg
                 border
                 border-[var(--color-text-primary)]
                 bg-white
                 px-4
                 no-underline
+                transition-all
+                duration-200
+                active:scale-[0.98]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[var(--color-text-primary)]
+                focus-visible:ring-offset-2
               "
               style={{
                 backgroundColor: "var(--color-white)",
@@ -417,8 +455,8 @@ export function WelcomeScreen() {
                   block
                   w-full
                   text-center
-                  text-[12px]
-                  font-normal
+                  text-[14px]
+                  font-medium
                   leading-none
                   text-[var(--color-text-primary)]
                 "

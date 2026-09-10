@@ -196,13 +196,6 @@ body {
   min-height: 100%;
 }
 
-body {
-  margin: 0;
-  background: #f2f2f2;
-  color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 button,
 input,
 select,
@@ -552,14 +545,26 @@ a {
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     background-color: var(--base-white);
-    color: var(--pneutral-900);
-    font-family: var(--font-work);
+    color: var(--color-text-body);
+    font-family: var(--font-noto), var(--font-work-sans), Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-work-sans), Arial, sans-serif;
   }
 
   button {
@@ -576,6 +581,75 @@ a {
   img {
     display: block;
     max-width: 100%;
+  }
+
+  ::selection {
+    background: var(--primary-200);
+    color: var(--color-text-primary);
+  }
+}
+
+/* =========================
+   SEMANTIC TYPE SCALE
+   Shared vocabulary so screens stop
+   inventing one-off text-[Npx] sizes.
+========================= */
+
+@utility text-page-title {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-semibold);
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+}
+
+@utility text-section-title {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-semibold);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+@utility text-body {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: var(--font-regular);
+}
+
+@utility text-caption {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: var(--font-regular);
+}
+
+@utility text-label {
+  font-family: var(--font-work-sans);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: var(--font-medium);
+}
+
+@utility focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* =========================
+   REDUCED MOTION
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
