@@ -62,7 +62,10 @@ export const donorRegistrationSchema = z
       .trim()
       .min(2, "Full Name must be at least 2 characters")
       .max(100, "Full Name must not exceed 100 characters")
-      .regex(/^[A-Za-z][A-Za-z .'-]*$/, "Use letters, spaces, apostrophe or hyphen only"),
+      .regex(
+        /^[A-Za-z][A-Za-z .'-]*$/,
+        "Use letters, spaces, apostrophe or hyphen only",
+      ),
     mobileNumber: z
       .string()
       .trim()
@@ -82,7 +85,9 @@ export const donorRegistrationSchema = z
       .or(z.literal("")),
     bloodGroupId: z
       .union([z.number(), z.literal("")])
-      .refine((value) => value !== "", { message: "Please select a blood group" }),
+      .refine((value) => value !== "", {
+        message: "Please select a blood group",
+      }),
     dob: z
       .string()
       .trim()

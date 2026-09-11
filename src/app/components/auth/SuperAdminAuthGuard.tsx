@@ -10,7 +10,6 @@ interface SuperAdminAuthGuardProps {
 
 export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
   const router = useRouter();
-
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
@@ -18,18 +17,18 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
 
     if (!session) {
       router.replace("/blood-centre/login");
+      return;
+    }
 
+    if (session.userType === "BLOOD_CENTRE") {
+      router.replace("/blood-centre/dashboard");
       return;
     }
 
     if (session.userType !== "SUPER_ADMIN") {
-      router.replace("/blood-centre/dashboard");
-
+      router.replace("/blood-centre/login");
       return;
     }
-
-    // Verify the Super Admin
-    // identity again.
 
     const validId = Number(session.id) > 0;
 
@@ -42,10 +41,10 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
 
     if (!validId || !validRole || !validToken) {
       router.replace("/blood-centre/login");
-
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setChecking(false);
   }, [router]);
 

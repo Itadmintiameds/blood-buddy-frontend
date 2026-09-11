@@ -10,7 +10,6 @@ interface BloodCentreAuthGuardProps {
 
 export function BloodCentreAuthGuard({ children }: BloodCentreAuthGuardProps) {
   const router = useRouter();
-
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
@@ -18,28 +17,29 @@ export function BloodCentreAuthGuard({ children }: BloodCentreAuthGuardProps) {
 
     if (!session) {
       router.replace("/blood-centre/login");
-
       return;
     }
 
     if (session.userType === "SUPER_ADMIN") {
       router.replace("/blood-centre/super-admin/dashboard");
-
       return;
     }
 
     if (session.userType !== "BLOOD_CENTRE") {
       router.replace("/blood-centre/login");
-
       return;
     }
 
-    if (!session.id || !session.email || !session.accessToken) {
+    const validId = Number(session.id) > 0;
+    const validEmail = Boolean(session.email);
+    const validToken = Boolean(session.accessToken);
+
+    if (!validId || !validEmail || !validToken) {
       router.replace("/blood-centre/login");
-
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setChecking(false);
   }, [router]);
 
