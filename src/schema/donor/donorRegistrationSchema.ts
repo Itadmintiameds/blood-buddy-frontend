@@ -29,6 +29,32 @@ function isValidIndianMobile(value: string) {
   return !ascending && !descending;
 }
 
+function parseIsoDate(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isAtLeast18YearsOld(value: string): boolean {
+  const dob = parseIsoDate(value);
+  if (!dob) return false;
+
+  const today = new Date();
+  const eighteenYearsAgo = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  return dob <= eighteenYearsAgo;
+}
+
+function isNotFutureDate(value: string): boolean {
+  const date = parseIsoDate(value);
+  if (!date) return false;
+  return date.getTime() <= Date.now();
+}
+
 export const donorRegistrationSchema = z
   .object({
     fullName: z
@@ -44,9 +70,26 @@ export const donorRegistrationSchema = z
       .regex(/^\d+$/, "Mobile number must contain digits only")
       .length(10, "Mobile number must be exactly 10 digits")
       .refine(isValidIndianMobile, "Enter a valid mobile number"),
+    alternativeMobileNumber: z
+      .string()
+      .trim()
+      .regex(/^\d*$/, "Alternate mobile number must contain digits only")
+      .refine(
+        (value) => value === "" || value.length === 10,
+        "Alternate mobile number must be exactly 10 digits",
+      )
+      .optional()
+      .or(z.literal("")),
     bloodGroupId: z
       .union([z.number(), z.literal("")])
       .refine((value) => value !== "", { message: "Please select a blood group" }),
+    dob: z
+      .string()
+      .trim()
+      .min(1, "Date of birth is required")
+      .refine((value) => parseIsoDate(value) !== null, "Enter a valid date")
+      .refine(isNotFutureDate, "Date of birth cannot be in the future")
+      .refine(isAtLeast18YearsOld, "Donor must be at least 18 years old"),
     address: z
       .string()
       .trim()
@@ -70,6 +113,19 @@ export const donorRegistrationSchema = z
       .trim()
       .regex(/^\d{6}$/, "Pincode must be exactly 6 digits")
       .refine((value) => !/^0+$/.test(value), "Enter a valid pincode"),
+    lastBloodDonationDate: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || parseIsoDate(value) !== null,
+        "Enter a valid date",
+      )
+      .refine(
+        (value) => value === "" || isNotFutureDate(value),
+        "Last donation date cannot be in the future",
+      )
+      .optional()
+      .or(z.literal("")),
     password: z
       .string()
       .min(8, "Password must be at least 8 characters")
@@ -88,6 +144,17 @@ export const donorRegistrationSchema = z
         message: "Passwords do not match",
       });
     }
+
+    if (
+      data.alternativeMobileNumber &&
+      data.alternativeMobileNumber === data.mobileNumber
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["alternativeMobileNumber"],
+        message: "Alternate mobile number must be different from mobile number",
+      });
+    }
   });
 
 export function normalizeDonorForm(
@@ -96,11 +163,16 @@ export function normalizeDonorForm(
   return {
     fullName: data.fullName.trim().replace(/\s+/g, " "),
     mobileNumber: data.mobileNumber.replace(/\D/g, "").slice(-10),
+    alternativeMobileNumber: data.alternativeMobileNumber
+      .replace(/\D/g, "")
+      .slice(-10),
     bloodGroupId: data.bloodGroupId,
+    dob: data.dob.trim(),
     address: data.address.trim().replace(/\s+/g, " "),
     district: data.district.trim().replace(/\s+/g, " "),
     city: data.city.trim().replace(/\s+/g, " "),
     pincode: data.pincode.replace(/\D/g, "").slice(0, 6),
+    lastBloodDonationDate: data.lastBloodDonationDate.trim(),
     password: data.password,
     confirmPassword: data.confirmPassword,
   };

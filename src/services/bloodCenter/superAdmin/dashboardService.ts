@@ -2,8 +2,10 @@ import { api } from "@/services/api/client";
 import type { ApiEnvelope } from "@/types/api.types";
 import type {
   SuperAdminBloodBank,
+  SuperAdminDonor,
   UpdateBloodUnitsInput,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
+import type { DonorRegistrationResponse } from "@/types/donor/donorTypes";
 
 interface BloodCentreResponse {
   bloodCentreId: number;
@@ -96,4 +98,29 @@ export async function updateSuperAdminBloodUnits(
   );
 
   return { success: true, message: data.message };
+}
+
+// GET ALL DONORS (SUPERADMIN only).
+export async function getSuperAdminDonors(): Promise<SuperAdminDonor[]> {
+  const { data } = await api.get<ApiEnvelope<DonorRegistrationResponse[]>>(
+    "/admin/donors",
+  );
+
+  const donors = data.data ?? [];
+
+  return donors.map((donor) => ({
+    id: donor.bloodDonorDetailsId,
+    donorName: donor.fullName,
+    mobileNumber: donor.mobileNumber,
+    alternateMobileNumber: donor.alternativeMobileNumber ?? "—",
+    bloodGroupId: donor.bloodGroupId,
+    bloodGroup: donor.bloodGroupName,
+    dateOfBirth: donor.dob,
+    address: donor.address,
+    city: donor.city,
+    district: donor.district,
+    pincode: donor.pincode,
+    lastBloodDonationDate: donor.lastBloodDonationDate,
+    createdAt: donor.createdAt,
+  }));
 }

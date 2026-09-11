@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  CalendarDays,
   ChevronDown,
   Droplets,
   LockKeyhole,
@@ -30,11 +31,14 @@ import type { MasterBloodGroup } from "@/types/master.types";
 const defaultValues: DonorRegistrationInput = {
   fullName: "",
   mobileNumber: "",
+  alternativeMobileNumber: "",
   bloodGroupId: "",
+  dob: "",
   address: "",
   district: "",
   city: "",
   pincode: "",
+  lastBloodDonationDate: "",
   password: "",
   confirmPassword: "",
 };
@@ -93,11 +97,14 @@ export function DonorRegistrationForm() {
       const response = await registerDonor({
         fullName: data.fullName,
         mobileNumber: data.mobileNumber,
+        alternativeMobileNumber: data.alternativeMobileNumber || undefined,
         bloodGroupId: Number(data.bloodGroupId),
+        dob: data.dob,
         address: data.address || undefined,
         city: data.city,
         district: data.district,
         pincode: data.pincode,
+        lastBloodDonationDate: data.lastBloodDonationDate || undefined,
       });
 
       // Backend has no password field for donors — kept locally only so the
@@ -151,6 +158,36 @@ export function DonorRegistrationForm() {
             },
           })}
           error={errors.mobileNumber?.message}
+        />
+
+        <FormInput
+          id="alternativeMobileNumber"
+          icon={Phone}
+          label="Alternate Mobile Number (Optional)"
+          placeholder="Enter alternate mobile number"
+          type="tel"
+          inputMode="numeric"
+          maxLength={10}
+          autoComplete="tel"
+          {...register("alternativeMobileNumber", {
+            onChange: (event) => {
+              event.target.value = event.target.value
+                .replace(/\D/g, "")
+                .slice(0, 10);
+            },
+          })}
+          error={errors.alternativeMobileNumber?.message}
+        />
+
+        <FormInput
+          id="dob"
+          icon={CalendarDays}
+          label="Date of Birth"
+          type="date"
+          max={new Date().toISOString().slice(0, 10)}
+          autoComplete="bday"
+          {...register("dob")}
+          error={errors.dob?.message}
         />
 
         <div className="w-full">
@@ -300,6 +337,16 @@ export function DonorRegistrationForm() {
             },
           })}
           error={errors.pincode?.message}
+        />
+
+        <FormInput
+          id="lastBloodDonationDate"
+          icon={CalendarDays}
+          label="Last Blood Donation Date (Optional)"
+          type="date"
+          max={new Date().toISOString().slice(0, 10)}
+          {...register("lastBloodDonationDate")}
+          error={errors.lastBloodDonationDate?.message}
         />
       </div>
 

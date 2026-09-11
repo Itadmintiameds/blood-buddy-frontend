@@ -1,86 +1,84 @@
 "use client";
 
 import {
+  AlertCircle,
   CalendarDays,
   Droplets,
+  Loader2,
   MapPin,
   Phone,
   Search,
   UserRound,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { SuperAdminDonor } from "@/types/bloodCenter/superAdmin/superAdminTypes";
+import { getSuperAdminDonors } from "@/services/bloodCenter/superAdmin/dashboardService";
 
-interface Donor {
-  id: number;
-  donorName: string;
-  mobileNumber: string;
-  alternateMobileNumber: string;
-  bloodGroup: string;
-  dateOfBirth: string;
-  address: string;
-  pincode: string;
-  lastBloodDonationDate: string;
+function formatDate(value: string | null): string {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("en-GB");
 }
 
-const donorData: Donor[] = [
-  {
-    id: 1,
-    donorName: "Gowtham",
-    mobileNumber: "8680561620",
-    alternateMobileNumber: "9874123456",
-    bloodGroup: "O+",
-    dateOfBirth: "18/12/2000",
-    address: "Coimbatore",
-    pincode: "641603",
-    lastBloodDonationDate: "21/07/2026",
-  },
-  {
-    id: 2,
-    donorName: "Praveen",
-    mobileNumber: "9657432180",
-    alternateMobileNumber: "8876543210",
-    bloodGroup: "B+",
-    dateOfBirth: "24/08/1998",
-    address: "Erode",
-    pincode: "638001",
-    lastBloodDonationDate: "21/03/2026",
-  },
-  {
-    id: 3,
-    donorName: "Mani",
-    mobileNumber: "8667087850",
-    alternateMobileNumber: "9098765120",
-    bloodGroup: "A+",
-    dateOfBirth: "24/08/1999",
-    address: "Tiruppur",
-    pincode: "641602",
-    lastBloodDonationDate: "05/08/2026",
-  },
-  {
-    id: 4,
-    donorName: "Dharan",
-    mobileNumber: "9385476210",
-    alternateMobileNumber: "8448092121",
-    bloodGroup: "O+",
-    dateOfBirth: "22/02/2000",
-    address: "Ooty",
-    pincode: "643001",
-    lastBloodDonationDate: "28/07/2026",
-  },
-];
-
 export function DonorManagement() {
+  const [donors, setDonors] = useState<SuperAdminDonor[]>([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadDonors = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getSuperAdminDonors();
+
+        if (!mounted) {
+          return;
+        }
+
+        setDonors(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load donors:", err);
+
+        if (mounted) {
+          setDonors([]);
+          setError("Unable to load donor details.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadDonors();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filteredDonors = useMemo(() => {
     const query = search.trim().toLowerCase();
 
     if (!query) {
-      return donorData;
+      return donors;
     }
 
-    return donorData.filter((donor) => {
+    return donors.filter((donor) => {
       return (
         donor?.donorName.toLowerCase().includes(query) ||
         donor?.mobileNumber.includes(query) ||
@@ -89,7 +87,7 @@ export function DonorManagement() {
         donor?.pincode.includes(query)
       );
     });
-  }, [search]);
+  }, [donors, search]);
 
   return (
     <div className="space-y-6">
@@ -125,6 +123,16 @@ export function DonorManagement() {
         </div>
       </div>
 
+      {error && (
+        <div
+          role="alert"
+          className="flex items-center gap-2 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600"
+        >
+          <AlertCircle size={16} className="shrink-0" />
+          <span className="min-w-0">{error}</span>
+        </div>
+      )}
+
       {/* Desktop Table */}
       <div className="hidden overflow-hidden rounded-2xl border border-[var(--color-border-lighter)] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.025)] lg:block">
         <div className="w-full overflow-hidden">
@@ -156,7 +164,13 @@ export function DonorManagement() {
             </thead>
 
             <tbody>
-              {filteredDonors?.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={9}>
+                    <LoadingState />
+                  </td>
+                </tr>
+              ) : filteredDonors?.length > 0 ? (
                 filteredDonors.map((donor, index) => (
                   <tr
                     key={donor.id}
@@ -184,7 +198,7 @@ export function DonorManagement() {
                       <BloodGroupBadge value={donor?.bloodGroup} />
                     </TableCell>
 
-                    <TableCell>{donor?.dateOfBirth}</TableCell>
+                    <TableCell>{formatDate(donor?.dateOfBirth)}</TableCell>
 
                     <TableCell>
                       <span className="block truncate">{donor?.address}</span>
@@ -192,7 +206,7 @@ export function DonorManagement() {
 
                     <TableCell>{donor?.pincode}</TableCell>
 
-                    <TableCell>{donor?.lastBloodDonationDate}</TableCell>
+                    <TableCell>{formatDate(donor?.lastBloodDonationDate)}</TableCell>
                   </tr>
                 ))
               ) : (
@@ -210,7 +224,9 @@ export function DonorManagement() {
       {/* Tablet */}
       <div className="hidden overflow-hidden rounded-2xl border border-[var(--color-border-lighter)] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.025)] sm:block lg:hidden">
         <div className="divide-y divide-[var(--color-border-lighter)]">
-          {filteredDonors?.length > 0 ? (
+          {loading ? (
+            <LoadingState />
+          ) : filteredDonors?.length > 0 ? (
             filteredDonors.map((donor, index) => (
               <div key={donor.id} className="p-5">
                 <div className="flex items-start justify-between gap-4">
@@ -239,7 +255,10 @@ export function DonorManagement() {
                     value={donor?.alternateMobileNumber}
                   />
 
-                  <InfoItem label="Date of Birth" value={donor?.dateOfBirth} />
+                  <InfoItem
+                    label="Date of Birth"
+                    value={formatDate(donor?.dateOfBirth)}
+                  />
 
                   <InfoItem label="Address" value={donor?.address} />
 
@@ -247,7 +266,7 @@ export function DonorManagement() {
 
                   <InfoItem
                     label="Last Donation"
-                    value={donor?.lastBloodDonationDate}
+                    value={formatDate(donor?.lastBloodDonationDate)}
                   />
                 </div>
               </div>
@@ -260,7 +279,9 @@ export function DonorManagement() {
 
       {/* Mobile Cards */}
       <div className="space-y-4 sm:hidden">
-        {filteredDonors.length > 0 ? (
+        {loading ? (
+          <LoadingState />
+        ) : filteredDonors.length > 0 ? (
           filteredDonors.map((donor, index) => (
             <div
               key={donor.id}
@@ -300,7 +321,7 @@ export function DonorManagement() {
                 <MobileInfoRow
                   icon={CalendarDays}
                   label="Date of Birth"
-                  value={donor.dateOfBirth}
+                  value={formatDate(donor.dateOfBirth)}
                 />
 
                 <MobileInfoRow
@@ -318,7 +339,7 @@ export function DonorManagement() {
                 <MobileInfoRow
                   icon={Droplets}
                   label="Last Blood Donation"
-                  value={donor.lastBloodDonationDate}
+                  value={formatDate(donor.lastBloodDonationDate)}
                 />
               </div>
             </div>
@@ -393,6 +414,18 @@ function MobileInfoRow({
           {value}
         </p>
       </div>
+    </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex min-h-[180px] flex-col items-center justify-center px-5 py-10 text-center">
+      <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
+
+      <p className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]">
+        Loading donors...
+      </p>
     </div>
   );
 }
