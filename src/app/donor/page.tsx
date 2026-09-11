@@ -1,3 +1,5 @@
+import { DonorLandingScreen } from "@/app/donor/components/DonorLandingScreen";
+
 export default function DonorPage() {
-  return <div className="p-8 text-center">Donor Module</div>;
+  return <DonorLandingScreen />;
 }

@@ -3,6 +3,8 @@
 import { CheckCircle2 } from "lucide-react";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 
+import { useExitTransition } from "@/app/hooks/useExitTransition";
+
 interface OtpVerificationSuccessModalProps {
   open: boolean;
   onConfirm: () => void;

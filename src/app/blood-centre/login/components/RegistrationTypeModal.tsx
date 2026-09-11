@@ -2,6 +2,8 @@
 
 import { Building2, ShieldCheck, X } from "lucide-react";
 
+import { useExitTransition } from "@/app/hooks/useExitTransition";
+
 interface RegistrationTypeModalProps {
   open: boolean;
   onClose: () => void;
@@ -15,35 +17,55 @@ export function RegistrationTypeModal({
   onSuperAdmin,
   onBloodCentre,
 }: RegistrationTypeModalProps) {
-  if (!open) {
+  const { rendered, visible } = useExitTransition(open, 200);
+
+  if (!rendered) {
     return null;
   }
 
   return (
     <div
-      className="
+      className={`
+        motion-scrim
         fixed
         inset-0
         z-[9999]
         flex
         items-center
         justify-center
-        bg-black/40
+        bg-black/45
         px-4
-        backdrop-blur-[2px]
-      "
+        backdrop-blur-md
+        transition-opacity
+        duration-200
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
+      role="presentation"
       onMouseDown={onClose}
     >
       <div
-        className="
+        className={`
+          motion-surface
           relative
+          max-h-[90vh]
           w-full
-          max-w-[390px]
+          max-w-[400px]
+          overflow-y-auto
           rounded-2xl
           bg-white
           p-6
-          shadow-2xl
-        "
+          shadow-[0_25px_70px_rgba(0,0,0,0.2)]
+          transition-[transform,opacity]
+          duration-200
+          ${
+            visible
+              ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+              : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+          }
+        `}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="registration-type-title"
         onMouseDown={(event) => {
           event.stopPropagation();
         }}
@@ -59,8 +81,8 @@ export function RegistrationTypeModal({
             right-4
             top-4
             flex
-            h-8
-            w-8
+            h-9
+            w-9
             items-center
             justify-center
             rounded-full
@@ -68,6 +90,9 @@ export function RegistrationTypeModal({
             transition
             hover:bg-gray-100
             hover:text-gray-700
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-gray-300
           "
         >
           <X size={18} />
@@ -77,10 +102,12 @@ export function RegistrationTypeModal({
 
         <div className="pr-8">
           <h2
+            id="registration-type-title"
             className="
-              text-[18px]
+              text-[19px]
               font-semibold
-              text-[#222]
+              tracking-[-0.01em]
+              text-[var(--color-text-primary)]
             "
           >
             Registration
@@ -89,7 +116,7 @@ export function RegistrationTypeModal({
           <p
             className="
               mt-1
-              text-[12px]
+              text-[13px]
               leading-5
               text-gray-500
             "
@@ -122,6 +149,10 @@ export function RegistrationTypeModal({
               hover:border-[#FF3B3B]
               hover:bg-red-50
               active:scale-[0.99]
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-[var(--color-primary)]
+              focus-visible:ring-offset-2
             "
           >
             <div
@@ -146,7 +177,7 @@ export function RegistrationTypeModal({
             <div className="min-w-0">
               <p
                 className="
-                  text-[13px]
+                  text-[14px]
                   font-semibold
                   text-[#222]
                 "
@@ -157,7 +188,7 @@ export function RegistrationTypeModal({
               <p
                 className="
                   mt-0.5
-                  text-[11px]
+                  text-[12px]
                   leading-4
                   text-gray-500
                 "
@@ -188,6 +219,10 @@ export function RegistrationTypeModal({
               hover:border-[#FF3B3B]
               hover:bg-red-50
               active:scale-[0.99]
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-[var(--color-primary)]
+              focus-visible:ring-offset-2
             "
           >
             <div
@@ -212,7 +247,7 @@ export function RegistrationTypeModal({
             <div className="min-w-0">
               <p
                 className="
-                  text-[13px]
+                  text-[14px]
                   font-semibold
                   text-[#222]
                 "
@@ -223,7 +258,7 @@ export function RegistrationTypeModal({
               <p
                 className="
                   mt-0.5
-                  text-[11px]
+                  text-[12px]
                   leading-4
                   text-gray-500
                 "
@@ -242,10 +277,16 @@ export function RegistrationTypeModal({
           className="
             mt-5
             w-full
-            text-[12px]
+            rounded-lg
+            py-2
+            text-[13px]
             text-gray-500
             transition
+            hover:bg-gray-50
             hover:text-[#222]
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-gray-300
           "
         >
           Cancel

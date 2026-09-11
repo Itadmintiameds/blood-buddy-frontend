@@ -57,26 +57,24 @@ export function AvailabilityListScreen() {
               <div
                 key={item.group}
                 className="
-                  rounded-[6px]
+                  rounded-xl
                   border
                   border-[var(--color-border-input)]
                   bg-white
-                  p-3
-                  sm:p-3.5
-                  md:p-4
-                  transition
+                  p-4
+                  transition-all
+                  duration-200
+                  hover:-translate-y-px
                   hover:border-[#d9d9d9]
-                  hover:shadow-sm
+                  hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)]
                 "
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <span
                     className="
-                      text-[13px]
+                      text-[16px]
                       font-bold
                       text-[var(--color-primary)]
-                      sm:text-[14px]
-                      md:text-[15px]
                     "
                   >
                     {item?.group}
@@ -86,13 +84,11 @@ export function AvailabilityListScreen() {
                     className="
                       rounded-full
                       bg-[var(--color-primary)]
-                      px-2
-                      py-0.5
-                      text-[8px]
+                      px-2.5
+                      py-1
+                      text-[11px]
+                      font-medium
                       text-white
-                      sm:text-[9px]
-                      md:px-2.5
-                      md:text-[10px]
                     "
                   >
                     {item?.units} Units
@@ -101,12 +97,9 @@ export function AvailabilityListScreen() {
 
                 <p
                   className="
-                    mt-2
-                    text-[8px]
+                    mt-2.5
+                    text-[12px]
                     text-[var(--color-text-secondary)]
-                    sm:text-[9px]
-                    md:mt-2.5
-                    md:text-[10px]
                   "
                 >
                   Contact: 98765 43210
@@ -114,10 +107,9 @@ export function AvailabilityListScreen() {
 
                 <p
                   className="
-                    text-[8px]
+                    mt-0.5
+                    text-[12px]
                     text-[var(--color-text-secondary)]
-                    sm:text-[9px]
-                    md:text-[10px]
                   "
                 >
                   Address: 115 Main Street, City Pin: 600001
@@ -138,24 +130,31 @@ export function AvailabilityListScreen() {
               href="/blood-centre/availability/add"
               className="
                 flex
-                h-[38px]
+                h-11
                 w-full
                 items-center
                 justify-center
-                gap-1
-                rounded-[6px]
+                gap-1.5
+                rounded-lg
                 bg-[var(--color-primary)]
-                text-[11px]
+                text-[14px]
+                font-semibold
                 text-white
-                transition
+                shadow-[0_4px_14px_rgba(255,59,63,0.22)]
+                transition-all
+                duration-200
+                hover:-translate-y-px
                 hover:bg-[var(--color-dashboard-cta-hover)]
+                active:translate-y-0
                 active:scale-[0.99]
-                sm:h-[40px]
-                md:text-[12px]
+                focus-visible:outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[var(--color-primary)]
+                focus-visible:ring-offset-2
                 lg:w-[300px]
               "
             >
-              <Plus size={14} />
+              <Plus size={16} />
               Add New
             </Link>
           </div>

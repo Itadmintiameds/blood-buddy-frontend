@@ -27,3 +27,19 @@ export interface UpdateBloodUnitsInput {
   previousUnits: number;
   units: number;
 }
+
+export interface SuperAdminDonor {
+  id: number;
+  donorName: string;
+  mobileNumber: string;
+  alternateMobileNumber: string;
+  bloodGroupId: number;
+  bloodGroup: string;
+  dateOfBirth: string;
+  address: string;
+  city: string;
+  district: string;
+  pincode: string;
+  lastBloodDonationDate: string | null;
+  createdAt: string;
+}
