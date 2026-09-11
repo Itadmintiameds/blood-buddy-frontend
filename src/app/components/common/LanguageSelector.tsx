@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Languages } from "lucide-react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useExitTransition } from "@/app/hooks/useExitTransition";
 
 export default function LanguageSelector() {
   const { language, setLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { rendered, visible } = useExitTransition(open, 150);
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -76,11 +78,12 @@ export default function LanguageSelector() {
         />
       </button>
 
-      {open && (
+      {rendered && (
         <div
           role="listbox"
-          className="
-            animate-modal
+          style={{ transformOrigin: "top right" }}
+          className={`
+            motion-surface
             absolute
             right-0
             top-full
@@ -94,7 +97,14 @@ export default function LanguageSelector() {
             bg-white
             p-1.5
             shadow-[0_12px_30px_rgba(0,0,0,0.12)]
-          "
+            transition-[transform,opacity]
+            duration-150
+            ${
+              visible
+                ? "scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+                : "scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+            }
+          `}
         >
           <button
             type="button"

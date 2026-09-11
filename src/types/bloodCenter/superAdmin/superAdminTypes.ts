@@ -2,6 +2,8 @@ export type SuperAdminSection = "blood-bank" | "donor" | "recipient";
 
 export interface BloodAvailability {
   id: number;
+  bloodGroupId: number;
+  bloodComponentId: number;
   bloodGroup: string;
   bloodType: string;
   units: number;
@@ -20,5 +22,8 @@ export interface SuperAdminBloodBank {
 export interface UpdateBloodUnitsInput {
   bloodBankId: number;
   availabilityId: number;
+  bloodGroupId: number;
+  bloodComponentId: number;
+  previousUnits: number;
   units: number;
 }

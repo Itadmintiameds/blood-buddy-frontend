@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/backend-api/:path*",
-        destination: `${backendApiUrl}/api/:path*`,
+        destination: `${backendApiUrl}/api/v1/:path*`,
       },
     ];
   },

@@ -2,6 +2,8 @@
 
 import { CheckCircle2 } from "lucide-react";
 
+import { useExitTransition } from "@/app/hooks/useExitTransition";
+
 interface RegistrationSuccessModalProps {
   open: boolean;
   onConfirm: () => void;
@@ -11,13 +13,16 @@ export function RegistrationSuccessModal({
   open,
   onConfirm,
 }: RegistrationSuccessModalProps) {
-  if (!open) {
+  const { rendered, visible } = useExitTransition(open, 200);
+
+  if (!rendered) {
     return null;
   }
 
   return (
     <div
-      className="
+      className={`
+        motion-scrim
         fixed
         inset-0
         z-50
@@ -26,15 +31,18 @@ export function RegistrationSuccessModal({
         justify-center
         bg-black/45
         px-5
-        backdrop-blur-[2px]
-      "
+        backdrop-blur-md
+        transition-opacity
+        duration-200
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
       role="dialog"
       aria-modal="true"
       aria-labelledby="registration-success-title"
     >
       <div
-        className="
-          animate-modalFadeSlide
+        className={`
+          motion-surface
           max-h-[90vh]
           w-full
           max-w-[340px]
@@ -45,7 +53,14 @@ export function RegistrationSuccessModal({
           py-7
           text-center
           shadow-[0_25px_70px_rgba(0,0,0,0.2)]
-        "
+          transition-[transform,opacity]
+          duration-200
+          ${
+            visible
+              ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+              : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+          }
+        `}
       >
         <div
           className="
@@ -68,7 +83,7 @@ export function RegistrationSuccessModal({
 
         <h2
           id="registration-success-title"
-          className="mt-4 text-[18px] font-semibold text-[var(--color-text-primary)]"
+          className="mt-4 text-[18px] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]"
         >
           Registration Successful
         </h2>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, ChevronDown, Droplets, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
@@ -8,21 +8,71 @@ import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { saveAvailability } from "@/services/bloodCenter/bloodCenter.service";
 import {
-  BLOOD_GROUPS,
-  BLOOD_TYPES,
-  BloodGroup,
-  BloodType,
-} from "@/types/bloodCenter/bloodCenterTypes";
+  getBloodComponents,
+  getBloodGroups,
+} from "@/services/master/masterService";
+import { getApiErrorMessage } from "@/services/api/client";
+import type {
+  MasterBloodComponent,
+  MasterBloodGroup,
+} from "@/types/master.types";
 
 export function AddAvailabilityScreen() {
   const router = useRouter();
 
-  const [bloodGroup, setBloodGroup] = useState<BloodGroup | "">("");
-  const [bloodType, setBloodType] = useState<BloodType | "">("");
+  const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
+  const [bloodComponents, setBloodComponents] = useState<
+    MasterBloodComponent[]
+  >([]);
+  const [mastersLoading, setMastersLoading] = useState(true);
+  const [mastersError, setMastersError] = useState("");
+
+  const [bloodGroupId, setBloodGroupId] = useState<number | "">("");
+  const [bloodComponentId, setBloodComponentId] = useState<number | "">("");
   const [units, setUnits] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMasters() {
+      setMastersLoading(true);
+      setMastersError("");
+
+      try {
+        const [groups, components] = await Promise.all([
+          getBloodGroups(),
+          getBloodComponents(),
+        ]);
+
+        if (!cancelled) {
+          setBloodGroups(groups);
+          setBloodComponents(components);
+        }
+      } catch (fetchError) {
+        if (!cancelled) {
+          setMastersError(
+            getApiErrorMessage(
+              fetchError,
+              "Unable to load blood group / component options.",
+            ),
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setMastersLoading(false);
+        }
+      }
+    }
+
+    void loadMasters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const clearError = () => {
     if (error) {
@@ -32,13 +82,13 @@ export function AddAvailabilityScreen() {
 
   const submit = async () => {
     //  Blood Group validation
-    if (!bloodGroup) {
+    if (!bloodGroupId) {
       setError("Select a blood group");
       return;
     }
 
     //  Blood Type validation
-    if (!bloodType) {
+    if (!bloodComponentId) {
       setError("Select a blood type");
       return;
     }
@@ -66,23 +116,22 @@ export function AddAvailabilityScreen() {
 
     try {
       //  API REQUEST
-      const response = await saveAvailability({
-        bloodGroup,
-        bloodType,
-        unitsAvailable: count,
+      await saveAvailability({
+        bloodGroupId,
+        bloodComponentId,
+        units: count,
       });
-
-      console.log("Availability API response:", response);
 
       setShowSuccess(true);
     } catch (error) {
       console.error("Save availability error:", error);
 
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Unable to save blood availability. Please try again.");
-      }
+      setError(
+        getApiErrorMessage(
+          error,
+          "Unable to save blood availability. Please try again.",
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -197,6 +246,20 @@ export function AddAvailabilityScreen() {
                   </div>
                 </div>
 
+                {mastersError && (
+                  <p
+                    role="alert"
+                    className="
+                      mb-4
+                      text-[12px]
+                      leading-4
+                      text-red-500
+                    "
+                  >
+                    {mastersError}
+                  </p>
+                )}
+
                 <div className="w-full">
                   <label
                     htmlFor="bloodGroup"
@@ -227,9 +290,14 @@ export function AddAvailabilityScreen() {
 
                     <select
                       id="bloodGroup"
-                      value={bloodGroup}
+                      value={bloodGroupId}
+                      disabled={mastersLoading}
                       onChange={(event) => {
-                        setBloodGroup(event.target.value as BloodGroup | "");
+                        setBloodGroupId(
+                          event.target.value
+                            ? Number(event.target.value)
+                            : "",
+                        );
                         clearError();
                       }}
                       className={`
@@ -247,7 +315,7 @@ export function AddAvailabilityScreen() {
                         duration-200
 
                         ${
-                          error && !bloodGroup
+                          error && !bloodGroupId
                             ? "border-red-400"
                             : "border-[var(--color-border)] hover:border-[#c7c7c7]"
                         }
@@ -256,14 +324,21 @@ export function AddAvailabilityScreen() {
                         focus:ring-2
                         focus:ring-[var(--color-primary)]/20
 
-                        ${bloodGroup ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
+                        ${bloodGroupId ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
                       `}
                     >
-                      <option value="">Select Blood Group</option>
+                      <option value="">
+                        {mastersLoading
+                          ? "Loading..."
+                          : "Select Blood Group"}
+                      </option>
 
-                      {BLOOD_GROUPS.map((group) => (
-                        <option key={group} value={group}>
-                          {group}
+                      {bloodGroups.map((group) => (
+                        <option
+                          key={group.bloodGroupId}
+                          value={group.bloodGroupId}
+                        >
+                          {group.bloodGroupName}
                         </option>
                       ))}
                     </select>
@@ -313,9 +388,14 @@ export function AddAvailabilityScreen() {
 
                     <select
                       id="bloodType"
-                      value={bloodType}
+                      value={bloodComponentId}
+                      disabled={mastersLoading}
                       onChange={(event) => {
-                        setBloodType(event.target.value as BloodType | "");
+                        setBloodComponentId(
+                          event.target.value
+                            ? Number(event.target.value)
+                            : "",
+                        );
 
                         clearError();
                       }}
@@ -334,7 +414,7 @@ export function AddAvailabilityScreen() {
                         duration-200
 
                         ${
-                          error && !bloodType
+                          error && !bloodComponentId
                             ? "border-red-400"
                             : "border-[var(--color-border)] hover:border-[#c7c7c7]"
                         }
@@ -343,14 +423,19 @@ export function AddAvailabilityScreen() {
                         focus:ring-2
                         focus:ring-[var(--color-primary)]/20
 
-                        ${bloodType ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
+                        ${bloodComponentId ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
                       `}
                     >
-                      <option value="">Select Blood Type</option>
+                      <option value="">
+                        {mastersLoading ? "Loading..." : "Select Blood Type"}
+                      </option>
 
-                      {BLOOD_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
+                      {bloodComponents.map((component) => (
+                        <option
+                          key={component.bloodComponentId}
+                          value={component.bloodComponentId}
+                        >
+                          {component.bloodComponentName}
                         </option>
                       ))}
                     </select>

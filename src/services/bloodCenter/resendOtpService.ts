@@ -1,5 +1,5 @@
 import { sendOtp } from "./otpSendService";
 
-export async function resendOtp(mobileNumber: string) {
-  return sendOtp({ mobileNumber });
+export async function resendOtp(email: string) {
+  return sendOtp({ email });
 }

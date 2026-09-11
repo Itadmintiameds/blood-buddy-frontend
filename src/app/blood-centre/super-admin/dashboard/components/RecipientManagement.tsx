@@ -96,7 +96,7 @@ export function RecipientManagement() {
       <div>
         <p className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]">Management</p>
 
-        <h2 className="mt-1 text-[22px] font-bold text-[var(--color-text-primary)]">
+        <h2 className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
           Recipient Details
         </h2>
 

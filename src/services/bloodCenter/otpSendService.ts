@@ -1,12 +1,16 @@
 import { api } from "@/services/api/client";
+import type { ApiEnvelope } from "@/types/api.types";
 import type {
+  ApiMessageResponse,
   SendOtpPayload,
-  SendOtpResponse,
 } from "@/types/bloodCenter/bloodCenterTypes";
 
 export async function sendOtp(
   payload: SendOtpPayload,
-): Promise<SendOtpResponse> {
-  const { data } = await api.post<SendOtpResponse>("/v1/otp/send", payload);
-  return data;
+): Promise<ApiMessageResponse> {
+  const { data } = await api.post<ApiEnvelope<void>>(
+    "/public/blood-centres/send-otp",
+    payload,
+  );
+  return { message: data.message };
 }

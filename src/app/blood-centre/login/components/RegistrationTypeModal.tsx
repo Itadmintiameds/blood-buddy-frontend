@@ -2,6 +2,8 @@
 
 import { Building2, ShieldCheck, X } from "lucide-react";
 
+import { useExitTransition } from "@/app/hooks/useExitTransition";
+
 interface RegistrationTypeModalProps {
   open: boolean;
   onClose: () => void;
@@ -15,13 +17,16 @@ export function RegistrationTypeModal({
   onSuperAdmin,
   onBloodCentre,
 }: RegistrationTypeModalProps) {
-  if (!open) {
+  const { rendered, visible } = useExitTransition(open, 200);
+
+  if (!rendered) {
     return null;
   }
 
   return (
     <div
-      className="
+      className={`
+        motion-scrim
         fixed
         inset-0
         z-[9999]
@@ -30,14 +35,17 @@ export function RegistrationTypeModal({
         justify-center
         bg-black/45
         px-4
-        backdrop-blur-[2px]
-      "
+        backdrop-blur-md
+        transition-opacity
+        duration-200
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
       role="presentation"
       onMouseDown={onClose}
     >
       <div
-        className="
-          animate-modalFadeSlide
+        className={`
+          motion-surface
           relative
           max-h-[90vh]
           w-full
@@ -47,7 +55,14 @@ export function RegistrationTypeModal({
           bg-white
           p-6
           shadow-[0_25px_70px_rgba(0,0,0,0.2)]
-        "
+          transition-[transform,opacity]
+          duration-200
+          ${
+            visible
+              ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+              : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+          }
+        `}
         role="dialog"
         aria-modal="true"
         aria-labelledby="registration-type-title"
@@ -91,6 +106,7 @@ export function RegistrationTypeModal({
             className="
               text-[19px]
               font-semibold
+              tracking-[-0.01em]
               text-[var(--color-text-primary)]
             "
           >

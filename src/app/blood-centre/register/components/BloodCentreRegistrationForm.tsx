@@ -23,15 +23,13 @@ import {
   normalizeBloodCentreForm,
 } from "@/schema/bloodCenter/registrationSchema";
 import type {
+  BloodCentreCategory,
   BloodCentreRegistrationInput,
   BloodCentreRegistrationPayload,
 } from "@/types/bloodCenter/bloodCenterTypes";
-import {
-  registerBloodCentre,
-  sendOtp,
-} from "@/services/bloodCenter/bloodCenter.service";
+import { sendOtp } from "@/services/bloodCenter/bloodCenter.service";
 import { getApiErrorMessage } from "@/services/api/client";
-import { normalizeIndianMobile } from "@/utils/mobile";
+import { savePendingRegistration } from "@/services/bloodCenter/registrationStorage";
 
 const defaultValues: BloodCentreRegistrationInput = {
   bloodCentreName: "",
@@ -75,19 +73,17 @@ export function BloodCentreRegistrationForm() {
 
     const data = normalizeBloodCentreForm(rawData);
 
+    // Backend requires the email to be OTP-verified before the account can
+    // be created, so registration itself is submitted later, from the OTP
+    // verification screen — this step only sends the OTP.
     const payload: BloodCentreRegistrationPayload = {
       bloodCentreName: data?.bloodCentreName,
-      licenseNumber: data?.licenseNumber,
-      category: data?.category as
-        | "Government"
-        | "Private"
-        | "Charitable"
-        | "Redcross",
-      dateOfExpiry: data?.dateOfExpiry,
+      bloodBankCategory: data?.category as BloodCentreCategory,
+      bloodCentreLicenceNumber: data?.licenseNumber,
+      licenceExpiryDate: data?.dateOfExpiry,
       email: data?.email,
       mobileNumber: data?.mobileNumber,
       password: data?.password,
-      confirmPassword: data?.confirmPassword,
       address: data?.address,
       district: data?.district,
       city: data?.city,
@@ -95,37 +91,18 @@ export function BloodCentreRegistrationForm() {
     };
 
     try {
-      const registrationResponse = await registerBloodCentre(payload);
+      await sendOtp({ email: data?.email });
 
-      if (registrationResponse?.success !== true) {
-        throw new Error(
-          registrationResponse?.message ||
-            "Registration failed. Please try again.",
-        );
-      }
+      savePendingRegistration(payload);
 
-      const otpResponse = await sendOtp({
-        mobileNumber: normalizeIndianMobile(data?.mobileNumber),
-      });
-
-      if (otpResponse?.success !== true) {
-        throw new Error(
-          otpResponse?.message || "Unable to send OTP. Please try again.",
-        );
-      }
-
-      sessionStorage.setItem("bloodCentreMobile", data?.mobileNumber);
       router.push(
-        `/blood-centre/verify?mobile=${encodeURIComponent(data?.mobileNumber)}`,
+        `/blood-centre/verify?email=${encodeURIComponent(data?.email)}`,
       );
     } catch (error) {
-      console.error("Blood Centre Registration / OTP Error:", error);
+      console.error("Blood Centre OTP Send Error:", error);
 
       setSubmitError(
-        getApiErrorMessage(
-          error,
-          "Unable to complete registration. Please try again.",
-        ),
+        getApiErrorMessage(error, "Unable to send OTP. Please try again."),
       );
     }
   };

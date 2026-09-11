@@ -191,6 +191,7 @@ export function BloodCentreLoginScreen() {
             mt-4
             text-[20px]
             font-semibold
+            tracking-[-0.01em]
             text-[var(--color-text-primary)]
           "
         >

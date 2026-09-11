@@ -1,15 +1,17 @@
 import { api } from "@/services/api/client";
+import type { ApiEnvelope } from "@/types/api.types";
 import type {
   BloodCentreRegistrationPayload,
-  RegistrationResponse,
+  BloodCentreRegistrationResponse,
 } from "@/types/bloodCenter/bloodCenterTypes";
 
+// Backend gates this on a prior verified OTP for the same email
+// (see EmailVerificationService.assertEmailVerified) — call sendOtp/verifyOtp first.
 export async function registerBloodCentre(
   payload: BloodCentreRegistrationPayload,
-): Promise<RegistrationResponse> {
-  const { data } = await api.post<RegistrationResponse>(
-    "/v1/blood-centres/send-otp",
-    payload,
-  );
-  return data;
+): Promise<BloodCentreRegistrationResponse> {
+  const { data } = await api.post<
+    ApiEnvelope<BloodCentreRegistrationResponse>
+  >("/public/blood-centres/register", payload);
+  return data.data;
 }

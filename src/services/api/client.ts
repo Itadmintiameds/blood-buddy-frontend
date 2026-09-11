@@ -1,4 +1,5 @@
 import axios, { type AxiosError } from "axios";
+import { getAccessToken } from "@/services/auth/authStorage";
 
 // Browser requests use a same-origin Next.js proxy.
 // /backend-api
@@ -17,6 +18,12 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  const token = getAccessToken();
+
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   if (process.env.NODE_ENV === "development") {
     console.debug("API Request:", {
       method: config.method?.toUpperCase(),

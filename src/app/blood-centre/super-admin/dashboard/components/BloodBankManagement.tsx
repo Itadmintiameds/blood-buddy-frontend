@@ -19,6 +19,7 @@ import {
   getSuperAdminBloodBanks,
   updateSuperAdminBloodUnits,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
+import { useExitTransition } from "@/app/hooks/useExitTransition";
 
 export default function BloodBankManagement() {
   const router = useRouter();
@@ -137,11 +138,10 @@ export default function BloodBankManagement() {
       return;
     }
 
+    // Only flip the open flag here -- selectedBank/etc. stay populated so
+    // UpdateUnitsModal can play its close transition before unmounting.
+    // openUpdateModal() overwrites them fresh on the next open.
     setUpdateModalOpen(false);
-    setSelectedBank(null);
-    setSelectedAvailabilityId(null);
-    setUnits("");
-    setFormError("");
   };
 
   const saveUnits = async () => {
@@ -175,6 +175,15 @@ export default function BloodBankManagement() {
       return;
     }
 
+    const currentAvailability = selectedBank.availability.find(
+      (item) => item?.id === selectedAvailabilityId,
+    );
+
+    if (!currentAvailability) {
+      setFormError("Unable to find this stock entry. Please try again.");
+      return;
+    }
+
     try {
       setSaving(true);
       setFormError("");
@@ -182,6 +191,9 @@ export default function BloodBankManagement() {
       const response = await updateSuperAdminBloodUnits({
         bloodBankId: selectedBank?.id,
         availabilityId: selectedAvailabilityId,
+        bloodGroupId: currentAvailability.bloodGroupId,
+        bloodComponentId: currentAvailability.bloodComponentId,
+        previousUnits: currentAvailability.units,
         units: parsedUnits,
       });
 
@@ -248,6 +260,7 @@ export default function BloodBankManagement() {
                   truncate
                   text-[19px]
                   font-bold
+                  tracking-[-0.01em]
                   text-[var(--color-text-primary)]
                   sm:text-[22px]
                 "
@@ -764,8 +777,9 @@ export default function BloodBankManagement() {
       </div>
 
       {/* UPDATE MODAL */}
-      {updateModalOpen && selectedBank && (
+      {selectedBank && (
         <UpdateUnitsModal
+          open={updateModalOpen}
           bank={selectedBank}
           availabilityId={selectedAvailabilityId}
           units={units}
@@ -1608,6 +1622,7 @@ function StatCard({
 
 // UPDATE UNITS MODAL
 function UpdateUnitsModal({
+  open,
   bank,
   availabilityId,
   units,
@@ -1617,6 +1632,7 @@ function UpdateUnitsModal({
   onClose,
   onSave,
 }: {
+  open: boolean;
   bank: SuperAdminBloodBank;
   availabilityId: number | null;
   units: string;
@@ -1626,17 +1642,20 @@ function UpdateUnitsModal({
   onClose: () => void;
   onSave: () => void;
 }) {
+  const { rendered, visible } = useExitTransition(open, 200);
+
   const availability = bank?.availability.find(
     (item) => item?.id === availabilityId,
   );
 
-  if (!availability) {
+  if (!rendered || !availability) {
     return null;
   }
 
   return (
     <div
-      className="
+      className={`
+        motion-scrim
         fixed
         inset-0
         z-[100]
@@ -1645,15 +1664,18 @@ function UpdateUnitsModal({
         justify-center
         bg-black/45
         px-4
-        backdrop-blur-[3px]
-      "
+        backdrop-blur-md
+        transition-opacity
+        duration-200
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
       role="dialog"
       aria-modal="true"
       aria-labelledby="update-units-title"
     >
       <div
-        className="
-          animate-modalFadeSlide
+        className={`
+          motion-surface
           flex
           max-h-[90vh]
           w-full
@@ -1663,7 +1685,14 @@ function UpdateUnitsModal({
           rounded-2xl
           bg-white
           shadow-[0_25px_70px_rgba(0,0,0,0.18)]
-        "
+          transition-[transform,opacity]
+          duration-200
+          ${
+            visible
+              ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+              : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+          }
+        `}
       >
         <div
           className="
