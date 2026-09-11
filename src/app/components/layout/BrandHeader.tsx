@@ -80,18 +80,18 @@ export function BrandHeader({
       </div>
 
       {title && (
-        <div className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-3 sm:px-6">
+        <div className="border-b border-[var(--color-border-lighter)] bg-white">
+          <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-4 py-3.5 sm:px-6 sm:py-4">
             {showBackButton && (
               <Link
                 href={backHref}
                 aria-label="Go back"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-700 transition hover:bg-slate-100"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
               >
                 <ChevronLeft size={22} strokeWidth={1.8} />
               </Link>
             )}
-            <h1 className="text-[16px] font-medium text-slate-800 sm:text-[18px]">
+            <h1 className="truncate text-[16px] font-semibold text-[var(--color-text-primary)] sm:text-[18px]">
               {title}
             </h1>
           </div>

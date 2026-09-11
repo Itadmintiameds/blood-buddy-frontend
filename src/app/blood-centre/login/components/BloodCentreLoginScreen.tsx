@@ -1,130 +1,212 @@
 "use client";
 
-import { LockKeyhole, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
+import { LockKeyhole, Mail } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
-
-import {
-  getBloodCentreSession,
-  saveAuthSession,
-} from "@/services/auth/authStorage";
-
-import { loginBloodCentre } from "@/services/bloodCenter/loginService";
-import { getApiErrorMessage } from "@/utils/api";
+import { getAuthSession } from "@/services/auth/authStorage";
+import { loginCommon } from "@/services/bloodCenter/commonLoginService";
+import { RegistrationTypeModal } from "./RegistrationTypeModal";
 
 export function BloodCentreLoginScreen() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
 
   useEffect(() => {
-    const session = getBloodCentreSession();
+    const session = getAuthSession();
 
-    if (session) {
+    if (!session) {
+      return;
+    }
+
+    if (session.userType === "SUPER_ADMIN") {
+      router.replace("/blood-centre/super-admin/dashboard");
+
+      return;
+    }
+
+    if (session.userType === "BLOOD_CENTRE") {
       router.replace("/blood-centre/dashboard");
     }
   }, [router]);
 
+  //  Email validation
   const validateEmail = (value: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   };
 
-  const handleSubmit = async () => {
-    if (loading) return;
+  // Login
+  const submit = async () => {
+    if (loading) {
+      return;
+    }
 
     setError("");
 
     const cleanEmail = email.trim();
 
     if (!cleanEmail) {
-      setError("Enter your email address.");
+      setError("Enter your email address");
       return;
     }
 
     if (!validateEmail(cleanEmail)) {
-      setError("Enter a valid email address.");
+      setError("Enter a valid email address");
       return;
     }
 
     if (!password) {
-      setError("Enter your password.");
+      setError("Enter your password");
       return;
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError("Password must be at least 6 characters");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await loginBloodCentre({
-        email: cleanEmail,
-        password,
-      });
+      const result = await loginCommon(cleanEmail, password);
 
-      if (
-        !response ||
-        Number(response.id) <= 0 ||
-        !response.email ||
-        !response.accessToken
-      ) {
-        throw new Error("Invalid Blood Centre login response.");
+      console.log("Common Login Result:", result);
+
+      // SUPER ADMIN
+      if (result.userType === "SUPER_ADMIN") {
+        router.replace("/blood-centre/super-admin/dashboard");
+
+        return;
       }
 
-      saveAuthSession({
-        isLoggedIn: true,
-        userType: "BLOOD_CENTRE",
-        id: Number(response.id),
-        email: response.email,
-        accessToken: response.accessToken,
-        loggedInAt: new Date().toISOString(),
-      });
+      // BLOOD CENTRE
+      if (result.userType === "BLOOD_CENTRE") {
+        router.replace("/blood-centre/dashboard");
 
-      router.replace("/blood-centre/dashboard");
-    } catch (loginError) {
-      console.error("Blood Centre Login Error:", loginError);
+        return;
+      }
 
-      setError(getApiErrorMessage(loginError, "Invalid email or password."));
+      setError("Unable to determine account type.");
+    } catch (error) {
+      console.error("Common Login Error:", error);
+
+      setError(
+        error instanceof Error ? error.message : "Invalid email or password.",
+      );
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
+
+    if (error) {
+      setError("");
+    }
+  };
+
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+
+    if (error) {
+      setError("");
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      void handleSubmit();
+
+      void submit();
     }
+  };
+
+  const openRegistrationModal = () => {
+    setRegistrationModalOpen(true);
+  };
+
+  const closeRegistrationModal = () => {
+    setRegistrationModalOpen(false);
+  };
+
+  const handleSuperAdminRegistration = () => {
+    setRegistrationModalOpen(false);
+
+    router.push("/blood-centre/super-admin/register");
+  };
+
+  const handleBloodCentreRegistration = () => {
+    setRegistrationModalOpen(false);
+
+    router.push("/blood-centre/register");
   };
 
   return (
     <ScreenShell>
       <BrandHeader />
 
-      <section className="flex min-h-[620px] flex-col items-center bg-white px-5 pt-10">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF0F0] shadow-sm">
-          <Mail size={28} strokeWidth={1.5} className="text-[#FF3B3B]" />
+      <section
+        className="
+          flex
+          min-h-[510px]
+          flex-col
+          items-center
+          bg-white
+          px-5
+          pb-10
+          pt-12
+        "
+      >
+        <div
+          className="
+            flex
+            h-14
+            w-14
+            items-center
+            justify-center
+            rounded-full
+            bg-[var(--color-icon-bg-soft)]
+            shadow-sm
+          "
+        >
+          <Mail
+            size={26}
+            strokeWidth={1.5}
+            className="text-[var(--color-primary)]"
+          />
         </div>
 
-        <h2 className="mt-3 text-[17px] font-medium text-[#222]">
-          Blood Centre Login
+        <h2
+          className="
+            mt-4
+            text-[20px]
+            font-semibold
+            text-[var(--color-text-primary)]
+          "
+        >
+          Login
         </h2>
 
-        <div className="mt-8 w-full max-w-[360px]">
+        <div
+          className="
+            mt-8
+            w-full
+            max-w-[360px]
+          "
+        >
           <div className="mb-2.5">
             <FormInput
-              id="bloodCentreEmail"
+              id="loginEmail"
               name="email"
               icon={Mail}
               label="Email"
@@ -133,16 +215,13 @@ export function BloodCentreLoginScreen() {
               autoComplete="email"
               placeholder="Enter your email"
               value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                if (error) setError("");
-              }}
+              onChange={(event) => handleEmailChange(event.target.value)}
               onKeyDown={handleKeyDown}
             />
           </div>
 
           <FormInput
-            id="bloodCentrePassword"
+            id="loginPassword"
             name="password"
             icon={LockKeyhole}
             label="Password"
@@ -150,60 +229,103 @@ export function BloodCentreLoginScreen() {
             autoComplete="current-password"
             placeholder="Enter your password"
             value={password}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              if (error) setError("");
-            }}
+            onChange={(event) => handlePasswordChange(event.target.value)}
             onKeyDown={handleKeyDown}
           />
 
           {error && (
             <p
               role="alert"
-              className="mt-2 px-1 text-[10px] leading-4 text-red-500"
+              className="
+                mt-2
+                px-1
+                text-[12px]
+                leading-4
+                text-red-500
+              "
             >
               {error}
             </p>
           )}
 
-          <div className="mt-3 text-center text-[11px] text-[#555]">
-            Don&apos;t have an account?{" "}
-            <button
-              type="button"
-              onClick={() => router.push("/blood-centre/register")}
-              className="font-medium text-[#FF3B3B] underline-offset-2 hover:underline"
-            >
-              Register
-            </button>
-          </div>
-
-          <div className="mt-2 text-center text-[11px]">
-            <button
-              type="button"
-              onClick={() => router.push("/blood-centre/forgot-password")}
-              className="text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
-            >
-              Forgot your password?
-            </button>
-          </div>
-
-          <div className="mt-2 text-center text-[11px]">
-            <button
-              type="button"
-              onClick={() => router.push("/welcome")}
-              className="text-[#FF3B3B] hover:underline"
-            >
-              Return to Welcome page
-            </button>
-          </div>
-
-          <div className="mt-24">
-            <AppButton type="button" loading={loading} onClick={handleSubmit}>
+          <div className="mt-8">
+            <AppButton type="button" loading={loading} onClick={submit}>
               Login
             </AppButton>
           </div>
+
+          <div
+            className="
+              mt-5
+              text-center
+              text-[13px]
+              text-[var(--color-text-secondary)]
+            "
+          >
+            Don&apos;t have an account?{" "}
+            <button
+              type="button"
+              onClick={openRegistrationModal}
+              className="
+                font-medium
+                text-[var(--color-primary)]
+                underline-offset-2
+                transition
+                hover:underline
+              "
+            >
+              Register Now
+            </button>
+          </div>
+
+          <div
+            className="
+              mt-2.5
+              text-center
+              text-[13px]
+            "
+          >
+            <Link
+              href="/blood-centre/forgot-password"
+              className="
+                text-[var(--color-text-secondary)]
+                underline
+                underline-offset-2
+                transition
+                hover:text-[var(--color-primary)]
+              "
+            >
+              Forgot your password?
+            </Link>
+          </div>
+
+          <div
+            className="
+              mt-2.5
+              text-center
+              text-[13px]
+            "
+          >
+            <Link
+              href="/welcome"
+              className="
+                text-[var(--color-primary)]
+                transition
+                hover:underline
+              "
+            >
+              Return to Welcome page
+            </Link>
+          </div>
         </div>
       </section>
+
+      {/* <RegistrationTypeModal
+        open={registrationModalOpen}
+        onClose={closeRegistrationModal}
+        onSuperAdmin={handleSuperAdminRegistration}
+        onBloodCentre={handleBloodCentreRegistration}
+      /> */}
     </ScreenShell>
   );
 }

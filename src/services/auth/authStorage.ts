@@ -13,8 +13,10 @@ export interface AuthSession {
   loggedInAt: string;
 }
 
+// Storage Key
 const AUTH_KEY = "bloodBuddyAuth";
 
+// Save Common Auth Session
 export function saveAuthSession(session: AuthSession): void {
   if (typeof window === "undefined") {
     return;
@@ -23,6 +25,7 @@ export function saveAuthSession(session: AuthSession): void {
   localStorage.setItem(AUTH_KEY, JSON.stringify(session));
 }
 
+// Get Common Auth Session
 export function getAuthSession(): AuthSession | null {
   if (typeof window === "undefined") {
     return null;
@@ -35,20 +38,20 @@ export function getAuthSession(): AuthSession | null {
       return null;
     }
 
-    const session = JSON.parse(storedSession) as Partial<AuthSession>;
+    const parsed = JSON.parse(storedSession) as Partial<AuthSession>;
 
     if (
-      session.isLoggedIn !== true ||
-      !session.userType ||
-      !session.email ||
-      !session.accessToken
+      parsed.isLoggedIn !== true ||
+      !parsed.userType ||
+      !parsed.email ||
+      !parsed.accessToken
     ) {
       return null;
     }
 
-    return session as AuthSession;
+    return parsed as AuthSession;
   } catch (error) {
-    console.error("Unable to read authentication session:", error);
+    console.error("Unable to read auth session:", error);
 
     localStorage.removeItem(AUTH_KEY);
 
@@ -56,7 +59,64 @@ export function getAuthSession(): AuthSession | null {
   }
 }
 
-export function getSuperAdminSession() {
+// Check Login
+export function isAuthenticated(): boolean {
+  return getAuthSession() !== null;
+}
+
+// Check Super Admin
+export function isSuperAdminLoggedIn(): boolean {
+  const session = getAuthSession();
+
+  return session?.userType === "SUPER_ADMIN" && session?.role === "SUPERADMIN";
+}
+
+// Check Blood Centre
+export function isBloodCentreLoggedIn(): boolean {
+  const session = getAuthSession();
+
+  return session?.userType === "BLOOD_CENTRE";
+}
+
+// Blood Centre Compatibility Session-
+// Your existing BloodCentreDashboardScreen is already using:
+// getBloodCentreSession()
+// So keep this helper to avoid changing every existing screen.
+
+export interface BloodCentreSession {
+  isLoggedIn: true;
+  userType: "BLOOD_CENTRE";
+  id: number;
+  email: string;
+  accessToken: string;
+  loggedInAt: string;
+  name?: string;
+  role?: string;
+}
+
+export function getBloodCentreSession(): BloodCentreSession | null {
+  const session = getAuthSession();
+
+  if (!session || session.userType !== "BLOOD_CENTRE") {
+    return null;
+  }
+
+  return session as BloodCentreSession;
+}
+
+// Super Admin Session
+export interface SuperAdminSession {
+  isLoggedIn: true;
+  userType: "SUPER_ADMIN";
+  id: number;
+  name?: string;
+  email: string;
+  role: "SUPERADMIN";
+  accessToken: string;
+  loggedInAt: string;
+}
+
+export function getSuperAdminSession(): SuperAdminSession | null {
   const session = getAuthSession();
 
   if (
@@ -67,32 +127,32 @@ export function getSuperAdminSession() {
     return null;
   }
 
-  return session;
+  return session as SuperAdminSession;
 }
 
-export function getBloodCentreSession() {
+// Access Token
+export function getAccessToken(): string | null {
   const session = getAuthSession();
 
-  if (!session || session.userType !== "BLOOD_CENTRE") {
-    return null;
-  }
-
-  return session;
+  return session?.accessToken ?? null;
 }
 
+// Logout
 export function logout(): void {
   if (typeof window === "undefined") {
     return;
   }
-
   localStorage.removeItem(AUTH_KEY);
+
+  // Existing Blood Centre registration/OTP storage
   sessionStorage.removeItem("bloodCentreMobile");
 }
 
-export function logoutSuperAdmin(): void {
+// Compatibility Logout Names
+export function logoutBloodCentre(): void {
   logout();
 }
 
-export function logoutBloodCentre(): void {
+export function logoutSuperAdmin(): void {
   logout();
 }

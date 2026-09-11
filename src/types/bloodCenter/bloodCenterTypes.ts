@@ -19,53 +19,40 @@ export interface BloodCentreRegistrationInput {
   pinCode: string;
 }
 
+// Sent to POST /public/blood-centres/register (bloodbuddy.backend.dto.centre.BloodCentreRegistrationRequest).
 export interface BloodCentreRegistrationPayload {
   bloodCentreName: string;
-  licenseNumber: string;
-  category: BloodCentreCategory;
-  dateOfExpiry: string;
+  bloodBankCategory: BloodCentreCategory;
+  bloodCentreLicenceNumber: string;
+  licenceExpiryDate: string;
   email: string;
   mobileNumber: string;
   password: string;
-  confirmPassword: string;
   address: string;
   district: string;
   city: string;
   pincode: string;
 }
 
-export interface RegistrationResponse {
-  success?: boolean;
-  message?: string;
-  otpRequired?: boolean;
-  data?: object;
+export interface BloodCentreRegistrationResponse {
+  bloodCentreId: number;
+  bloodCentreName: string;
+  username: string;
+  email: string;
+  role: string;
 }
 
 export interface SendOtpPayload {
-  mobileNumber: string;
-}
-
-export interface SendOtpResponse {
-  success?: boolean;
-  message?: string;
-  data?: object;
+  email: string;
 }
 
 export interface OtpPayload {
-  mobileNumber: string;
+  email: string;
   otp: string;
 }
 
-export interface OtpResponse {
-  message?: string;
-  success?: boolean;
-}
-
-export interface OtpVerificationResponse {
-  success?: boolean;
-  verified?: boolean;
-  message?: string;
-  data?: object;
+export interface ApiMessageResponse {
+  message: string;
 }
 
 export interface LoginPayload {
@@ -73,54 +60,9 @@ export interface LoginPayload {
   password: string;
 }
 
-export interface LoginResponse {
-  success?: boolean;
-  message?: string;
-  token?: string;
-  email: string;
-  data?: object;
-}
-
-export interface AvailabilityPayload {
-  bloodGroup: string;
-  units: number;
-}
-
 /* ============================================================
    BLOOD AVAILABILITY
 ============================================================ */
-
-export const BLOOD_GROUPS = [
-  "A+",
-  "A-",
-  "B+",
-  "B-",
-  "O+",
-  "O-",
-  "AB+",
-  "AB-",
-  "Bombay Group",
-] as const;
-
-export const BLOOD_TYPES = [
-  "PRBC",
-  "Platelets",
-  "RDP (Random Donor Platelets)",
-  "FFP (Fresh Frozen Plasma)",
-  "Whole Blood",
-  "Cryoprecipitate",
-  "Single Donor Platelet",
-] as const;
-
-export type BloodGroup = (typeof BLOOD_GROUPS)[number];
-
-export type BloodType = (typeof BLOOD_TYPES)[number];
-
-export interface BloodAvailabilityPayload {
-  bloodGroup: BloodGroup;
-  bloodType: BloodType;
-  units: number;
-}
 
 export interface BloodAvailabilityItem {
   id?: string | number;
@@ -129,16 +71,12 @@ export interface BloodAvailabilityItem {
   unitsAvailable: number;
 }
 
-export interface BloodAvailabilityResponse {
-  message?: string;
-  success?: boolean;
-  data?: BloodAvailabilityItem;
-}
-
+// Sent to POST /inventory/add-availability (bloodbuddy.backend.dto.inventory.AddAvailabilityRequest).
 export interface AddAvailabilityPayload {
-  bloodGroup: BloodGroup;
-  bloodType: BloodType;
-  unitsAvailable: number;
+  bloodGroupId: number;
+  bloodComponentId: number;
+  units: number;
+  remarks?: string;
 }
 
 export interface ApiTextResponse {

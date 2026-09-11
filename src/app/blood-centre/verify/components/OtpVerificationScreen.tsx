@@ -9,21 +9,27 @@ import { AppButton } from "@/app/components/ui/AppButton";
 import {
   resendOtp,
   verifyOtp,
+  registerBloodCentre,
 } from "@/services/bloodCenter/bloodCenter.service";
-import { normalizeIndianMobile } from "@/utils/mobile";
+import {
+  clearPendingRegistration,
+  getPendingRegistration,
+} from "@/services/bloodCenter/registrationStorage";
+import { getApiErrorMessage } from "@/services/api/client";
 import { OtpVerificationSuccessModal } from "./OtpVerificationSuccessModal";
 
 export function OtpVerificationScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const mobile = searchParams.get("mobile") || "";
+  const email = searchParams.get("email") || "";
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [seconds, setSeconds] = useState(30);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [poppedIndex, setPoppedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (seconds <= 0) {
@@ -54,6 +60,7 @@ export function OtpVerificationScreen() {
     next[index] = digit;
     setOtp(next);
     setError("");
+    setPoppedIndex(index);
 
     if (index < 5) {
       document.getElementById(`otp-${index + 1}`)?.focus();
@@ -77,7 +84,8 @@ export function OtpVerificationScreen() {
     }
   };
 
-  // Verify OTP
+  // Verify OTP, then complete the registration that was deferred until the
+  // email was confirmed (backend rejects registration until the OTP is verified).
   const submit = async () => {
     const value = otp.join("");
 
@@ -86,8 +94,8 @@ export function OtpVerificationScreen() {
       return;
     }
 
-    if (!mobile) {
-      setError("Mobile number is missing. Please register again.");
+    if (!email) {
+      setError("Email is missing. Please register again.");
       return;
     }
 
@@ -95,25 +103,24 @@ export function OtpVerificationScreen() {
     setLoading(true);
 
     try {
-      const response = await verifyOtp({
-        mobileNumber: normalizeIndianMobile(mobile),
-        otp: value,
-      });
+      await verifyOtp({ email, otp: value });
 
-      if (!response?.success) {
-        setError(response.message || "Unable to verify OTP.");
-        return;
+      const pending = getPendingRegistration();
+
+      if (!pending) {
+        throw new Error(
+          "Your registration details were not found. Please register again.",
+        );
       }
 
+      await registerBloodCentre(pending);
+
+      clearPendingRegistration();
       setShowSuccessModal(true);
     } catch (error) {
-      console.error("Verify OTP error:", error);
+      console.error("Verify OTP / registration error:", error);
 
-      setError(
-        error instanceof Error
-          ? error?.message
-          : "Invalid OTP. Please try again.",
-      );
+      setError(getApiErrorMessage(error, "Invalid OTP. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -125,8 +132,8 @@ export function OtpVerificationScreen() {
       return;
     }
 
-    if (!mobile) {
-      setError("Mobile number is missing. Please register again.");
+    if (!email) {
+      setError("Email is missing. Please register again.");
       return;
     }
 
@@ -134,12 +141,7 @@ export function OtpVerificationScreen() {
     setResendLoading(true);
 
     try {
-      const response = await resendOtp(normalizeIndianMobile(mobile));
-
-      if (!response.success) {
-        setError(response.message || "Unable to resend OTP.");
-        return;
-      }
+      await resendOtp(email);
 
       setOtp(["", "", "", "", "", ""]);
       setSeconds(30);
@@ -148,9 +150,7 @@ export function OtpVerificationScreen() {
     } catch (error) {
       console.error("Resend OTP error:", error);
 
-      setError(
-        error instanceof Error ? error.message : "Unable to resend OTP.",
-      );
+      setError(getApiErrorMessage(error, "Unable to resend OTP."));
     } finally {
       setResendLoading(false);
     }
@@ -167,7 +167,7 @@ export function OtpVerificationScreen() {
     <>
       <ScreenShell>
         <BrandHeader
-          title="Verify Mobile Number"
+          title="Verify Email Address"
           showBackButton
           backHref="/blood-centre/register"
         />
@@ -212,36 +212,36 @@ export function OtpVerificationScreen() {
               className="
                 mt-5
                 text-center
-                text-[16px]
+                text-[18px]
                 font-semibold
                 text-[var(--color-text-primary)]
-                md:text-[20px]
+                md:text-[22px]
               "
             >
-              Verify your mobile number
+              Verify your email address
             </h1>
 
             <p
               className="
                 mt-2
-                max-w-[290px]
+                max-w-[300px]
                 text-center
-                text-[11px]
+                text-[13px]
                 leading-5
                 text-[var(--color-text-placeholder-alt)]
-                md:text-[13px]
+                md:text-[14px]
               "
             >
-              We just sent a verification code to your phone number
+              We just sent a verification code to your email
             </p>
 
-            {mobile && (
-              <p className="mt-2 text-[11px] font-medium text-[var(--color-text-secondary)]">
-                {mobile}
+            {email && (
+              <p className="mt-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
+                {email}
               </p>
             )}
 
-            <p className="mt-6 text-[12px] font-medium text-[var(--color-text-body)]">
+            <p className="mt-6 text-[13px] font-medium text-[var(--color-text-body)]">
               Enter your OTP code here
             </p>
 
@@ -257,23 +257,33 @@ export function OtpVerificationScreen() {
                   autoComplete={index === 0 ? "one-time-code" : "off"}
                   onChange={(event) => onOtpChange(index, event.target.value)}
                   onKeyDown={(event) => onOtpKeyDown(index, event)}
-                  className="
-                    h-9
-                    w-9
-                    rounded-[5px]
+                  onAnimationEnd={() =>
+                    setPoppedIndex((current) =>
+                      current === index ? null : current,
+                    )
+                  }
+                  className={`
+                    h-11
+                    w-11
+                    rounded-lg
                     border
                     border-[var(--color-border)]
                     bg-white
                     text-center
-                    text-[13px]
+                    text-[16px]
+                    font-semibold
                     outline-none
+                    transition-all
+                    duration-200
+                    hover:border-[#c7c7c7]
                     focus:border-[var(--color-primary)]
-                    focus:ring-1
+                    focus:ring-2
                     focus:ring-[var(--color-primary)]/20
                     md:h-12
                     md:w-12
-                    md:text-[16px]
-                  "
+                    md:text-[18px]
+                    ${poppedIndex === index ? "animate-otp-pop" : ""}
+                  `}
                 />
               ))}
             </div>
@@ -284,7 +294,7 @@ export function OtpVerificationScreen() {
                 className="
                   mt-2
                   text-center
-                  text-[10px]
+                  text-[12px]
                   leading-4
                   text-red-500
                 "
@@ -293,7 +303,7 @@ export function OtpVerificationScreen() {
               </p>
             )}
 
-            <div className="mt-4 text-center text-[11px] text-[var(--color-text-secondary)]">
+            <div className="mt-4 text-center text-[13px] text-[var(--color-text-secondary)]">
               Didn&apos;t receive the OTP?{" "}
               <button
                 type="button"

@@ -4,21 +4,13 @@ import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { logoutBloodCentre } from "@/services/auth/authStorage";
+import { logoutDonor } from "@/services/donor/donorSessionStorage";
 
-interface LogoutButtonProps {
+interface DonorLogoutButtonProps {
   className?: string;
 }
 
-// Reusable logout control for any protected Blood Centre screen.
-// Clears the session, then replaces (not pushes) the current
-// history entry with the login screen, so pressing the browser
-// back button afterwards cannot return to the protected page - it
-// simply isn't in history anymore. `BloodCentreAuthGuard` is the
-// second line of defense (it re-verifies the session on
-//  back/forward navigation and bfcache restores).
-
-export function LogoutButton({ className = "" }: LogoutButtonProps) {
+export function DonorLogoutButton({ className = "" }: DonorLogoutButtonProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -27,9 +19,9 @@ export function LogoutButton({ className = "" }: LogoutButtonProps) {
 
     setLoggingOut(true);
 
-    logoutBloodCentre();
+    logoutDonor();
 
-    router.replace("/blood-centre/login");
+    router.replace("/donor/login");
     router.refresh();
   };
 

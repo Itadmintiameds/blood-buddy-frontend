@@ -1,135 +1,99 @@
-// SUPER ADMIN BLOOD BANK SERVICE
-// The current backend API details provided do not include:
-// GET  all blood banks
-// PUT/PATCH update blood availability
-//
-// Therefore these methods currently return local/demo data.
-//
-// Replace these implementations with Axios API calls when
-// the Super Admin backend endpoints are available.
-
-import {
+import { api } from "@/services/api/client";
+import type { ApiEnvelope } from "@/types/api.types";
+import type {
   SuperAdminBloodBank,
   UpdateBloodUnitsInput,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 
-const demoBloodBanks: SuperAdminBloodBank[] = [
-  {
-    id: 1,
-    bloodBankName: "TiaMeds Blood Centre",
-    category: "Private",
-    address: "JP Nagar",
-    city: "Bangalore",
-    phoneNumber: "8688941920",
-    availability: [
-      {
-        id: 101,
-        bloodGroup: "O+",
-        bloodType: "PRBC",
-        units: 10,
-      },
-      {
-        id: 102,
-        bloodGroup: "A+",
-        bloodType: "Platelets",
-        units: 7,
-      },
-      {
-        id: 103,
-        bloodGroup: "O-",
-        bloodType: "Whole Blood",
-        units: 15,
-      },
-    ],
-  },
+interface BloodCentreResponse {
+  bloodCentreId: number;
+  bloodCentreName: string;
+  bloodBankCategory: string | null;
+  mobileNumber: string;
+  email: string;
+  address: string | null;
+  district: string;
+  city: string;
+  pincode: string;
+  isActive: boolean;
+}
 
-  {
-    id: 2,
-    bloodBankName: "KPR Blood Centre",
-    category: "Government",
-    address: "JP Nagar",
-    city: "Mysuru",
-    phoneNumber: "8609851919",
-    availability: [
-      {
-        id: 201,
-        bloodGroup: "B+",
-        bloodType: "PRBC",
-        units: 15,
-      },
-      {
-        id: 202,
-        bloodGroup: "B+",
-        bloodType: "Platelets",
-        units: 20,
-      },
-      {
-        id: 203,
-        bloodGroup: "AB+",
-        bloodType: "FFP",
-        units: 18,
-      },
-      {
-        id: 204,
-        bloodGroup: "A+",
-        bloodType: "RDP",
-        units: 16,
-      },
-      {
-        id: 205,
-        bloodGroup: "Blood Bombay",
-        bloodType: "Whole Blood",
-        units: 25,
-      },
-    ],
-  },
+interface InventoryResponse {
+  inventoryId: number;
+  bloodGroupId: number;
+  bloodGroupName: string;
+  bloodComponentId: number;
+  bloodComponentName: string;
+  availableUnits: number;
+}
 
-  {
-    id: 3,
-    bloodBankName: "Royal Blood Centre",
-    category: "Redcross",
-    address: "5th Phase JP Nagar",
-    city: "Bangalore",
-    phoneNumber: "9678519128",
-    availability: [
-      {
-        id: 301,
-        bloodGroup: "A+",
-        bloodType: "PRBC",
-        units: 12,
-      },
-      {
-        id: 302,
-        bloodGroup: "O+",
-        bloodType: "Single Donor Platelet",
-        units: 8,
-      },
-    ],
-  },
-];
+interface CentreInventoryResponse {
+  bloodCentre: BloodCentreResponse;
+  inventory: InventoryResponse[];
+}
 
-// GET ALL BLOOD BANKS
+// GET ALL BLOOD BANKS (+ each centre's stock, SUPERADMIN only).
 export async function getSuperAdminBloodBanks(): Promise<
   SuperAdminBloodBank[]
 > {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  const { data: centresEnvelope } = await api.get<
+    ApiEnvelope<BloodCentreResponse[]>
+  >("/admin/blood-centres");
 
-  return structuredClone(demoBloodBanks);
+  const centres = centresEnvelope.data ?? [];
+
+  return Promise.all(
+    centres.map(async (centre) => {
+      const { data: inventoryEnvelope } = await api.get<
+        ApiEnvelope<CentreInventoryResponse>
+      >(`/admin/blood-centres/${centre.bloodCentreId}/inventory`);
+
+      const inventory = inventoryEnvelope.data?.inventory ?? [];
+
+      return {
+        id: centre.bloodCentreId,
+        bloodBankName: centre.bloodCentreName,
+        category: centre.bloodBankCategory ?? "—",
+        address: centre.address ?? "—",
+        city: centre.city,
+        phoneNumber: centre.mobileNumber,
+        availability: inventory.map((item) => ({
+          id: item.inventoryId,
+          bloodGroupId: item.bloodGroupId,
+          bloodComponentId: item.bloodComponentId,
+          bloodGroup: item.bloodGroupName,
+          bloodType: item.bloodComponentName,
+          units: item.availableUnits,
+        })),
+      };
+    }),
+  );
 }
 
 // UPDATE BLOOD UNITS
+// The UI collects a new absolute unit count; the backend's stock-adjustment
+// endpoint only accepts a signed delta, so it's applied here as a CORRECTION.
 export async function updateSuperAdminBloodUnits(
   payload: UpdateBloodUnitsInput,
 ): Promise<{
   success: boolean;
   message: string;
 }> {
-  console.log("Update Blood Units:", payload);
+  const changedUnits = payload.units - payload.previousUnits;
 
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  if (changedUnits === 0) {
+    return { success: true, message: "No change." };
+  }
 
-  return {
-    success: true,
-    message: "Blood units updated successfully",
-  };
+  const { data } = await api.post<ApiEnvelope<unknown>>(
+    `/admin/blood-centres/${payload.bloodBankId}/inventory/stock-adjustment`,
+    {
+      bloodGroupId: payload.bloodGroupId,
+      bloodComponentId: payload.bloodComponentId,
+      movement: "CORRECTION",
+      changedUnits,
+    },
+  );
+
+  return { success: true, message: data.message };
 }

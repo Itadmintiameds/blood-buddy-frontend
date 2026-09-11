@@ -95,24 +95,26 @@ export function DonorManagement() {
     <div className="space-y-6">
       {/* Page Title */}
       <div>
-        <p className="text-[12px] font-medium text-[#999]">Management</p>
+        <p className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]">
+          Management
+        </p>
 
-        <h2 className="mt-1 text-[22px] font-bold text-[#222]">
+        <h2 className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
           Donor Details
         </h2>
 
-        <p className="mt-1 text-[13px] text-[#999]">
+        <p className="mt-1 text-[13px] text-[var(--color-text-placeholder-alt)]">
           Manage registered blood donors and their donation information.
         </p>
       </div>
 
       {/* Search */}
-      <div className="rounded-2xl border border-[#eeeeee] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
+      <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
         <div className="relative w-full max-w-[480px]">
           <Search
             size={18}
             strokeWidth={1.7}
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#999]"
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder-alt)]"
           />
 
           <input
@@ -120,13 +122,13 @@ export function DonorManagement() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search donor..."
-            className="h-[46px] w-full rounded-xl border border-[#e5e5e5] bg-white pl-11 pr-4 text-[13px] text-[#333] outline-none transition placeholder:text-[#aaa] focus:border-[#ff3b3f] focus:ring-2 focus:ring-[#ff3b3f]/10"
+            className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
           />
         </div>
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden overflow-hidden rounded-2xl border border-[#eeeeee] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.025)] lg:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-[var(--color-border-lighter)] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.025)] lg:block">
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed border-collapse">
             <colgroup>
@@ -142,7 +144,7 @@ export function DonorManagement() {
             </colgroup>
 
             <thead>
-              <tr className="border-b border-[#eeeeee] bg-[#fafafa]">
+              <tr className="border-b border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)]">
                 <TableHeader>S.No</TableHeader>
                 <TableHeader>Donor Name</TableHeader>
                 <TableHeader>Mobile Number</TableHeader>
@@ -160,17 +162,20 @@ export function DonorManagement() {
                 filteredDonors.map((donor, index) => (
                   <tr
                     key={donor.id}
-                    className="border-b border-[#f0f0f0] transition-colors duration-200 last:border-b-0 hover:bg-[#fff9f9]"
+                    className="border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[#fff9f9]"
                   >
                     <TableCell>{index + 1}</TableCell>
 
                     <TableCell>
                       <div className="flex min-w-0 items-center gap-2">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#fff0f0]">
-                          <UserRound size={15} className="text-[#ff3b3f]" />
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
+                          <UserRound
+                            size={15}
+                            className="text-[var(--color-primary)]"
+                          />
                         </div>
 
-                        <span className="truncate font-semibold text-[#333]">
+                        <span className="truncate font-semibold text-[var(--color-text-body)]">
                           {donor?.donorName}
                         </span>
                       </div>
@@ -208,23 +213,26 @@ export function DonorManagement() {
       </div>
 
       {/* Tablet */}
-      <div className="hidden overflow-hidden rounded-2xl border border-[#eeeeee] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.025)] sm:block lg:hidden">
-        <div className="divide-y divide-[#eeeeee]">
+      <div className="hidden overflow-hidden rounded-2xl border border-[var(--color-border-lighter)] bg-white shadow-[0_4px_18px_rgba(0,0,0,0.025)] sm:block lg:hidden">
+        <div className="divide-y divide-[var(--color-border-lighter)]">
           {filteredDonors?.length > 0 ? (
             filteredDonors.map((donor, index) => (
               <div key={donor.id} className="p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#fff0f0]">
-                      <UserRound size={18} className="text-[#ff3b3f]" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
+                      <UserRound
+                        size={18}
+                        className="text-[var(--color-primary)]"
+                      />
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate text-[14px] font-bold text-[#333]">
+                      <p className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
                         {index + 1}. {donor?.donorName}
                       </p>
 
-                      <p className="mt-1 text-[12px] text-[#999]">
+                      <p className="mt-1 text-[12px] text-[var(--color-text-placeholder-alt)]">
                         {donor?.mobileNumber}
                       </p>
                     </div>
@@ -264,18 +272,23 @@ export function DonorManagement() {
           filteredDonors.map((donor, index) => (
             <div
               key={donor.id}
-              className="rounded-2xl border border-[#eeeeee] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
+              className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#fff0f0]">
-                    <UserRound size={19} className="text-[#ff3b3f]" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
+                    <UserRound
+                      size={19}
+                      className="text-[var(--color-primary)]"
+                    />
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[10px] text-[#aaa]">S.No {index + 1}</p>
+                    <p className="text-[10px] text-[var(--color-text-placeholder)]">
+                      S.No {index + 1}
+                    </p>
 
-                    <h3 className="truncate text-[15px] font-bold text-[#333]">
+                    <h3 className="truncate text-[15px] font-bold text-[var(--color-text-body)]">
                       {donor.donorName}
                     </h3>
                   </div>
@@ -333,7 +346,7 @@ export function DonorManagement() {
 
 function TableHeader({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-[0.02em] text-[#444]">
+    <th className="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-[0.02em] text-[var(--color-text-secondary)]">
       {children}
     </th>
   );
@@ -341,7 +354,7 @@ function TableHeader({ children }: { children: React.ReactNode }) {
 
 function TableCell({ children }: { children: React.ReactNode }) {
   return (
-    <td className="px-3 py-4 text-left text-[11px] font-medium leading-5 text-[#666]">
+    <td className="px-3 py-4 text-left text-[11px] font-medium leading-5 text-[var(--color-text-quaternary)]">
       {children}
     </td>
   );
@@ -349,7 +362,7 @@ function TableCell({ children }: { children: React.ReactNode }) {
 
 function BloodGroupBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[#ffd5d5] bg-[#fff5f5] px-2.5 py-1 text-[11px] font-bold text-[#ff3b3f]">
+    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[#ffd5d5] bg-[#fff5f5] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
       {value}
     </span>
   );
@@ -358,11 +371,11 @@ function BloodGroupBadge({ value }: { value: string }) {
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-[#aaa]">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
         {label}
       </p>
 
-      <p className="mt-1 truncate text-[12px] font-medium text-[#555]">
+      <p className="mt-1 truncate text-[12px] font-medium text-[var(--color-text-secondary)]">
         {value}
       </p>
     </div>
@@ -379,17 +392,19 @@ function MobileInfoRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl bg-[#fafafa] px-3 py-2.5">
+    <div className="flex items-start gap-3 rounded-xl bg-[var(--color-surface-alt)] px-3 py-2.5">
       <Icon
         size={15}
         strokeWidth={1.7}
-        className="mt-0.5 shrink-0 text-[#ff3b3f]"
+        className="mt-0.5 shrink-0 text-[var(--color-primary)]"
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-[#aaa]">{label}</p>
+        <p className="text-[10px] font-semibold text-[var(--color-text-placeholder)]">
+          {label}
+        </p>
 
-        <p className="mt-0.5 break-words text-[12px] font-medium text-[#555]">
+        <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
           {value}
         </p>
       </div>
@@ -402,12 +417,14 @@ function EmptyState({ message }: { message: string }) {
     <div className="flex min-h-[180px] items-center justify-center px-5 py-10 text-center">
       <div>
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#fff3f3]">
-          <Users size={20} className="text-[#ff3b3f]" />
+          <Users size={20} className="text-[var(--color-primary)]" />
         </div>
 
-        <p className="mt-3 text-[13px] font-semibold text-[#555]">{message}</p>
+        <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]">
+          {message}
+        </p>
 
-        <p className="mt-1 text-[11px] text-[#aaa]">
+        <p className="mt-1 text-[11px] text-[var(--color-text-placeholder)]">
           Donor records will appear here.
         </p>
       </div>

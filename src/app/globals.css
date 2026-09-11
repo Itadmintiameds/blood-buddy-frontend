@@ -39,6 +39,16 @@
   --color-stat-green: #378200;
   --color-stat-yellow: #fdc000;
 
+  /* =========================
+     MOTION
+     Spring-shaped easing curves (ease-out-expo family).
+     -spring: settling entrance. -spring-out: quicker mirrored exit,
+     so closing visibly retraces the path opening took.
+  ========================= */
+
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring-out: cubic-bezier(0.4, 0, 0.68, 0.06);
+
   /* legacy aliases kept for backward compatibility */
   --blood-red: var(--color-primary);
   --blood-red-dark: var(--color-primary-hover);
@@ -194,13 +204,6 @@
 html,
 body {
   min-height: 100%;
-}
-
-body {
-  margin: 0;
-  background: #f2f2f2;
-  color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 button,
@@ -552,14 +555,26 @@ a {
 
   html {
     scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     background-color: var(--base-white);
-    color: var(--pneutral-900);
-    font-family: var(--font-work);
+    color: var(--color-text-body);
+    font-family: var(--font-noto), var(--font-work-sans), Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-work-sans), Arial, sans-serif;
   }
 
   button {
@@ -576,6 +591,87 @@ a {
   img {
     display: block;
     max-width: 100%;
+  }
+
+  ::selection {
+    background: var(--primary-200);
+    color: var(--color-text-primary);
+  }
+}
+
+/* =========================
+   SEMANTIC TYPE SCALE
+   Shared vocabulary so screens stop
+   inventing one-off text-[Npx] sizes.
+========================= */
+
+@utility text-page-title {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-semibold);
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.01em;
+}
+
+@utility text-section-title {
+  font-family: var(--font-work-sans);
+  font-weight: var(--font-semibold);
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.01em;
+}
+
+@utility text-body {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: var(--font-regular);
+}
+
+@utility text-caption {
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: var(--font-regular);
+}
+
+@utility text-label {
+  font-family: var(--font-work-sans);
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: var(--font-medium);
+}
+
+@utility focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* =========================
+   REDUCED MOTION
+   Reduced motion isn't "no feedback" -- it means dropping
+   transform-driven slides/springs/overshoot while keeping short
+   opacity cross-fades that still communicate state changes.
+========================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .motion-surface,
+  .motion-scrim {
+    transition-property: opacity !important;
+    transition-duration: 120ms !important;
+    transform: none !important;
+    animation: none !important;
   }
 }
 
@@ -667,6 +763,25 @@ a {
 
 .animate-pop {
   animation: pop 2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Fast tactile confirmation pop for per-keystroke feedback (e.g. OTP boxes) */
+@keyframes otpPop {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.12);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-otp-pop {
+  animation: otpPop 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Slide from left animation for button - smoother */

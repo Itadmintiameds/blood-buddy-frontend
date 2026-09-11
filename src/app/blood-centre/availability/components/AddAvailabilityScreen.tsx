@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle2, ChevronDown, Droplets, Package } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
@@ -8,21 +8,71 @@ import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { saveAvailability } from "@/services/bloodCenter/bloodCenter.service";
 import {
-  BLOOD_GROUPS,
-  BLOOD_TYPES,
-  BloodGroup,
-  BloodType,
-} from "@/types/bloodCenter/bloodCenterTypes";
+  getBloodComponents,
+  getBloodGroups,
+} from "@/services/master/masterService";
+import { getApiErrorMessage } from "@/services/api/client";
+import type {
+  MasterBloodComponent,
+  MasterBloodGroup,
+} from "@/types/master.types";
 
 export function AddAvailabilityScreen() {
   const router = useRouter();
 
-  const [bloodGroup, setBloodGroup] = useState<BloodGroup | "">("");
-  const [bloodType, setBloodType] = useState<BloodType | "">("");
+  const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
+  const [bloodComponents, setBloodComponents] = useState<
+    MasterBloodComponent[]
+  >([]);
+  const [mastersLoading, setMastersLoading] = useState(true);
+  const [mastersError, setMastersError] = useState("");
+
+  const [bloodGroupId, setBloodGroupId] = useState<number | "">("");
+  const [bloodComponentId, setBloodComponentId] = useState<number | "">("");
   const [units, setUnits] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMasters() {
+      setMastersLoading(true);
+      setMastersError("");
+
+      try {
+        const [groups, components] = await Promise.all([
+          getBloodGroups(),
+          getBloodComponents(),
+        ]);
+
+        if (!cancelled) {
+          setBloodGroups(groups);
+          setBloodComponents(components);
+        }
+      } catch (fetchError) {
+        if (!cancelled) {
+          setMastersError(
+            getApiErrorMessage(
+              fetchError,
+              "Unable to load blood group / component options.",
+            ),
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setMastersLoading(false);
+        }
+      }
+    }
+
+    void loadMasters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const clearError = () => {
     if (error) {
@@ -32,13 +82,13 @@ export function AddAvailabilityScreen() {
 
   const submit = async () => {
     //  Blood Group validation
-    if (!bloodGroup) {
+    if (!bloodGroupId) {
       setError("Select a blood group");
       return;
     }
 
     //  Blood Type validation
-    if (!bloodType) {
+    if (!bloodComponentId) {
       setError("Select a blood type");
       return;
     }
@@ -66,23 +116,22 @@ export function AddAvailabilityScreen() {
 
     try {
       //  API REQUEST
-      const response = await saveAvailability({
-        bloodGroup,
-        bloodType,
-        unitsAvailable: count,
+      await saveAvailability({
+        bloodGroupId,
+        bloodComponentId,
+        units: count,
       });
-
-      console.log("Availability API response:", response);
 
       setShowSuccess(true);
     } catch (error) {
       console.error("Save availability error:", error);
 
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Unable to save blood availability. Please try again.");
-      }
+      setError(
+        getApiErrorMessage(
+          error,
+          "Unable to save blood availability. Please try again.",
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -104,7 +153,7 @@ export function AddAvailabilityScreen() {
           backHref="/blood-centre/dashboard"
         />
 
-        <main className="w-full bg-white">
+        <main className="w-full bg-[var(--color-surface-alt)] md:bg-[var(--color-surface-alt)]">
           <section
             className="
               mx-auto
@@ -132,11 +181,15 @@ export function AddAvailabilityScreen() {
             >
               <div
                 className="
-                  rounded-none
+                  rounded-2xl
+                  border
+                  border-[var(--color-border-lighter)]
                   bg-white
-                  md:rounded-[12px]
-                  md:border
-                  md:border-[var(--color-border-lighter)]
+                  px-4
+                  py-6
+                  shadow-[0_2px_12px_rgba(0,0,0,0.04)]
+                  sm:px-6
+                  sm:py-7
                   md:px-8
                   md:py-8
                   md:shadow-[0_4px_20px_rgba(0,0,0,0.05)]
@@ -144,13 +197,13 @@ export function AddAvailabilityScreen() {
                   lg:py-9
                 "
               >
-                <div className="mb-6 md:mb-8">
-                  <div className="flex items-center gap-3">
+                <div className="mb-7 md:mb-9">
+                  <div className="flex items-center gap-3.5">
                     <div
                       className="
                         flex
-                        h-10
-                        w-10
+                        h-11
+                        w-11
                         shrink-0
                         items-center
                         justify-center
@@ -159,7 +212,7 @@ export function AddAvailabilityScreen() {
                       "
                     >
                       <Droplets
-                        size={21}
+                        size={22}
                         strokeWidth={1.8}
                         className="text-[var(--color-primary)]"
                       />
@@ -168,11 +221,11 @@ export function AddAvailabilityScreen() {
                     <div>
                       <h1
                         className="
-                          text-[16px]
+                          text-[18px]
                           font-semibold
-                          leading-5
+                          leading-6
                           text-[var(--color-text-primary)]
-                          md:text-[19px]
+                          md:text-[20px]
                         "
                       >
                         Blood Availability
@@ -181,10 +234,10 @@ export function AddAvailabilityScreen() {
                       <p
                         className="
                           mt-1
-                          text-[10px]
+                          text-[12px]
                           leading-4
                           text-[var(--color-text-tertiary)]
-                          md:text-[12px]
+                          md:text-[13px]
                         "
                       >
                         Add the currently available blood units.
@@ -193,15 +246,28 @@ export function AddAvailabilityScreen() {
                   </div>
                 </div>
 
+                {mastersError && (
+                  <p
+                    role="alert"
+                    className="
+                      mb-4
+                      text-[12px]
+                      leading-4
+                      text-red-500
+                    "
+                  >
+                    {mastersError}
+                  </p>
+                )}
+
                 <div className="w-full">
                   <label
                     htmlFor="bloodGroup"
                     className="
                       block
-                      text-[11px]
+                      text-[13px]
                       font-medium
                       text-[var(--color-text-body)]
-                      md:text-[12px]
                     "
                   >
                     Blood Group
@@ -224,42 +290,51 @@ export function AddAvailabilityScreen() {
 
                     <select
                       id="bloodGroup"
-                      value={bloodGroup}
+                      value={bloodGroupId}
+                      disabled={mastersLoading}
                       onChange={(event) => {
-                        setBloodGroup(event.target.value as BloodGroup | "");
+                        setBloodGroupId(
+                          event.target.value ? Number(event.target.value) : "",
+                        );
                         clearError();
                       }}
                       className={`
-                        h-[40px]
+                        h-11
                         w-full
                         appearance-none
-                        rounded-[6px]
+                        rounded-lg
                         border
                         bg-white
                         pl-10
                         pr-10
-                        text-[12px]
+                        text-[14px]
                         outline-none
-                        transition
+                        transition-all
+                        duration-200
 
                         ${
-                          error && !bloodGroup
+                          error && !bloodGroupId
                             ? "border-red-400"
-                            : "border-[var(--color-border)]"
+                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
                         }
 
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/20
 
-                        ${bloodGroup ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
+                        ${bloodGroupId ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
                       `}
                     >
-                      <option value="">Select Blood Group</option>
+                      <option value="">
+                        {mastersLoading ? "Loading..." : "Select Blood Group"}
+                      </option>
 
-                      {BLOOD_GROUPS.map((group) => (
-                        <option key={group} value={group}>
-                          {group}
+                      {bloodGroups.map((group) => (
+                        <option
+                          key={group.bloodGroupId}
+                          value={group.bloodGroupId}
+                        >
+                          {group.bloodGroupName}
                         </option>
                       ))}
                     </select>
@@ -284,10 +359,9 @@ export function AddAvailabilityScreen() {
                     htmlFor="bloodType"
                     className="
                       block
-                      text-[11px]
+                      text-[13px]
                       font-medium
                       text-[var(--color-text-body)]
-                      md:text-[12px]
                     "
                   >
                     Blood Type
@@ -310,43 +384,52 @@ export function AddAvailabilityScreen() {
 
                     <select
                       id="bloodType"
-                      value={bloodType}
+                      value={bloodComponentId}
+                      disabled={mastersLoading}
                       onChange={(event) => {
-                        setBloodType(event.target.value as BloodType | "");
+                        setBloodComponentId(
+                          event.target.value ? Number(event.target.value) : "",
+                        );
 
                         clearError();
                       }}
                       className={`
-                        h-[40px]
+                        h-11
                         w-full
                         appearance-none
-                        rounded-[6px]
+                        rounded-lg
                         border
                         bg-white
                         pl-10
                         pr-10
-                        text-[12px]
+                        text-[14px]
                         outline-none
-                        transition
+                        transition-all
+                        duration-200
 
                         ${
-                          error && !bloodType
+                          error && !bloodComponentId
                             ? "border-red-400"
-                            : "border-[var(--color-border)]"
+                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
                         }
 
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/20
 
-                        ${bloodType ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
+                        ${bloodComponentId ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
                       `}
                     >
-                      <option value="">Select Blood Type</option>
+                      <option value="">
+                        {mastersLoading ? "Loading..." : "Select Blood Type"}
+                      </option>
 
-                      {BLOOD_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
+                      {bloodComponents.map((component) => (
+                        <option
+                          key={component.bloodComponentId}
+                          value={component.bloodComponentId}
+                        >
+                          {component.bloodComponentName}
                         </option>
                       ))}
                     </select>
@@ -371,10 +454,9 @@ export function AddAvailabilityScreen() {
                     htmlFor="units"
                     className="
                       block
-                      text-[11px]
+                      text-[13px]
                       font-medium
                       text-[var(--color-text-body)]
-                      md:text-[12px]
                     "
                   >
                     Units Available
@@ -413,21 +495,23 @@ export function AddAvailabilityScreen() {
                       placeholder="Enter units"
                       autoComplete="off"
                       className="
-                        h-[40px]
+                        h-11
                         w-full
-                        rounded-[6px]
+                        rounded-lg
                         border
                         border-[var(--color-border)]
                         bg-white
                         pl-10
                         pr-3
-                        text-[12px]
+                        text-[14px]
                         text-[var(--color-text-body)]
                         outline-none
-                        transition
+                        transition-all
+                        duration-200
                         placeholder:text-[var(--color-text-placeholder)]
+                        hover:border-[#c7c7c7]
                         focus:border-[var(--color-primary)]
-                        focus:ring-1
+                        focus:ring-2
                         focus:ring-[var(--color-primary)]/20
                       "
                     />
@@ -439,10 +523,9 @@ export function AddAvailabilityScreen() {
                     role="alert"
                     className="
                       mt-2
-                      text-[10px]
+                      text-[12px]
                       leading-4
                       text-red-500
-                      md:text-[11px]
                     "
                   >
                     {error}
@@ -494,14 +577,17 @@ export function AddAvailabilityScreen() {
         >
           <div
             className="
+              animate-modalFadeSlide
+              max-h-[90vh]
               w-full
               max-w-[340px]
-              rounded-[10px]
+              overflow-y-auto
+              rounded-2xl
               bg-white
               px-5
-              py-6
+              py-7
               text-center
-              shadow-xl
+              shadow-[0_25px_70px_rgba(0,0,0,0.2)]
               sm:max-w-[380px]
               sm:px-7
             "
@@ -510,8 +596,8 @@ export function AddAvailabilityScreen() {
               <div
                 className="
                   flex
-                  h-[52px]
-                  w-[52px]
+                  h-14
+                  w-14
                   items-center
                   justify-center
                   rounded-full
@@ -529,7 +615,7 @@ export function AddAvailabilityScreen() {
             <h2
               id="availability-success-title"
               className="
-                text-[16px]
+                text-[18px]
                 font-semibold
                 leading-6
                 text-[var(--color-text-primary)]
@@ -541,7 +627,7 @@ export function AddAvailabilityScreen() {
             <p
               className="
                 mt-2
-                text-[12px]
+                text-[13px]
                 leading-5
                 text-[var(--color-text-muted)]
               "
@@ -553,18 +639,20 @@ export function AddAvailabilityScreen() {
               type="button"
               onClick={handleSuccess}
               className="
-                mt-5
+                mt-6
                 flex
-                h-[40px]
+                h-11
                 w-full
                 items-center
                 justify-center
-                rounded-[6px]
+                rounded-lg
                 bg-[var(--color-primary)]
-                text-[12px]
-                font-medium
+                text-[14px]
+                font-semibold
                 text-white
-                transition
+                shadow-[0_4px_14px_rgba(255,59,63,0.22)]
+                transition-all
+                duration-200
                 hover:bg-[var(--color-primary-hover-alt)]
                 active:scale-[0.98]
                 focus:outline-none

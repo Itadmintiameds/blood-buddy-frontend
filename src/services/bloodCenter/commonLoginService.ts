@@ -1,116 +1,76 @@
 "use client";
 
-import { loginBloodCentre } from "@/services/bloodCenter/bloodCenter.service";
-import { loginSuperAdmin } from "@/services/bloodCenter/superAdmin/superAdminService";
+import { api } from "@/services/api/client";
 import {
   saveAuthSession,
   type AuthUserType,
 } from "@/services/auth/authStorage";
 import { getApiErrorMessage } from "@/utils/api";
+import type { ApiEnvelope } from "@/types/api.types";
 
 export interface CommonLoginResult {
   userType: AuthUserType;
   id: number;
-  name?: string;
   email: string;
-  role?: string;
+  role: string;
   accessToken: string;
 }
 
-// Common Login
+// Backend AuthResponse (bloodbuddy.backend.dto.auth.AuthResponse).
+interface AuthResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresIn: number;
+  refreshToken: string;
+  username: string;
+  role: string;
+  bloodCentreId: number | null;
+}
+
+// Single login endpoint for every role — SUPERADMIN and BLOOD_CENTRE accounts
+// both authenticate against POST /auth/login; the role in the response
+// decides where the app routes the user next.
 export async function loginCommon(
   email: string,
   password: string,
 ): Promise<CommonLoginResult> {
   const cleanEmail = email.trim();
 
-  // 1. Super Admin Login
-
   try {
-    const superAdminResponse = await loginSuperAdmin({
-      email: cleanEmail,
+    const { data } = await api.post<ApiEnvelope<AuthResponse>>("/auth/login", {
+      username: cleanEmail,
       password,
     });
 
-    console.log("Super Admin Login Response:", superAdminResponse);
+    const auth = data.data;
+    const role = String(auth.role ?? "").toUpperCase();
+    const userType: AuthUserType =
+      role === "SUPERADMIN" ? "SUPER_ADMIN" : "BLOOD_CENTRE";
 
-    const isValidSuperAdmin =
-      superAdminResponse &&
-      Number.isFinite(Number(superAdminResponse.id)) &&
-      String(superAdminResponse.role).toUpperCase() === "SUPERADMIN" &&
-      typeof superAdminResponse.accessToken === "string" &&
-      superAdminResponse.accessToken.length > 0;
+    // The backend has no plain numeric user id in AuthResponse; use the
+    // centre id for BLOOD_CENTRE accounts (there is exactly one Super Admin).
+    const id = userType === "BLOOD_CENTRE" ? (auth.bloodCentreId ?? 0) : 1;
 
-    if (isValidSuperAdmin) {
-      const session = {
-        isLoggedIn: true as const,
-        userType: "SUPER_ADMIN" as const,
-        id: Number(superAdminResponse.id),
-        name: superAdminResponse.name,
-        email: superAdminResponse.email,
-        role: "SUPERADMIN",
-        accessToken: superAdminResponse.accessToken,
-        loggedInAt: new Date().toISOString(),
-      };
-
-      saveAuthSession(session);
-
-      return {
-        userType: "SUPER_ADMIN",
-        id: Number(superAdminResponse.id),
-        name: superAdminResponse.name,
-        email: superAdminResponse.email,
-        role: "SUPERADMIN",
-        accessToken: superAdminResponse.accessToken,
-      };
-    }
-  } catch (superAdminError) {
-    console.log(
-      "Super Admin login failed. Trying Blood Centre login...",
-      superAdminError,
-    );
-  }
-
-  // 2. Blood Centre Login
-
-  try {
-    const bloodCentreResponse = await loginBloodCentre({
-      email: cleanEmail,
-      password,
-    });
-
-    console.log("Blood Centre Login Response:", bloodCentreResponse);
-
-    if (
-      !bloodCentreResponse ||
-      !bloodCentreResponse.email ||
-      !bloodCentreResponse.accessToken
-    ) {
-      throw new Error("Invalid Blood Centre login response.");
-    }
-
-    const session = {
-      isLoggedIn: true as const,
-      userType: "BLOOD_CENTRE" as const,
-      id: Number(bloodCentreResponse.id),
-      email: bloodCentreResponse.email,
-      accessToken: bloodCentreResponse.accessToken,
+    saveAuthSession({
+      isLoggedIn: true,
+      userType,
+      id,
+      email: auth.username,
+      role,
+      accessToken: auth.accessToken,
       loggedInAt: new Date().toISOString(),
-    };
-
-    saveAuthSession(session);
+    });
 
     return {
-      userType: "BLOOD_CENTRE",
-      id: Number(bloodCentreResponse.id),
-      email: bloodCentreResponse.email,
-      accessToken: bloodCentreResponse.accessToken,
+      userType,
+      id,
+      email: auth.username,
+      role,
+      accessToken: auth.accessToken,
     };
-  } catch (bloodCentreError) {
-    console.error("Blood Centre login failed:", bloodCentreError);
+  } catch (error) {
+    console.error("Login error:", error);
 
-    throw new Error(
-      getApiErrorMessage(bloodCentreError, "Invalid email or password."),
-    );
+    throw new Error(getApiErrorMessage(error, "Invalid email or password."));
   }
 }
