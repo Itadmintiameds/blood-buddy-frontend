@@ -1,8 +1,7 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
-
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import { CheckCircle2 } from "lucide-react";
 
 interface OtpVerificationSuccessModalProps {
   open: boolean;
@@ -109,8 +108,8 @@ export function OtpVerificationSuccessModal({
             text-[var(--color-text-muted)]
           "
         >
-          Your email has been verified and your Blood Centre account has
-          been created.
+          Your email has been verified and your Blood Centre account has been
+          created.
         </p>
 
         <p

@@ -294,9 +294,7 @@ export function AddAvailabilityScreen() {
                       disabled={mastersLoading}
                       onChange={(event) => {
                         setBloodGroupId(
-                          event.target.value
-                            ? Number(event.target.value)
-                            : "",
+                          event.target.value ? Number(event.target.value) : "",
                         );
                         clearError();
                       }}
@@ -328,9 +326,7 @@ export function AddAvailabilityScreen() {
                       `}
                     >
                       <option value="">
-                        {mastersLoading
-                          ? "Loading..."
-                          : "Select Blood Group"}
+                        {mastersLoading ? "Loading..." : "Select Blood Group"}
                       </option>
 
                       {bloodGroups.map((group) => (
@@ -392,9 +388,7 @@ export function AddAvailabilityScreen() {
                       disabled={mastersLoading}
                       onChange={(event) => {
                         setBloodComponentId(
-                          event.target.value
-                            ? Number(event.target.value)
-                            : "",
+                          event.target.value ? Number(event.target.value) : "",
                         );
 
                         clearError();

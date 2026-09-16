@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
-
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 
 interface RegistrationSuccessModalProps {

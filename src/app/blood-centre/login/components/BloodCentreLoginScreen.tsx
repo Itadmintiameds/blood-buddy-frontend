@@ -266,7 +266,7 @@ export function BloodCentreLoginScreen() {
             Don&apos;t have an account?{" "}
             <button
               type="button"
-              onClick={openRegistrationModal}
+              onClick={handleBloodCentreRegistration}
               className="
                 font-medium
                 text-[var(--color-primary)]
@@ -314,6 +314,10 @@ export function BloodCentreLoginScreen() {
                 transition
                 hover:underline
               "
+              style={{
+                color: "#FF3B3B",
+                textDecorationColor: "#FF3B3B",
+              }}
             >
               Return to Welcome page
             </Link>
@@ -321,12 +325,12 @@ export function BloodCentreLoginScreen() {
         </div>
       </section>
 
-      <RegistrationTypeModal
+      {/* <RegistrationTypeModal
         open={registrationModalOpen}
         onClose={closeRegistrationModal}
         onSuperAdmin={handleSuperAdminRegistration}
         onBloodCentre={handleBloodCentreRegistration}
-      />
+      /> */}
     </ScreenShell>
   );
 }

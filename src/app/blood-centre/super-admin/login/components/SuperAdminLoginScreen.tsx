@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { LockKeyhole, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BrandHeader } from "@/app/components/layout/BrandHeader";
+import { ScreenShell } from "@/app/components/ui/ScreenShell";
+import { AppButton } from "@/app/components/ui/AppButton";
+import { FormInput } from "@/app/components/ui/FormInput";
+import {
+  getSuperAdminSession,
+  saveAuthSession,
+} from "@/services/auth/authStorage";
+import { getApiErrorMessage } from "@/utils/api";
+import { loginSuperAdmin } from "@/services/bloodCenter/superAdmin/superAdminService";
+
+export function SuperAdminLoginScreen() {
+  const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const session = getSuperAdminSession();
+
+    if (session) {
+      router.replace("/blood-centre/super-admin/dashboard");
+    }
+  }, [router]);
+
+  const validateEmail = (value: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
+
+  const handleSubmit = async () => {
+    if (loading) return;
+
+    setError("");
+
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail) {
+      setError("Enter your email address.");
+      return;
+    }
+
+    if (!validateEmail(cleanEmail)) {
+      setError("Enter a valid email address.");
+      return;
+    }
+
+    if (!password) {
+      setError("Enter your password.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await loginSuperAdmin({
+        email: cleanEmail,
+        password,
+      });
+
+      if (
+        !response ||
+        !response.id ||
+        !response.email ||
+        !response.accessToken ||
+        String(response.role).toUpperCase() !== "SUPERADMIN"
+      ) {
+        throw new Error("Invalid Super Admin login response.");
+      }
+
+      saveAuthSession({
+        isLoggedIn: true,
+        userType: "SUPER_ADMIN",
+        id: Number(response.id),
+        name: response.name,
+        email: response.email,
+        role: "SUPERADMIN",
+        accessToken: response.accessToken,
+        loggedInAt: new Date().toISOString(),
+      });
+
+      router.replace("/blood-centre/super-admin/dashboard");
+    } catch (loginError) {
+      console.error("Super Admin Login Error:", loginError);
+
+      setError(getApiErrorMessage(loginError, "Invalid email or password."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      void handleSubmit();
+    }
+  };
+
+  return (
+    <ScreenShell>
+      <BrandHeader />
+
+      <section className="flex min-h-[620px] flex-col items-center bg-white px-5 pt-10">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF0F0] shadow-sm">
+          <ShieldIcon />
+        </div>
+
+        <h2 className="mt-3 text-[17px] font-medium text-[#222]">
+          Super Admin Login
+        </h2>
+
+        <div className="mt-8 w-full max-w-[360px]">
+          <div className="mb-2.5">
+            <FormInput
+              id="superAdminEmail"
+              name="email"
+              icon={Mail}
+              label="Email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+                if (error) setError("");
+              }}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+
+          <FormInput
+            id="superAdminPassword"
+            name="password"
+            icon={LockKeyhole}
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              if (error) setError("");
+            }}
+            onKeyDown={handleKeyDown}
+          />
+
+          {error && (
+            <p
+              role="alert"
+              className="mt-2 px-1 text-[10px] leading-4 text-red-500"
+            >
+              {error}
+            </p>
+          )}
+
+          <div className="mt-3 text-center text-[11px]">
+            <button
+              type="button"
+              onClick={() => router.push("/welcome")}
+              className="text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
+            >
+              Back to Welcome
+            </button>
+          </div>
+
+          <div className="mt-28">
+            <AppButton type="button" loading={loading} onClick={handleSubmit}>
+              Login
+            </AppButton>
+          </div>
+        </div>
+      </section>
+    </ScreenShell>
+  );
+}
+
+function ShieldIcon() {
+  return <ShieldCheckIcon />;
+}
+
+function ShieldCheckIcon() {
+  return (
+    <svg
+      width="30"
+      height="30"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="text-[#FF3B3B]"
+      aria-hidden="true"
+    >
+      <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}

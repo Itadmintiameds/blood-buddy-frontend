@@ -1,3 +1,5 @@
+"use client";
+
 import { SuperAdminAuthGuard } from "@/app/components/auth/SuperAdminAuthGuard";
 import { SuperAdminDashboard } from "./components/SuperAdminDashboardScreen";
 

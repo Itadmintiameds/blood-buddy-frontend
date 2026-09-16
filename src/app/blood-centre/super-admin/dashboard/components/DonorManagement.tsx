@@ -93,7 +93,9 @@ export function DonorManagement() {
     <div className="space-y-6">
       {/* Page Title */}
       <div>
-        <p className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]">Management</p>
+        <p className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]">
+          Management
+        </p>
 
         <h2 className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
           Donor Details
@@ -181,7 +183,10 @@ export function DonorManagement() {
                     <TableCell>
                       <div className="flex min-w-0 items-center gap-2">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
-                          <UserRound size={15} className="text-[var(--color-primary)]" />
+                          <UserRound
+                            size={15}
+                            className="text-[var(--color-primary)]"
+                          />
                         </div>
 
                         <span className="truncate font-semibold text-[var(--color-text-body)]">
@@ -206,7 +211,9 @@ export function DonorManagement() {
 
                     <TableCell>{donor?.pincode}</TableCell>
 
-                    <TableCell>{formatDate(donor?.lastBloodDonationDate)}</TableCell>
+                    <TableCell>
+                      {formatDate(donor?.lastBloodDonationDate)}
+                    </TableCell>
                   </tr>
                 ))
               ) : (
@@ -232,7 +239,10 @@ export function DonorManagement() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
-                      <UserRound size={18} className="text-[var(--color-primary)]" />
+                      <UserRound
+                        size={18}
+                        className="text-[var(--color-primary)]"
+                      />
                     </div>
 
                     <div className="min-w-0">
@@ -290,11 +300,16 @@ export function DonorManagement() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
-                    <UserRound size={19} className="text-[var(--color-primary)]" />
+                    <UserRound
+                      size={19}
+                      className="text-[var(--color-primary)]"
+                    />
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[10px] text-[var(--color-text-placeholder)]">S.No {index + 1}</p>
+                    <p className="text-[10px] text-[var(--color-text-placeholder)]">
+                      S.No {index + 1}
+                    </p>
 
                     <h3 className="truncate text-[15px] font-bold text-[var(--color-text-body)]">
                       {donor.donorName}
@@ -408,7 +423,9 @@ function MobileInfoRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-[var(--color-text-placeholder)]">{label}</p>
+        <p className="text-[10px] font-semibold text-[var(--color-text-placeholder)]">
+          {label}
+        </p>
 
         <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
           {value}
@@ -438,7 +455,9 @@ function EmptyState({ message }: { message: string }) {
           <Users size={20} className="text-[var(--color-primary)]" />
         </div>
 
-        <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]">{message}</p>
+        <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]">
+          {message}
+        </p>
 
         <p className="mt-1 text-[11px] text-[var(--color-text-placeholder)]">
           Donor records will appear here.

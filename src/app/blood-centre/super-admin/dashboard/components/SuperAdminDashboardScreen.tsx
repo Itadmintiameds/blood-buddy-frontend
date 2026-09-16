@@ -59,7 +59,8 @@ function isDesktopViewport() {
 // past, the less it follows (skill: rubber-banding).
 function rubberband(overshoot: number, dimension: number, constant = 0.55) {
   return (
-    (overshoot * dimension * constant) / (dimension + constant * Math.abs(overshoot))
+    (overshoot * dimension * constant) /
+    (dimension + constant * Math.abs(overshoot))
   );
 }
 
@@ -138,7 +139,10 @@ export function SuperAdminDashboard() {
     const reduced = prefersReducedMotion();
     const durationMs = reduced
       ? 0
-      : Math.min(320, Math.max(120, distance / Math.max(Math.abs(velocity), 0.3)));
+      : Math.min(
+          320,
+          Math.max(120, distance / Math.max(Math.abs(velocity), 0.3)),
+        );
 
     if (aside) {
       aside.style.transition = reduced
@@ -148,7 +152,9 @@ export function SuperAdminDashboard() {
     }
 
     if (scrim) {
-      scrim.style.transition = reduced ? "none" : `opacity ${durationMs}ms linear`;
+      scrim.style.transition = reduced
+        ? "none"
+        : `opacity ${durationMs}ms linear`;
       scrim.style.opacity = open ? "1" : "0";
     }
 
