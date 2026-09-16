@@ -3,6 +3,8 @@ export const routes = {
   bloodCentreRegister: "/blood-centre/register",
   bloodCentreVerify: "/blood-centre/verify",
   bloodCentreLogin: "/blood-centre/login",
+  bloodCentreForgotPassword: "/blood-centre/forgot-password",
+  bloodCentreResetPassword: "/blood-centre/reset-password",
   bloodCentreDashboard: "/blood-centre/dashboard",
   addAvailability: "/blood-centre/availability/add",
   availability: "/blood-centre/availability",

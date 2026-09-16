@@ -93,13 +93,14 @@ export interface StockAdjustmentPayload {
   remarks?: string;
 }
 
-export interface ApiTextResponse {
-  success?: boolean;
-  message?: string;
+// Sent to POST /auth/forgot-password (bloodbuddy.backend.dto.auth.ForgotPasswordRequest).
+export interface ForgotPasswordPayload {
+  email: string;
 }
 
-export interface PasswordResetPayload {
+// Sent to POST /auth/reset-password (bloodbuddy.backend.dto.auth.ResetPasswordRequest).
+export interface ResetPasswordPayload {
   email: string;
+  otp: string;
   newPassword: string;
-  confirmPassword: string;
 }
