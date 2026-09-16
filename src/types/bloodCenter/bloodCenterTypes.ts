@@ -89,3 +89,27 @@ export interface PasswordResetPayload {
   newPassword: string;
   confirmPassword: string;
 }
+
+/* ============================================================
+   FORGOT PASSWORD
+============================================================ */
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  newPassword: string;
+}
+
+/*
+ * Kept for compatibility with any existing code that may still
+ * import PasswordResetPayload.
+ */
+export interface PasswordResetPayload {
+  email: string;
+  newPassword: string;
+  confirmPassword: string;
+}

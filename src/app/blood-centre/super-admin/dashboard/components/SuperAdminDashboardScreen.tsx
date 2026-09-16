@@ -217,7 +217,7 @@ export function SuperAdminDashboard() {
 
     drag.samples.push({ x: event.clientX, t: event.timeStamp });
 
-    if (drag.samples.length > 5) {
+    if (drag.samples?.length > 5) {
       drag.samples.shift();
     }
 
@@ -365,14 +365,14 @@ export function SuperAdminDashboard() {
 
           <nav className="space-y-1.5">
             {navigationItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeSection === item.id;
+              const Icon = item?.icon;
+              const isActive = activeSection === item?.id;
 
               return (
                 <button
-                  key={item.id}
+                  key={item?.id}
                   type="button"
-                  onClick={() => handleSectionChange(item.id)}
+                  onClick={() => handleSectionChange(item?.id)}
                   className={`
                     group flex w-full items-center gap-3 rounded-xl
                     px-4 py-3 text-left

@@ -9,6 +9,8 @@ export interface DonorRegistrationInput {
   city: string;
   pincode: string;
   lastBloodDonationDate: string;
+  password: string;
+  confirmPassword: string;
 }
 // Sent to POST /public/donors/register (bloodbuddy.backend.dto.donor.DonorRegistrationRequest).
 // Note: the backend request has no password field — it only accepts the donor's

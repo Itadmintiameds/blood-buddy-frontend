@@ -1470,7 +1470,7 @@ function BloodBankCard({
           <div className="space-y-2.5">
             {bank?.availability.map((availability) => (
               <div
-                key={availability.id}
+                key={availability?.id}
                 className="
                   flex
                   items-center
@@ -1515,7 +1515,7 @@ function BloodBankCard({
 
                 <button
                   type="button"
-                  onClick={() => onUpdate(availability.id)}
+                  onClick={() => onUpdate(availability?.id)}
                   className="
                     flex
                     h-9
