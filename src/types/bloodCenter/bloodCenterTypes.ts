@@ -66,6 +66,8 @@ export interface LoginPayload {
 
 export interface BloodAvailabilityItem {
   id?: string | number;
+  bloodGroupId?: number;
+  bloodComponentId?: number;
   bloodGroup: string;
   bloodType: string;
   unitsAvailable: number;
@@ -76,6 +78,18 @@ export interface AddAvailabilityPayload {
   bloodGroupId: number;
   bloodComponentId: number;
   units: number;
+  remarks?: string;
+}
+
+// bloodbuddy.backend.model.StockMovement
+export type StockMovement = "ADD" | "ISSUE" | "DISCARD" | "CORRECTION";
+
+// Sent to POST /inventory/stock-adjustment (bloodbuddy.backend.dto.inventory.StockAdjustmentRequest).
+export interface StockAdjustmentPayload {
+  bloodGroupId: number;
+  bloodComponentId: number;
+  movement: StockMovement;
+  changedUnits: number;
   remarks?: string;
 }
 

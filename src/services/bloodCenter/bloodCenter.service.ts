@@ -5,3 +5,4 @@ export { verifyOtp } from "./otpVerifyService";
 export { resetPassword } from "./forgotPasswordService";
 export { getAvailability } from "./dashboardService";
 export { addAvailability, saveAvailability } from "./addAvailabilityService";
+export { adjustStock } from "./stockAdjustmentService";

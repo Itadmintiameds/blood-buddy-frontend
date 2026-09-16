@@ -1,6 +1,7 @@
 import { api } from "@/services/api/client";
 import type { ApiEnvelope } from "@/types/api.types";
 import type {
+  AdminAddStockInput,
   SuperAdminBloodBank,
   SuperAdminDonor,
   UpdateBloodUnitsInput,
@@ -94,6 +95,29 @@ export async function updateSuperAdminBloodUnits(
       bloodComponentId: payload.bloodComponentId,
       movement: "CORRECTION",
       changedUnits,
+    },
+  );
+
+  return { success: true, message: data.message };
+}
+
+// ADD STOCK TO A SPECIFIC CENTRE (SUPERADMIN only).
+// Unlike updateSuperAdminBloodUnits (a signed CORRECTION), this hits the
+// dedicated add-availability endpoint for that centre, same as a centre
+// adding its own stock.
+export async function addStockToCentre(
+  payload: AdminAddStockInput,
+): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  const { data } = await api.post<ApiEnvelope<unknown>>(
+    `/admin/blood-centres/${payload.bloodCentreId}/inventory/add-availability`,
+    {
+      bloodGroupId: payload.bloodGroupId,
+      bloodComponentId: payload.bloodComponentId,
+      units: payload.units,
+      remarks: payload.remarks,
     },
   );
 

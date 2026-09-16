@@ -10,6 +10,7 @@ export interface AuthSession {
   email: string;
   role?: string;
   accessToken: string;
+  refreshToken?: string;
   loggedInAt: string;
 }
 
@@ -135,6 +136,30 @@ export function getAccessToken(): string | null {
   const session = getAuthSession();
 
   return session?.accessToken ?? null;
+}
+
+// Refresh Token
+export function getRefreshToken(): string | null {
+  const session = getAuthSession();
+
+  return session?.refreshToken ?? null;
+}
+
+// Patch the stored session with a freshly-issued access (and optionally
+// refresh) token, e.g. after POST /auth/refresh. No-ops if nobody is
+// logged in (session must already exist).
+export function updateTokens(accessToken: string, refreshToken?: string): void {
+  const session = getAuthSession();
+
+  if (!session) {
+    return;
+  }
+
+  saveAuthSession({
+    ...session,
+    accessToken,
+    refreshToken: refreshToken ?? session.refreshToken,
+  });
 }
 
 // Logout

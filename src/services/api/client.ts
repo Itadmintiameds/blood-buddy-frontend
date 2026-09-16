@@ -1,5 +1,10 @@
-import axios, { type AxiosError } from "axios";
-import { getAccessToken } from "@/services/auth/authStorage";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import {
+  getAccessToken,
+  getRefreshToken,
+  logout,
+  updateTokens,
+} from "@/services/auth/authStorage";
 
 // Browser requests use a same-origin Next.js proxy.
 // /backend-api
@@ -33,9 +38,78 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Backend AuthResponse (bloodbuddy.backend.dto.auth.AuthResponse), the shape
+// POST /auth/refresh returns.
+interface RefreshedAuth {
+  accessToken: string;
+  refreshToken: string;
+}
+
+// Shared across concurrent 401s so only one /auth/refresh call is in
+// flight at a time; every request that raced into a 401 awaits the same
+// promise instead of each triggering its own refresh.
+let refreshPromise: Promise<string> | null = null;
+
+async function performRefresh(): Promise<string> {
+  const refreshToken = getRefreshToken();
+
+  if (!refreshToken) {
+    throw new Error("No refresh token available.");
+  }
+
+  // Plain axios (not the `api` instance) so this call never re-enters the
+  // request/response interceptors above.
+  const { data } = await axios.post<{ data: RefreshedAuth }>(
+    `${baseURL}/auth/refresh`,
+    { refreshToken },
+  );
+
+  updateTokens(data.data.accessToken, data.data.refreshToken);
+
+  return data.data.accessToken;
+}
+
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
+
+    const status = error.response?.status;
+    const requestUrl = originalRequest?.url ?? "";
+    const isAuthEndpoint =
+      requestUrl.includes("/auth/login") || requestUrl.includes("/auth/refresh");
+
+    if (
+      status === 401 &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !isAuthEndpoint &&
+      getRefreshToken()
+    ) {
+      originalRequest._retry = true;
+
+      try {
+        refreshPromise ??= performRefresh().finally(() => {
+          refreshPromise = null;
+        });
+
+        const newAccessToken = await refreshPromise;
+
+        originalRequest.headers = originalRequest.headers ?? {};
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+
+        return api(originalRequest);
+      } catch (refreshError) {
+        if (process.env.NODE_ENV === "development") {
+          console.error("Token refresh failed, logging out:", refreshError);
+        }
+
+        logout();
+      }
+    }
+
     if (process.env.NODE_ENV === "development") {
       console.error("API Error:", {
         message: error.message,

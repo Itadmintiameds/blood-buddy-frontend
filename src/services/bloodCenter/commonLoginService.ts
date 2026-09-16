@@ -61,6 +61,7 @@ export async function loginCommon(
       email: auth.username,
       role,
       accessToken: auth.accessToken,
+      refreshToken: auth.refreshToken,
       loggedInAt: new Date().toISOString(),
     });
 
