@@ -4,6 +4,7 @@ export interface RecipientRequestInput {
   bloodGroupId: number | "";
   bloodComponentId: number | "";
   requiredUnits: string;
+  dob: string;
   hospitalName: string;
   address: string;
   district: string;
@@ -18,6 +19,7 @@ export interface BloodRequestPayload {
   bloodGroupId: number;
   bloodComponentId: number;
   requiredUnits: number;
+  dob: string;
   hospitalName?: string;
   address?: string;
   city: string;

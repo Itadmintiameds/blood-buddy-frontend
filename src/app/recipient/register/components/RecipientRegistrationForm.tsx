@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  CalendarDays,
   ChevronDown,
   Droplets,
   Hospital,
@@ -54,6 +55,7 @@ export function RecipientRegistrationForm() {
     bloodGroupId: "",
     bloodComponentId: "",
     requiredUnits: "",
+    dob: "",
     hospitalName: "",
     address: "",
     district: "",
@@ -122,6 +124,7 @@ export function RecipientRegistrationForm() {
         bloodGroupId: Number(data.bloodGroupId),
         bloodComponentId: Number(data.bloodComponentId),
         requiredUnits: Number(data.requiredUnits),
+        dob: data.dob,
         hospitalName: data.hospitalName || undefined,
         address: data.address || undefined,
         city: data.city,
@@ -349,6 +352,17 @@ export function RecipientRegistrationForm() {
               },
             })}
             error={errors.requiredUnits?.message}
+          />
+
+          <FormInput
+            id="dob"
+            icon={CalendarDays}
+            label="Date of Birth"
+            type="date"
+            max={new Date().toISOString().slice(0, 10)}
+            autoComplete="bday"
+            {...register("dob")}
+            error={errors.dob?.message}
           />
 
           <FormInput
