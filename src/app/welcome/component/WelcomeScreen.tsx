@@ -13,12 +13,15 @@ export function WelcomeScreen() {
   return (
     <ScreenShell>
       <main className="flex h-[100dvh] w-full flex-col overflow-hidden bg-white">
+        {/* HEADER */}
         <div className="shrink-0">
           <BrandHeader />
         </div>
 
+        {/* WELCOME CONTENT */}
         <section className="min-h-0 flex-1 overflow-hidden bg-white">
           <div className="flex h-full w-full flex-col lg:flex-row">
+            {/* LEFT SIDE */}
             <div
               className="
                 relative
@@ -122,7 +125,7 @@ export function WelcomeScreen() {
                   Made Simple
                 </h6>
 
-                {/* Description */}
+                {/* Updated Description */}
                 <p
                   className="
                     mt-2
@@ -137,20 +140,20 @@ export function WelcomeScreen() {
                     md:text-[12px]
                   "
                 >
-                  A simple and reliable platform connecting blood centres,
-                  donors and recipients for better blood availability.
+                  Connects blood centres, donors and recipients to improve blood
+                  availability and help people find the required blood centre.
                 </p>
 
                 {/* Tagline */}
                 <div
                   className="
-                    mt-3
+                    mt-2.5
                     flex
                     items-center
                     gap-2
                     text-[9px]
                     text-[#888888]
-                    sm:mt-4
+                    sm:mt-3
                     sm:text-[10px]
                   "
                 >
@@ -163,9 +166,7 @@ export function WelcomeScreen() {
               </div>
             </div>
 
-            {/* =================================================
-                RIGHT SIDE
-            ================================================== */}
+            {/* RIGHT SIDE */}
             <div
               className="
                 flex
@@ -192,11 +193,6 @@ export function WelcomeScreen() {
                   justify-center
                 "
               >
-                {/* Language selector for desktop */}
-                <div className="mb-2 hidden w-full justify-end lg:flex">
-                  <LanguageSelector />
-                </div>
-
                 {/* Portal icon */}
                 <div
                   className="
@@ -234,7 +230,7 @@ export function WelcomeScreen() {
                   Blood Buddy Portal
                 </h2>
 
-                {/* Subtitle */}
+                {/* Updated subtitle */}
                 <p
                   className="
                     mt-1
@@ -246,38 +242,37 @@ export function WelcomeScreen() {
                     sm:text-[11px]
                   "
                 >
-                  Manage blood availability with ease
+                  Manage blood availability and connect with blood centres
                 </p>
 
                 {/* Blood Centre button */}
-
                 <Link
                   href="/blood-centre/login"
                   className="
-                      group
-                      flex
-                      h-[50px]
-                      w-full
-                      items-center
-                      justify-center
-                      gap-2.5
-                      rounded-[8px]
-                      bg-[#FF3B3B]
-                      px-5
-                      text-[14px]
-                      font-semibold
-                      text-white
-                      no-underline
-                      shadow-[0_5px_15px_rgba(255,59,59,0.18)]
-                      transition-all
-                      duration-200
-                      hover:bg-[#e93232]
-                      hover:shadow-[0_7px_20px_rgba(255,59,59,0.25)]
-                      focus:outline-none
-                      focus:ring-2
-                      focus:ring-[#FF3B3B]
-                      focus:ring-offset-2
-                    "
+                    group
+                    flex
+                    h-[50px]
+                    w-full
+                    items-center
+                    justify-center
+                    gap-2.5
+                    rounded-[8px]
+                    bg-[#FF3B3B]
+                    px-5
+                    text-[14px]
+                    font-semibold
+                    text-white
+                    no-underline
+                    shadow-[0_5px_15px_rgba(255,59,59,0.18)]
+                    transition-all
+                    duration-200
+                    hover:bg-[#e93232]
+                    hover:shadow-[0_7px_20px_rgba(255,59,59,0.25)]
+                    focus:outline-none
+                    focus:ring-2
+                    focus:ring-[#FF3B3B]
+                    focus:ring-offset-2
+                  "
                 >
                   <span>I am a Blood Centre</span>
 
@@ -285,10 +280,10 @@ export function WelcomeScreen() {
                     size={17}
                     strokeWidth={2}
                     className="
-                        transition-transform
-                        duration-200
-                        group-hover:translate-x-1
-                      "
+                      transition-transform
+                      duration-200
+                      group-hover:translate-x-1
+                    "
                   />
                 </Link>
 

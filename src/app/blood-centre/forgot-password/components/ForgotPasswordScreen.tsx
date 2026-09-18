@@ -166,13 +166,16 @@ export function ForgotPasswordScreen() {
     setOtp("");
     setNewPassword("");
     setConfirmPassword("");
-
     setStep("email");
   };
 
   return (
     <ScreenShell>
-      <BrandHeader />
+      <BrandHeader
+        title="Forgot Password"
+        showBackButton
+        backHref="/blood-centre/login"
+      />
 
       <main className="min-h-[calc(100vh-50px)] bg-white">
         <section
@@ -506,12 +509,6 @@ export function ForgotPasswordScreen() {
                 </div>
               </>
             )}
-
-            {/* POWERED BY */}
-
-            <div className="mt-10 flex justify-center">
-              <PoweredBy />
-            </div>
           </div>
         </section>
       </main>

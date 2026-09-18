@@ -510,7 +510,7 @@ export default function BloodBankManagement() {
                 className="
                   border-b
                   border-[var(--color-border-table)]
-                  bg-[var(--color-surface-alt)]
+                  bg-[var(--warning-500)]
                 "
               >
                 <th
@@ -523,7 +523,7 @@ export default function BloodBankManagement() {
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[var(--color-text-secondary)]
+                    text-[var(--base-white)]
                     sm:px-2
                     sm:py-4
                     sm:text-[13px]
@@ -542,7 +542,7 @@ export default function BloodBankManagement() {
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[var(--color-text-secondary)]
+                    text-[var(--base-white)]
                     sm:px-3
                     sm:py-4
                     sm:text-[13px]
@@ -561,7 +561,7 @@ export default function BloodBankManagement() {
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[var(--color-text-secondary)]
+                    text-[var(--base-white)]
                     sm:px-2
                     sm:py-4
                     sm:text-[13px]
@@ -580,7 +580,7 @@ export default function BloodBankManagement() {
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[var(--color-text-secondary)]
+                    text-[var(--base-white)]
                     sm:px-2
                     sm:py-4
                     sm:text-[13px]
@@ -599,7 +599,7 @@ export default function BloodBankManagement() {
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[var(--color-text-secondary)]
+                    text-[var(--base-white)]
                     sm:px-2
                     sm:py-4
                     sm:text-[13px]
@@ -618,7 +618,7 @@ export default function BloodBankManagement() {
                     font-bold
                     uppercase
                     tracking-wide
-                    text-[var(--color-text-secondary)]
+                    text-[var(--base-white)]
                     sm:px-2
                     sm:py-4
                     sm:text-[13px]
@@ -1001,7 +1001,7 @@ function BloodBankTableSection({
                 min-w-0
                 border-b
                 border-[var(--color-border-light)]
-                bg-[var(--color-surface-alt)]
+                bg-[#f7f7f8]
                 px-2
                 py-4
                 sm:px-4
@@ -1013,10 +1013,11 @@ function BloodBankTableSection({
                   w-full
                   min-w-0
                   overflow-hidden
-                  rounded-lg
+                  rounded-xl
                   border
-                  border-[var(--color-border-light)]
+                  border-[#e7e7e9]
                   bg-white
+                  shadow-[0_5px_18px_rgba(0,0,0,0.07)]
                 "
               >
                 {/* NESTED TABLE HEADER */}
@@ -1028,8 +1029,8 @@ function BloodBankTableSection({
                     justify-between
                     gap-2
                     border-b
-                    border-[var(--color-border-light)]
-                    bg-[#fffafa]
+                    border-[#ffd9d9]
+                    bg-[#fff5f5]
                     px-3
                     py-3
                     sm:px-4
@@ -1044,10 +1045,10 @@ function BloodBankTableSection({
                     <span
                       className="
                         truncate
-                        text-[10px]
+                        text-[12px]
                         font-bold
                         text-[var(--color-text-body)]
-                        sm:text-[11px]
+                        sm:text-[13px]
                       "
                     >
                       Blood Availability
@@ -1073,6 +1074,7 @@ function BloodBankTableSection({
                     min-w-0
                     overflow-x-hidden
                     overflow-y-auto
+                    bg-white
                   "
                 >
                   <table
@@ -1086,8 +1088,8 @@ function BloodBankTableSection({
                       <tr
                         className="
                           border-b
-                          border-[var(--color-border-light)]
-                          bg-[var(--color-surface-alt)]
+                          border-[#e9e9eb]
+                          bg-[#f3f4f6]
                         "
                       >
                         <th
@@ -1098,11 +1100,11 @@ function BloodBankTableSection({
                             px-2
                             py-3
                             text-left
-                            text-[11px]
+                            text-[12px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[var(--color-text-secondary)]
+                            text-[#555555]
                             sm:px-4
                             sm:text-[13px]
                           "
@@ -1118,11 +1120,11 @@ function BloodBankTableSection({
                             px-2
                             py-3
                             text-left
-                            text-[11px]
+                            text-[12px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[var(--color-text-secondary)]
+                            text-[#555555]
                             sm:px-4
                             sm:text-[13px]
                           "
@@ -1138,11 +1140,11 @@ function BloodBankTableSection({
                             px-1
                             py-3
                             text-center
-                            text-[11px]
+                            text-[12px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[var(--color-text-secondary)]
+                            text-[#555555]
                             sm:px-3
                             sm:text-[13px]
                           "
@@ -1158,11 +1160,11 @@ function BloodBankTableSection({
                             px-1
                             py-3
                             text-center
-                            text-[11px]
+                            text-[12px]
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[var(--color-text-secondary)]
+                            text-[#555555]
                             sm:px-3
                             sm:text-[13px]
                           "
@@ -1213,11 +1215,11 @@ function BloodBankTableSection({
                                 break-words
                                 px-2
                                 py-3
-                                text-[11px]
+                                text-[12px]
                                 font-medium
                                 uppercase
                                 leading-4
-                                text-[var(--color-text-secondary)]
+                                text-[#555555]
                                 sm:px-4
                                 sm:text-[13px]
                               "
@@ -1230,9 +1232,9 @@ function BloodBankTableSection({
                             <div className="flex flex-col items-center justify-center">
                               <span
                                 className="
-                                    text-[10px]
+                                    text-[12px]
                                     font-bold
-                                    text-[var(--color-text-body)]
+                                    text-[#222222]
                                     sm:text-[12px]
                                   "
                               >
@@ -1459,10 +1461,10 @@ function BloodBankCard({
       </div>
 
       {expanded && (
-        <div className="border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-4">
+        <div className="border-t border-[#e7e7e9] bg-[#f7f7f8] px-4 py-4 shadow-[inset_0_1px_0_rgba(0,0,0,0.02)]">
           <div className="mb-3 flex items-center gap-2">
             <Droplets size={15} className="text-[var(--color-primary)]" />
-            <span className="text-[12px] font-bold text-[var(--color-text-body)]">
+            <span className="text-[12px] font-bold text-[#222222]">
               Blood Availability
             </span>
           </div>
@@ -1478,10 +1480,11 @@ function BloodBankCard({
                   gap-3
                   rounded-lg
                   border
-                  border-[var(--color-border-lighter)]
+                  border-[#e7e7e9]
                   bg-white
                   px-3.5
                   py-3
+                  shadow-[0_2px_10px_rgba(0,0,0,0.04)]
                 "
               >
                 <div className="flex min-w-0 items-center gap-3">
