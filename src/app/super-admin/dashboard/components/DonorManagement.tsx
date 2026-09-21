@@ -307,11 +307,11 @@ export function DonorManagement() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[10px] text-[var(--color-text-placeholder)]">
+                    <p className="text-[11px] text-[var(--color-text-placeholder)]">
                       S.No {index + 1}
                     </p>
 
-                    <h3 className="truncate text-[15px] font-bold text-[var(--color-text-body)]">
+                    <h3 className="break-words text-[15px] font-bold text-[var(--color-text-body)]">
                       {donor.donorName}
                     </h3>
                   </div>
@@ -394,7 +394,7 @@ function BloodGroupBadge({ value }: { value: string }) {
 function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
         {label}
       </p>
 
@@ -423,7 +423,7 @@ function MobileInfoRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-[var(--color-text-placeholder)]">
+        <p className="text-[11px] font-semibold text-[var(--color-text-placeholder)]">
           {label}
         </p>
 

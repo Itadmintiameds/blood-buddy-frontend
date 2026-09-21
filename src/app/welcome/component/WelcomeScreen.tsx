@@ -12,13 +12,13 @@ import LanguageSelector from "@/app/components/common/LanguageSelector";
 export function WelcomeScreen() {
   return (
     <ScreenShell>
-      <main className="flex h-[100dvh] w-full flex-col overflow-hidden bg-white">
+      <main className="flex min-h-[100dvh] w-full flex-col bg-white lg:h-[100dvh] lg:overflow-hidden">
         <div className="shrink-0">
           <BrandHeader />
         </div>
 
-        <section className="min-h-0 flex-1 overflow-hidden bg-white">
-          <div className="flex h-full w-full flex-col lg:flex-row">
+        <section className="min-h-0 flex-1 bg-white lg:overflow-hidden">
+          <div className="flex w-full flex-col lg:h-full lg:flex-row">
             <div
               className="
                 relative
@@ -28,12 +28,12 @@ export function WelcomeScreen() {
                 flex-1
                 items-center
                 justify-center
-                overflow-hidden
                 bg-[#fffafa]
                 px-5
-                py-4
+                py-6
                 shadow-[4px_0_18px_rgba(0,0,0,0.08)]
                 sm:px-8
+                lg:overflow-hidden
                 lg:px-10
                 lg:py-5
                 xl:px-14
@@ -105,7 +105,7 @@ export function WelcomeScreen() {
                   className="
                     mt-3
                     text-center
-                    text-[15px]
+                    text-[20px]
                     font-semibold
                     leading-[1.15]
                     tracking-[-0.2px]
@@ -128,13 +128,13 @@ export function WelcomeScreen() {
                     mt-2
                     max-w-[390px]
                     text-center
-                    text-[10px]
-                    leading-4
+                    text-[13px]
+                    leading-5
                     text-[#777777]
                     sm:mt-2.5
-                    sm:text-[11px]
-                    sm:leading-5
-                    md:text-[12px]
+                    sm:text-[14px]
+                    sm:leading-relaxed
+                    md:text-[15px]
                   "
                 >
                   A simple and reliable platform connecting blood centres,
@@ -148,10 +148,10 @@ export function WelcomeScreen() {
                     flex
                     items-center
                     gap-2
-                    text-[9px]
+                    text-[12px]
                     text-[#888888]
                     sm:mt-4
-                    sm:text-[10px]
+                    sm:text-[13px]
                   "
                 >
                   <span className="h-px w-5 bg-[#dddddd]" />
@@ -173,12 +173,13 @@ export function WelcomeScreen() {
                 flex-1
                 items-center
                 justify-center
-                overflow-hidden
                 bg-white
                 px-6
-                py-4
+                py-6
                 sm:px-10
+                lg:overflow-hidden
                 lg:px-10
+                lg:py-4
                 xl:px-14
               "
             >
@@ -240,10 +241,10 @@ export function WelcomeScreen() {
                     mt-1
                     mb-5
                     text-center
-                    text-[10px]
-                    leading-4
+                    text-[13px]
+                    leading-5
                     text-[#888888]
-                    sm:text-[11px]
+                    sm:text-[14px]
                   "
                 >
                   Manage blood availability with ease
@@ -299,7 +300,9 @@ export function WelcomeScreen() {
                     className="
                       !inline-block
                       !text-[#FF3B3B]
-                      text-[11px]
+                      px-2
+                      py-2
+                      text-[13px]
                       font-semibold
                       !underline
                       !decoration-[#FF3B3B]
@@ -309,7 +312,7 @@ export function WelcomeScreen() {
                       duration-200
                       hover:!text-[#FF3B3B]
                       hover:!decoration-[#FF3B3B]
-                      sm:text-[12px]
+                      sm:text-[14px]
                     "
                     style={{
                       color: "#FF3B3B",
@@ -325,7 +328,7 @@ export function WelcomeScreen() {
                   <div className="flex items-center gap-2.5">
                     <div className="h-px flex-1 bg-[#eeeeee]" />
 
-                    <span className="text-[8px] text-[#aaaaaa]">
+                    <span className="text-[11px] tracking-wider text-[#999999]">
                       SECURE ACCESS
                     </span>
 
@@ -334,12 +337,12 @@ export function WelcomeScreen() {
 
                   <div className="mt-2 flex items-center justify-center gap-1.5">
                     <ShieldCheck
-                      size={12}
+                      size={14}
                       strokeWidth={1.7}
-                      className="text-[#FF3B3B]"
+                      className="shrink-0 text-[#FF3B3B]"
                     />
 
-                    <span className="text-[9px] text-[#888888]">
+                    <span className="text-[12px] text-[#888888]">
                       Authorized access for registered users
                     </span>
                   </div>

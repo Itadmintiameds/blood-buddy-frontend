@@ -289,7 +289,7 @@ export function RecipientManagement() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[10px] text-[var(--color-text-placeholder)]">
+                    <p className="text-[11px] text-[var(--color-text-placeholder)]">
                       S.No {index + 1}
                     </p>
 
@@ -913,7 +913,7 @@ function MobileInfoRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-[var(--color-text-placeholder)]">
+        <p className="text-[11px] font-semibold text-[var(--color-text-placeholder)]">
           {label}
         </p>
 

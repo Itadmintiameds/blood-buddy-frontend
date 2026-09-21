@@ -140,17 +140,17 @@ export function SuperAdminLoginScreen() {
           {error && (
             <p
               role="alert"
-              className="mt-2 px-1 text-[10px] leading-4 text-red-500"
+              className="mt-2 px-1 text-[12px] leading-4 text-red-500"
             >
               {error}
             </p>
           )}
 
-          <div className="mt-3 text-center text-[11px]">
+          <div className="mt-3 text-center text-[13px]">
             <button
               type="button"
               onClick={() => router.push("/welcome")}
-              className="text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
+              className="px-2 py-2 text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
             >
               Back to Welcome
             </button>
