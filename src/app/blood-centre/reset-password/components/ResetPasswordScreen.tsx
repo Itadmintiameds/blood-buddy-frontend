@@ -1,29 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MessageSquare } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
+import { FormInput } from "@/app/components/ui/FormInput";
 import {
-  resendOtp,
-  verifyOtp,
-  registerBloodCentre,
+  forgotPassword,
+  resetPassword,
 } from "@/services/bloodCenter/bloodCenter.service";
-import {
-  clearPendingRegistration,
-  getPendingRegistration,
-} from "@/services/bloodCenter/registrationStorage";
 import { getApiErrorMessage } from "@/services/api/client";
-import { OtpVerificationSuccessModal } from "./OtpVerificationSuccessModal";
+import { ResetPasswordSuccessModal } from "./ResetPasswordSuccessModal";
 
-export function OtpVerificationScreen() {
+export function ResetPasswordScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const email = searchParams.get("email") || "";
+
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [seconds, setSeconds] = useState(30);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,7 +62,7 @@ export function OtpVerificationScreen() {
     setPoppedIndex(index);
 
     if (index < 5) {
-      document.getElementById(`otp-${index + 1}`)?.focus();
+      document.getElementById(`reset-otp-${index + 1}`)?.focus();
     }
   };
 
@@ -72,68 +71,69 @@ export function OtpVerificationScreen() {
     event: React.KeyboardEvent<HTMLInputElement>,
   ) => {
     if (event.key === "Backspace" && !otp[index] && index > 0) {
-      document.getElementById(`otp-${index - 1}`)?.focus();
+      document.getElementById(`reset-otp-${index - 1}`)?.focus();
     }
 
     if (event.key === "ArrowLeft" && index > 0) {
-      document.getElementById(`otp-${index - 1}`)?.focus();
+      document.getElementById(`reset-otp-${index - 1}`)?.focus();
     }
 
     if (event.key === "ArrowRight" && index < 5) {
-      document.getElementById(`otp-${index + 1}`)?.focus();
+      document.getElementById(`reset-otp-${index + 1}`)?.focus();
     }
   };
 
-  // Verify OTP, then complete the registration that was deferred until the
-  // email was confirmed (backend rejects registration until the OTP is verified).
   const submit = async () => {
-    const value = otp.join("");
+    if (loading) {
+      return;
+    }
 
-    if (!/^\d{6}$/.test(value)) {
+    const otpValue = otp.join("");
+
+    setError("");
+
+    if (!email) {
+      setError("Email is missing. Please restart the forgot password flow.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(otpValue)) {
       setError("Enter the 6-digit OTP");
       return;
     }
 
-    if (!email) {
-      setError("Email is missing. Please register again.");
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
 
-    setError("");
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await verifyOtp({ email, otp: value });
+      await resetPassword({ email, otp: otpValue, newPassword });
 
-      const pending = getPendingRegistration();
-
-      if (!pending) {
-        throw new Error(
-          "Your registration details were not found. Please register again.",
-        );
-      }
-
-      await registerBloodCentre(pending);
-
-      clearPendingRegistration();
       setShowSuccessModal(true);
     } catch (error) {
-      console.error("Verify OTP / registration error:", error);
+      console.error("Reset password error:", error);
 
-      setError(getApiErrorMessage(error, "Invalid OTP. Please try again."));
+      setError(getApiErrorMessage(error, "Unable to reset password. Please try again."));
     } finally {
       setLoading(false);
     }
   };
 
-  // Resend OTP
   const handleResendOtp = async () => {
     if (seconds > 0 || resendLoading) {
       return;
     }
 
     if (!email) {
-      setError("Email is missing. Please register again.");
+      setError("Email is missing. Please restart the forgot password flow.");
       return;
     }
 
@@ -141,12 +141,12 @@ export function OtpVerificationScreen() {
     setResendLoading(true);
 
     try {
-      await resendOtp(email);
+      await forgotPassword({ email });
 
       setOtp(["", "", "", "", "", ""]);
       setSeconds(30);
 
-      document.getElementById("otp-0")?.focus();
+      document.getElementById("reset-otp-0")?.focus();
     } catch (error) {
       console.error("Resend OTP error:", error);
 
@@ -156,20 +156,35 @@ export function OtpVerificationScreen() {
     }
   };
 
-  // Success → Login
   const handleSuccessConfirm = () => {
     setShowSuccessModal(false);
 
     router.replace("/blood-centre/login");
   };
 
+  const handleNewPasswordChange = (value: string) => {
+    setNewPassword(value);
+
+    if (error) {
+      setError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (value: string) => {
+    setConfirmPassword(value);
+
+    if (error) {
+      setError("");
+    }
+  };
+
   return (
     <>
       <ScreenShell>
         <BrandHeader
-          title="Verify Email Address"
+          title="Reset Password"
           showBackButton
-          backHref="/blood-centre/register"
+          backHref="/blood-centre/forgot-password"
         />
 
         <main className="w-full bg-white">
@@ -201,8 +216,8 @@ export function OtpVerificationScreen() {
                 shadow-sm
               "
             >
-              <MessageSquare
-                size={30}
+              <LockKeyhole
+                size={26}
                 strokeWidth={1.5}
                 className="text-[var(--color-primary)]"
               />
@@ -218,7 +233,7 @@ export function OtpVerificationScreen() {
                 md:text-[22px]
               "
             >
-              Verify your email address
+              Reset your password
             </h1>
 
             <p
@@ -232,7 +247,7 @@ export function OtpVerificationScreen() {
                 md:text-[14px]
               "
             >
-              We just sent a verification code to your email
+              Enter the OTP sent to your email and choose a new password
             </p>
 
             {email && (
@@ -249,7 +264,7 @@ export function OtpVerificationScreen() {
               {otp.map((digit, index) => (
                 <input
                   key={index}
-                  id={`otp-${index}`}
+                  id={`reset-otp-${index}`}
                   value={digit}
                   type="text"
                   maxLength={1}
@@ -288,22 +303,7 @@ export function OtpVerificationScreen() {
               ))}
             </div>
 
-            {error && (
-              <p
-                role="alert"
-                className="
-                  mt-2
-                  text-center
-                  text-[12px]
-                  leading-4
-                  text-red-500
-                "
-              >
-                {error}
-              </p>
-            )}
-
-            <div className="mt-4 text-center text-[13px] text-[var(--color-text-secondary)]">
+            <div className="mt-3 text-center text-[13px] text-[var(--color-text-secondary)]">
               Didn&apos;t receive the OTP?{" "}
               <button
                 type="button"
@@ -322,10 +322,57 @@ export function OtpVerificationScreen() {
               </button>
             </div>
 
-            <div className="mt-10 flex w-full justify-center">
+            <div className="mt-6 w-full max-w-[320px] md:max-w-[300px]">
+              <div className="mb-2.5">
+                <FormInput
+                  id="newPassword"
+                  name="newPassword"
+                  icon={LockKeyhole}
+                  label="New Password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Enter new password"
+                  value={newPassword}
+                  onChange={(event) =>
+                    handleNewPasswordChange(event.target.value)
+                  }
+                />
+              </div>
+
+              <FormInput
+                id="confirmPassword"
+                name="confirmPassword"
+                icon={LockKeyhole}
+                label="Confirm Password"
+                type="password"
+                autoComplete="new-password"
+                placeholder="Re-enter new password"
+                value={confirmPassword}
+                onChange={(event) =>
+                  handleConfirmPasswordChange(event.target.value)
+                }
+              />
+            </div>
+
+            {error && (
+              <p
+                role="alert"
+                className="
+                  mt-3
+                  text-center
+                  text-[12px]
+                  leading-4
+                  text-red-500
+                "
+              >
+                {error}
+              </p>
+            )}
+
+            <div className="mt-8 flex w-full justify-center">
               <div className="w-full max-w-[320px] md:max-w-[300px]">
                 <AppButton type="button" loading={loading} onClick={submit}>
-                  Verify OTP
+                  Reset Password
                 </AppButton>
               </div>
             </div>
@@ -333,7 +380,7 @@ export function OtpVerificationScreen() {
         </main>
       </ScreenShell>
 
-      <OtpVerificationSuccessModal
+      <ResetPasswordSuccessModal
         open={showSuccessModal}
         onConfirm={handleSuccessConfirm}
       />

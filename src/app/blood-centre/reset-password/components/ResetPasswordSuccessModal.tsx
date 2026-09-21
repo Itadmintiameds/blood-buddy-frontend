@@ -3,15 +3,15 @@
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { CheckCircle2 } from "lucide-react";
 
-interface OtpVerificationSuccessModalProps {
+interface ResetPasswordSuccessModalProps {
   open: boolean;
   onConfirm: () => void;
 }
 
-export function OtpVerificationSuccessModal({
+export function ResetPasswordSuccessModal({
   open,
   onConfirm,
-}: OtpVerificationSuccessModalProps) {
+}: ResetPasswordSuccessModalProps) {
   const { rendered, visible } = useExitTransition(open, 200);
 
   if (!rendered) {
@@ -37,7 +37,7 @@ export function OtpVerificationSuccessModal({
       `}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="otp-success-title"
+      aria-labelledby="reset-password-success-title"
     >
       <div
         className={`
@@ -87,7 +87,7 @@ export function OtpVerificationSuccessModal({
 
         {/* Title */}
         <h2
-          id="otp-success-title"
+          id="reset-password-success-title"
           className="
             text-[18px]
             font-semibold
@@ -96,7 +96,7 @@ export function OtpVerificationSuccessModal({
             text-[var(--color-text-primary)]
           "
         >
-          Registration Complete
+          Password Reset
         </h2>
 
         {/* Message */}
@@ -108,8 +108,7 @@ export function OtpVerificationSuccessModal({
             text-[var(--color-text-muted)]
           "
         >
-          Your email has been verified and your Blood Centre account has been
-          created.
+          Your password has been reset successfully.
         </p>
 
         <p
@@ -120,7 +119,7 @@ export function OtpVerificationSuccessModal({
             text-[var(--color-text-muted)]
           "
         >
-          You can now continue to login.
+          You can now login with your new password.
         </p>
 
         {/* OK Button */}

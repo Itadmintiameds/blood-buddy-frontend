@@ -7,12 +7,8 @@ import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
-import {
-  getSuperAdminSession,
-  saveAuthSession,
-} from "@/services/auth/authStorage";
-import { getApiErrorMessage } from "@/utils/api";
-import { loginSuperAdmin } from "@/services/bloodCenter/superAdmin/superAdminService";
+import { getSuperAdminSession } from "@/services/auth/authStorage";
+import { loginCommon } from "@/services/bloodCenter/commonLoginService";
 
 export function SuperAdminLoginScreen() {
   const router = useRouter();
@@ -65,37 +61,21 @@ export function SuperAdminLoginScreen() {
     setLoading(true);
 
     try {
-      const response = await loginSuperAdmin({
-        email: cleanEmail,
-        password,
-      });
+      const result = await loginCommon(cleanEmail, password);
 
-      if (
-        !response ||
-        !response.id ||
-        !response.email ||
-        !response.accessToken ||
-        String(response.role).toUpperCase() !== "SUPERADMIN"
-      ) {
-        throw new Error("Invalid Super Admin login response.");
+      if (result.userType !== "SUPER_ADMIN") {
+        throw new Error("This login is for Super Admin accounts only.");
       }
-
-      saveAuthSession({
-        isLoggedIn: true,
-        userType: "SUPER_ADMIN",
-        id: Number(response.id),
-        name: response.name,
-        email: response.email,
-        role: "SUPERADMIN",
-        accessToken: response.accessToken,
-        loggedInAt: new Date().toISOString(),
-      });
 
       router.replace("/blood-centre/super-admin/dashboard");
     } catch (loginError) {
       console.error("Super Admin Login Error:", loginError);
 
-      setError(getApiErrorMessage(loginError, "Invalid email or password."));
+      setError(
+        loginError instanceof Error
+          ? loginError.message
+          : "Invalid email or password.",
+      );
     } finally {
       setLoading(false);
     }

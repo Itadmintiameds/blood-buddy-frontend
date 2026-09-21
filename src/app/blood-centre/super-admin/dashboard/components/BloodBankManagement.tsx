@@ -10,12 +10,14 @@ import {
   Loader2,
   Pencil,
   Plus,
+  PlusCircle,
   Search,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { SuperAdminBloodBank } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
+  addStockToCentre,
   getSuperAdminBloodBanks,
   updateSuperAdminBloodUnits,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
@@ -39,6 +41,18 @@ export default function BloodBankManagement() {
   const [units, setUnits] = useState("");
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
+
+  const [addStockModalOpen, setAddStockModalOpen] = useState(false);
+  const [addStockBank, setAddStockBank] = useState<SuperAdminBloodBank | null>(
+    null,
+  );
+  const [addStockAvailabilityId, setAddStockAvailabilityId] = useState<
+    number | null
+  >(null);
+  const [addStockUnits, setAddStockUnits] = useState("");
+  const [addStockRemarks, setAddStockRemarks] = useState("");
+  const [addStockSaving, setAddStockSaving] = useState(false);
+  const [addStockError, setAddStockError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -231,6 +245,92 @@ export default function BloodBankManagement() {
       setFormError("Unable to update units. Please try again.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openAddStockModal = (
+    bank: SuperAdminBloodBank,
+    availabilityId: number,
+  ) => {
+    setAddStockBank(bank);
+    setAddStockAvailabilityId(availabilityId);
+    setAddStockUnits("");
+    setAddStockRemarks("");
+    setAddStockError("");
+    setAddStockModalOpen(true);
+  };
+
+  const closeAddStockModal = () => {
+    if (addStockSaving) {
+      return;
+    }
+
+    setAddStockModalOpen(false);
+  };
+
+  const submitAddStock = async () => {
+    if (!addStockBank || addStockAvailabilityId === null) {
+      return;
+    }
+
+    const availability = addStockBank.availability.find(
+      (item) => item?.id === addStockAvailabilityId,
+    );
+
+    if (!availability) {
+      setAddStockError("Unable to find this stock entry. Please try again.");
+      return;
+    }
+
+    if (!addStockUnits.trim()) {
+      setAddStockError("Enter units to add.");
+      return;
+    }
+
+    const parsedUnits = Number(addStockUnits);
+
+    if (!Number.isInteger(parsedUnits) || parsedUnits < 1) {
+      setAddStockError("Enter a whole number of at least 1.");
+      return;
+    }
+
+    try {
+      setAddStockSaving(true);
+      setAddStockError("");
+
+      await addStockToCentre({
+        bloodCentreId: addStockBank.id,
+        bloodGroupId: availability.bloodGroupId,
+        bloodComponentId: availability.bloodComponentId,
+        units: parsedUnits,
+        remarks: addStockRemarks.trim() || undefined,
+      });
+
+      setBloodBanks((currentBanks) =>
+        currentBanks.map((bank) => {
+          if (bank?.id !== addStockBank.id) {
+            return bank;
+          }
+
+          return {
+            ...bank,
+            availability: bank.availability.map((item) => {
+              if (item?.id !== addStockAvailabilityId) {
+                return item;
+              }
+
+              return { ...item, units: item.units + parsedUnits };
+            }),
+          };
+        }),
+      );
+
+      setAddStockModalOpen(false);
+    } catch (err) {
+      console.error("Add stock error:", err);
+      setAddStockError("Unable to add stock. Please try again.");
+    } finally {
+      setAddStockSaving(false);
     }
   };
 
@@ -706,6 +806,9 @@ export default function BloodBankManagement() {
                       onUpdate={(availabilityId) =>
                         openUpdateModal(bank, availabilityId)
                       }
+                      onAddStock={(availabilityId) =>
+                        openAddStockModal(bank, availabilityId)
+                      }
                     />
                   );
                 })}
@@ -780,6 +883,9 @@ export default function BloodBankManagement() {
               onUpdate={(availabilityId) =>
                 openUpdateModal(bank, availabilityId)
               }
+              onAddStock={(availabilityId) =>
+                openAddStockModal(bank, availabilityId)
+              }
             />
           ))}
       </div>
@@ -798,6 +904,23 @@ export default function BloodBankManagement() {
           onSave={saveUnits}
         />
       )}
+
+      {/* ADD STOCK MODAL */}
+      {addStockBank && (
+        <AddStockModal
+          open={addStockModalOpen}
+          bank={addStockBank}
+          availabilityId={addStockAvailabilityId}
+          units={addStockUnits}
+          setUnits={setAddStockUnits}
+          remarks={addStockRemarks}
+          setRemarks={setAddStockRemarks}
+          error={addStockError}
+          saving={addStockSaving}
+          onClose={closeAddStockModal}
+          onSave={submitAddStock}
+        />
+      )}
     </section>
   );
 }
@@ -809,12 +932,14 @@ function BloodBankTableSection({
   expanded,
   onToggle,
   onUpdate,
+  onAddStock,
 }: {
   bank: SuperAdminBloodBank;
   index: number;
   expanded: boolean;
   onToggle: () => void;
   onUpdate: (availabilityId: number) => void;
+  onAddStock: (availabilityId: number) => void;
 }) {
   return (
     <>
@@ -1169,7 +1294,7 @@ function BloodBankTableSection({
                             sm:text-[13px]
                           "
                         >
-                          Update
+                          Actions
                         </th>
                       </tr>
                     </thead>
@@ -1253,41 +1378,77 @@ function BloodBankTableSection({
                             </div>
                           </td>
 
-                          {/* UPDATE */}
+                          {/* UPDATE / ADD STOCK */}
                           <td className="px-1 py-3 text-center sm:px-3">
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
 
-                                onUpdate(availability.id);
-                              }}
-                              className="
-                                  inline-flex
-                                  h-7
-                                  w-7
-                                  items-center
-                                  justify-center
-                                  rounded-lg
-                                  border
-                                  border-[var(--color-border-lighter)]
-                                  bg-white
-                                  text-[var(--color-text-muted)]
-                                  shadow-sm
-                                  transition-all
-                                  duration-200
-                                  hover:-translate-y-[1px]
-                                  hover:border-[#ffcccc]
-                                  hover:bg-[var(--color-icon-bg-soft)]
-                                  hover:text-[var(--color-primary)]
-                                  active:translate-y-0
-                                  sm:h-8
-                                  sm:w-8
-                                "
-                              aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
-                            >
-                              <Pencil size={12} />
-                            </button>
+                                  onAddStock(availability.id);
+                                }}
+                                className="
+                                    inline-flex
+                                    h-7
+                                    w-7
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    border
+                                    border-[var(--color-border-lighter)]
+                                    bg-white
+                                    text-[var(--color-text-muted)]
+                                    shadow-sm
+                                    transition-all
+                                    duration-200
+                                    hover:-translate-y-[1px]
+                                    hover:border-[#c9e8d1]
+                                    hover:bg-[var(--color-success-bg)]
+                                    hover:text-[var(--color-success)]
+                                    active:translate-y-0
+                                    sm:h-8
+                                    sm:w-8
+                                  "
+                                aria-label={`Add stock for ${availability?.bloodGroup} ${availability?.bloodType}`}
+                              >
+                                <PlusCircle size={12} />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+
+                                  onUpdate(availability.id);
+                                }}
+                                className="
+                                    inline-flex
+                                    h-7
+                                    w-7
+                                    items-center
+                                    justify-center
+                                    rounded-lg
+                                    border
+                                    border-[var(--color-border-lighter)]
+                                    bg-white
+                                    text-[var(--color-text-muted)]
+                                    shadow-sm
+                                    transition-all
+                                    duration-200
+                                    hover:-translate-y-[1px]
+                                    hover:border-[#ffcccc]
+                                    hover:bg-[var(--color-icon-bg-soft)]
+                                    hover:text-[var(--color-primary)]
+                                    active:translate-y-0
+                                    sm:h-8
+                                    sm:w-8
+                                  "
+                                aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
+                              >
+                                <Pencil size={12} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1327,12 +1488,14 @@ function BloodBankCard({
   expanded,
   onToggle,
   onUpdate,
+  onAddStock,
 }: {
   bank: SuperAdminBloodBank;
   index: number;
   expanded: boolean;
   onToggle: () => void;
   onUpdate: (availabilityId: number) => void;
+  onAddStock: (availabilityId: number) => void;
 }) {
   return (
     <div
@@ -1516,35 +1679,67 @@ function BloodBankCard({
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => onUpdate(availability?.id)}
-                  className="
-                    flex
-                    h-9
-                    w-9
-                    shrink-0
-                    items-center
-                    justify-center
-                    rounded-lg
-                    border
-                    border-[var(--color-border-lighter)]
-                    bg-white
-                    text-[var(--color-text-tertiary)]
-                    shadow-sm
-                    transition-all
-                    duration-200
-                    hover:border-[#ffcccc]
-                    hover:bg-[var(--color-icon-bg-soft)]
-                    hover:text-[var(--color-primary)]
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-[var(--color-primary)]
-                  "
-                  aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
-                >
-                  <Pencil size={14} />
-                </button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onAddStock(availability.id)}
+                    className="
+                      flex
+                      h-9
+                      w-9
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-lg
+                      border
+                      border-[var(--color-border-lighter)]
+                      bg-white
+                      text-[var(--color-text-tertiary)]
+                      shadow-sm
+                      transition-all
+                      duration-200
+                      hover:border-[#c9e8d1]
+                      hover:bg-[var(--color-success-bg)]
+                      hover:text-[var(--color-success)]
+                      focus-visible:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-[var(--color-primary)]
+                    "
+                    aria-label={`Add stock for ${availability?.bloodGroup} ${availability?.bloodType}`}
+                  >
+                    <PlusCircle size={14} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onUpdate(availability.id)}
+                    className="
+                      flex
+                      h-9
+                      w-9
+                      shrink-0
+                      items-center
+                      justify-center
+                      rounded-lg
+                      border
+                      border-[var(--color-border-lighter)]
+                      bg-white
+                      text-[var(--color-text-tertiary)]
+                      shadow-sm
+                      transition-all
+                      duration-200
+                      hover:border-[#ffcccc]
+                      hover:bg-[var(--color-icon-bg-soft)]
+                      hover:text-[var(--color-primary)]
+                      focus-visible:outline-none
+                      focus-visible:ring-2
+                      focus-visible:ring-[var(--color-primary)]
+                    "
+                    aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
+                  >
+                    <Pencil size={14} />
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -2055,6 +2250,320 @@ function UpdateUnitsModal({
             {saving && <Loader2 size={14} className="animate-spin" />}
 
             {saving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ADD STOCK MODAL
+function AddStockModal({
+  open,
+  bank,
+  availabilityId,
+  units,
+  setUnits,
+  remarks,
+  setRemarks,
+  error,
+  saving,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  bank: SuperAdminBloodBank;
+  availabilityId: number | null;
+  units: string;
+  setUnits: (value: string) => void;
+  remarks: string;
+  setRemarks: (value: string) => void;
+  error: string;
+  saving: boolean;
+  onClose: () => void;
+  onSave: () => void;
+}) {
+  const { rendered, visible } = useExitTransition(open, 200);
+
+  const availability = bank?.availability.find(
+    (item) => item?.id === availabilityId,
+  );
+
+  if (!rendered || !availability) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`
+        motion-scrim
+        fixed
+        inset-0
+        z-[100]
+        flex
+        items-center
+        justify-center
+        bg-black/45
+        px-4
+        backdrop-blur-md
+        transition-opacity
+        duration-200
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-stock-title"
+    >
+      <div
+        className={`
+          motion-surface
+          flex
+          max-h-[90vh]
+          w-full
+          max-w-[430px]
+          flex-col
+          overflow-hidden
+          rounded-2xl
+          bg-white
+          shadow-[0_25px_70px_rgba(0,0,0,0.18)]
+          transition-[transform,opacity]
+          duration-200
+          ${
+            visible
+              ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+              : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+          }
+        `}
+      >
+        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-success-bg)]">
+                <PlusCircle size={17} className="text-[var(--color-success)]" />
+              </div>
+
+              <div className="min-w-0">
+                <h2
+                  id="add-stock-title"
+                  className="text-[14px] font-bold text-[var(--color-text-primary)]"
+                >
+                  Add Stock
+                </h2>
+
+                <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
+                  Add units to this centre&apos;s inventory
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="
+              flex
+              h-8
+              w-8
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              text-[var(--color-text-placeholder-alt)]
+              transition
+              hover:bg-[var(--color-surface-hover)]
+              hover:text-[var(--color-text-secondary)]
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+            "
+            aria-label="Close"
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto px-5 py-5">
+          <div className="rounded-xl border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] p-4">
+            <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--color-text-placeholder-alt)]">
+              Blood Bank
+            </p>
+
+            <p className="mt-1 break-words text-[12px] font-bold text-[var(--color-text-body)]">
+              {bank.bloodBankName}
+            </p>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="min-w-0 rounded-lg border border-[var(--color-border-lighter)] p-3">
+              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
+                Blood Group
+              </p>
+
+              <p className="mt-1 text-[13px] font-bold text-[var(--color-primary)]">
+                {availability?.bloodGroup}
+              </p>
+            </div>
+
+            <div className="min-w-0 rounded-lg border border-[var(--color-border-lighter)] p-3">
+              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
+                Blood Type
+              </p>
+
+              <p className="mt-1 break-words text-[11px] font-bold uppercase leading-4 text-[var(--color-text-secondary)]">
+                {availability?.bloodType}
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]">
+            Current stock:{" "}
+            <span className="font-bold text-[var(--color-text-body)]">
+              {availability?.units} units
+            </span>
+          </p>
+
+          <div className="mt-5">
+            <label
+              htmlFor="addStockUnits"
+              className="block text-[10px] font-semibold text-[var(--color-text-secondary)]"
+            >
+              Units to Add
+            </label>
+
+            <div className="relative mt-2">
+              <input
+                id="addStockUnits"
+                type="text"
+                inputMode="numeric"
+                value={units}
+                maxLength={4}
+                onChange={(event) => {
+                  const value = event.target.value
+                    .replace(/\D/g, "")
+                    .slice(0, 4);
+
+                  setUnits(value);
+                }}
+                disabled={saving}
+                className={`
+                  h-[44px]
+                  w-full
+                  rounded-lg
+                  border
+                  bg-white
+                  px-3
+                  pr-16
+                  text-[13px]
+                  font-semibold
+                  text-[var(--color-text-body)]
+                  outline-none
+                  transition
+                  focus:border-[var(--color-primary)]
+                  focus:ring-2
+                  focus:ring-[var(--color-primary)]/10
+
+                  ${error ? "border-red-400" : "border-[var(--color-border)]"}
+                `}
+              />
+
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-placeholder-alt)]">
+                Units
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label
+              htmlFor="addStockRemarks"
+              className="block text-[10px] font-semibold text-[var(--color-text-secondary)]"
+            >
+              Remarks (optional)
+            </label>
+
+            <textarea
+              id="addStockRemarks"
+              value={remarks}
+              disabled={saving}
+              onChange={(event) => setRemarks(event.target.value)}
+              rows={2}
+              className="
+                mt-2
+                w-full
+                resize-none
+                rounded-lg
+                border
+                border-[var(--color-border)]
+                bg-white
+                px-3
+                py-2.5
+                text-[13px]
+                text-[var(--color-text-body)]
+                outline-none
+                transition
+                focus:border-[var(--color-primary)]
+                focus:ring-2
+                focus:ring-[var(--color-primary)]/10
+              "
+            />
+          </div>
+
+          {error && (
+            <p role="alert" className="mt-3 text-[12px] text-red-500">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="
+              h-[40px]
+              flex-1
+              rounded-lg
+              border
+              border-[var(--color-border)]
+              bg-white
+              text-[11px]
+              font-semibold
+              text-[var(--color-text-quaternary)]
+              transition
+              hover:bg-[var(--color-surface-hover)]
+              disabled:cursor-not-allowed
+              disabled:opacity-50
+            "
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="
+              flex
+              h-[40px]
+              flex-1
+              items-center
+              justify-center
+              gap-2
+              rounded-lg
+              bg-[var(--color-primary)]
+              text-[11px]
+              font-semibold
+              text-white
+              shadow-[0_5px_15px_rgba(255,59,63,0.18)]
+              transition-all
+              hover:bg-[var(--color-dashboard-cta-hover)]
+              disabled:cursor-not-allowed
+              disabled:opacity-60
+            "
+          >
+            {saving && <Loader2 size={14} className="animate-spin" />}
+
+            {saving ? "Adding..." : "Add Stock"}
           </button>
         </div>
       </div>

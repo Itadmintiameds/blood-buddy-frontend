@@ -66,6 +66,8 @@ export interface LoginPayload {
 
 export interface BloodAvailabilityItem {
   id?: string | number;
+  bloodGroupId?: number;
+  bloodComponentId?: number;
   bloodGroup: string;
   bloodType: string;
   unitsAvailable: number;
@@ -79,15 +81,28 @@ export interface AddAvailabilityPayload {
   remarks?: string;
 }
 
-export interface ApiTextResponse {
-  success?: boolean;
-  message?: string;
+// bloodbuddy.backend.model.StockMovement
+export type StockMovement = "ADD" | "ISSUE" | "DISCARD" | "CORRECTION";
+
+// Sent to POST /inventory/stock-adjustment (bloodbuddy.backend.dto.inventory.StockAdjustmentRequest).
+export interface StockAdjustmentPayload {
+  bloodGroupId: number;
+  bloodComponentId: number;
+  movement: StockMovement;
+  changedUnits: number;
+  remarks?: string;
 }
 
-export interface PasswordResetPayload {
+// Sent to POST /auth/forgot-password (bloodbuddy.backend.dto.auth.ForgotPasswordRequest).
+export interface ForgotPasswordPayload {
   email: string;
+}
+
+// Sent to POST /auth/reset-password (bloodbuddy.backend.dto.auth.ResetPasswordRequest).
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
   newPassword: string;
-  confirmPassword: string;
 }
 
 /* ============================================================

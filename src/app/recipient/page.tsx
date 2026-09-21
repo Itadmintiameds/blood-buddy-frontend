@@ -1,5 +1,5 @@
-import { RecipientLoginScreen } from "@/app/recipient/components/RecipientLoginScreen";
+import { RecipientLandingScreen } from "@/app/recipient/components/RecipientLandingScreen";
 
 export default function RecipientPage() {
-  return <RecipientLoginScreen />;
+  return <RecipientLandingScreen />;
 }

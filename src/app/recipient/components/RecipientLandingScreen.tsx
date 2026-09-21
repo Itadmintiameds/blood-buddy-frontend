@@ -8,12 +8,12 @@ import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 
-export function DonorLandingScreen() {
+export function RecipientLandingScreen() {
   const router = useRouter();
 
   return (
     <ScreenShell>
-      <BrandHeader title="Donor Module" showBackButton backHref="/welcome" />
+      <BrandHeader title="Recipient Module" showBackButton backHref="/welcome" />
 
       <section className="flex min-h-[460px] flex-col items-center bg-white px-5 pb-10 pt-12">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)]">
@@ -25,19 +25,20 @@ export function DonorLandingScreen() {
         </div>
 
         <h1 className="mt-5 text-center text-[18px] font-semibold text-[var(--color-text-primary)]">
-          Become a Blood Donor
+          Need Blood?
         </h1>
 
         <p className="mt-2 max-w-[300px] text-center text-[13px] leading-5 text-[var(--color-text-tertiary)]">
-          Register as a donor to help save lives.
+          Submit a blood request and our team will help match it with a
+          nearby blood centre.
         </p>
 
         <div className="mt-8 w-full max-w-[320px] space-y-3">
           <AppButton
             type="button"
-            onClick={() => router.push("/donor/register")}
+            onClick={() => router.push("/recipient/register")}
           >
-            Register as Donor
+            Request Blood
           </AppButton>
         </div>
 

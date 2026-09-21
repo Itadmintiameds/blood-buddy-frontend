@@ -1,5 +1,5 @@
-import { ForgotPasswordScreen } from "./components/ForgotPasswordScreen";
+import { ForgotPasswordScreen } from "@/app/blood-centre/forgot-password/components/ForgotPasswordScreen";
 
-export default function ForgotPasswordPage() {
+export default function BloodCentreForgotPasswordPage() {
   return <ForgotPasswordScreen />;
 }

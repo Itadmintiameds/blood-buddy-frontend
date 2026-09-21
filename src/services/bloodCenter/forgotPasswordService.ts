@@ -1,28 +1,30 @@
 import { api } from "@/services/api/client";
+import type { ApiEnvelope } from "@/types/api.types";
 import type {
-  ApiTextResponse,
   ForgotPasswordPayload,
   ResetPasswordPayload,
 } from "@/types/bloodCenter/bloodCenterTypes";
 
-export async function sendForgotPasswordOtp(
+// Sends a one-time OTP to the given email so the account's password can be reset.
+export async function forgotPassword(
   payload: ForgotPasswordPayload,
-): Promise<ApiTextResponse> {
-  const { data } = await api.post<ApiTextResponse>(
+): Promise<string> {
+  const { data } = await api.post<ApiEnvelope<unknown>>(
     "/auth/forgot-password",
     payload,
   );
 
-  return data;
+  return data.message;
 }
 
+// Verifies the OTP sent to the email and sets the new password.
 export async function resetPassword(
   payload: ResetPasswordPayload,
-): Promise<ApiTextResponse> {
-  const { data } = await api.post<ApiTextResponse>(
+): Promise<string> {
+  const { data } = await api.post<ApiEnvelope<unknown>>(
     "/auth/reset-password",
     payload,
   );
 
-  return data;
+  return data.message;
 }

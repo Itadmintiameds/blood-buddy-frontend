@@ -1,6 +1,9 @@
 import { api } from "@/services/api/client";
 import type { ApiEnvelope } from "@/types/api.types";
-import type { BloodAvailabilityItem } from "@/types/bloodCenter/bloodCenterTypes";
+import type {
+  BloodAvailabilityItem,
+  StockAdjustmentPayload,
+} from "@/types/bloodCenter/bloodCenterTypes";
 
 interface InventoryResponse {
   inventoryId: number;
@@ -16,10 +19,15 @@ interface CentreInventoryResponse {
   inventory: InventoryResponse[];
 }
 
-// GET /inventory returns the caller's own centre stock (centre id comes from the JWT).
-export async function getAvailability(): Promise<BloodAvailabilityItem[]> {
-  const { data } =
-    await api.get<ApiEnvelope<CentreInventoryResponse>>("/inventory");
+// POST /inventory/stock-adjustment issues/discards/corrects the caller's own
+// centre stock (centre id comes from the JWT); returns the updated inventory.
+export async function adjustStock(
+  payload: StockAdjustmentPayload,
+): Promise<BloodAvailabilityItem[]> {
+  const { data } = await api.post<ApiEnvelope<CentreInventoryResponse>>(
+    "/inventory/stock-adjustment",
+    payload,
+  );
 
   return (data.data?.inventory ?? []).map((item) => ({
     id: item.inventoryId,

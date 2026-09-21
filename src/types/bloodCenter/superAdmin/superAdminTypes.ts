@@ -43,3 +43,63 @@ export interface SuperAdminDonor {
   lastBloodDonationDate: string | null;
   createdAt: string;
 }
+
+// Sent to POST /admin/blood-centres/{id}/inventory/add-availability
+// (bloodbuddy.backend.dto.inventory.AddAvailabilityRequest) — SUPERADMIN
+// adding stock directly to a specific centre.
+export interface AdminAddStockInput {
+  bloodCentreId: number;
+  bloodGroupId: number;
+  bloodComponentId: number;
+  units: number;
+  remarks?: string;
+}
+
+/* ============================================================
+   BLOOD REQUESTS (bloodbuddy.backend.controller.AdminBloodRequestController)
+============================================================ */
+
+export type BloodRequestStatus =
+  | "CENTRES_FOUND"
+  | "NO_CENTRES_FOUND"
+  | "CLOSED"
+  | "CANCELLED";
+
+// bloodbuddy.backend.dto.bloodrequest.BloodRequestSummaryResponse
+export interface SuperAdminBloodRequestSummary {
+  id: number;
+  recipientName: string;
+  mobileNumber: string;
+  bloodGroup: string;
+  bloodType: string;
+  units: number;
+  city: string;
+  district: string;
+  pincode: string;
+  status: BloodRequestStatus;
+  createdAt: string;
+}
+
+// Lightweight centre reference used inside a blood request's matched
+// centres list — full stock detail lives in Blood Bank Management.
+export interface SuperAdminBloodRequestCentre {
+  id: number;
+  bloodBankName: string;
+  category: string;
+  address: string;
+  city: string;
+  phoneNumber: string;
+}
+
+// bloodbuddy.backend.dto.bloodrequest.BloodRequestDetailResponse
+export interface SuperAdminBloodRequestDetail extends SuperAdminBloodRequestSummary {
+  bloodGroupId: number;
+  bloodComponentId: number;
+  dateOfBirth: string | null;
+  hospitalName: string | null;
+  address: string | null;
+  remarks: string | null;
+  matchedCentres: SuperAdminBloodRequestCentre[];
+  donatedBy: SuperAdminDonor[];
+  donorCandidates: SuperAdminDonor[];
+}

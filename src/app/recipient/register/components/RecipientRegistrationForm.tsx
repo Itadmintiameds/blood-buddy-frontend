@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  CalendarDays,
   ChevronDown,
   Droplets,
   Hospital,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
@@ -37,8 +38,6 @@ import type {
 
 export function RecipientRegistrationForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const prefillMobile = searchParams.get("mobile") || "";
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
@@ -50,10 +49,11 @@ export function RecipientRegistrationForm() {
 
   const defaultValues: RecipientRequestInput = {
     patientName: "",
-    mobileNumber: prefillMobile,
+    mobileNumber: "",
     bloodGroupId: "",
     bloodComponentId: "",
     requiredUnits: "",
+    dob: "",
     hospitalName: "",
     address: "",
     district: "",
@@ -122,6 +122,7 @@ export function RecipientRegistrationForm() {
         bloodGroupId: Number(data.bloodGroupId),
         bloodComponentId: Number(data.bloodComponentId),
         requiredUnits: Number(data.requiredUnits),
+        dob: data.dob,
         hospitalName: data.hospitalName || undefined,
         address: data.address || undefined,
         city: data.city,
@@ -145,7 +146,7 @@ export function RecipientRegistrationForm() {
 
   const handleSuccessConfirm = () => {
     setSuccessMessage(null);
-    router.push("/recipient/search");
+    router.push("/recipient");
   };
 
   return (
@@ -349,6 +350,17 @@ export function RecipientRegistrationForm() {
               },
             })}
             error={errors.requiredUnits?.message}
+          />
+
+          <FormInput
+            id="dob"
+            icon={CalendarDays}
+            label="Date of Birth"
+            type="date"
+            max={new Date().toISOString().slice(0, 10)}
+            autoComplete="bday"
+            {...register("dob")}
+            error={errors.dob?.message}
           />
 
           <FormInput

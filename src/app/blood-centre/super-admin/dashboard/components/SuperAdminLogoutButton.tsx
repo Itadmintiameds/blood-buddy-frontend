@@ -5,18 +5,21 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { logout } from "@/services/auth/authStorage";
+import { logoutServerSide } from "@/services/auth/authService";
 
 export function SuperAdminLogoutButton() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (loading) {
       return;
     }
 
     setLoading(true);
+
+    await logoutServerSide();
 
     // Remove Super Admin session
     logout();

@@ -24,6 +24,7 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAuthorized(true);
     setChecking(false);
   }, [router]);

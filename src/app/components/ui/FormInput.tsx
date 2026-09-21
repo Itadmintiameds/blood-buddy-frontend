@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import type { ComponentType, InputHTMLAttributes } from "react";
+import type { ComponentType, InputHTMLAttributes, ReactNode } from "react";
 import { forwardRef, useState } from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -15,6 +15,8 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   name?: string;
   label?: string;
+  /** Optional inline control (e.g. a "Send OTP" button) rendered inside the input box. */
+  rightElement?: ReactNode;
 }
 
 export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
@@ -28,6 +30,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       id,
       name,
       placeholder,
+      rightElement,
       ...props
     },
     ref,
@@ -158,6 +161,13 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             >
               {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
             </button>
+          )}
+
+          {/* OPTIONAL INLINE ACTION (e.g. Send OTP) */}
+          {rightElement && (
+            <div className="ml-2 flex shrink-0 items-center">
+              {rightElement}
+            </div>
           )}
         </div>
 

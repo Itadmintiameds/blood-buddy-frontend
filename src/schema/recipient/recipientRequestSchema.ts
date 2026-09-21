@@ -5,6 +5,18 @@ function isValidIndianMobile(value: string) {
   return /^[6-9]\d{9}$/.test(value);
 }
 
+function parseIsoDate(value: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function isNotFutureDate(value: string): boolean {
+  const date = parseIsoDate(value);
+  if (!date) return false;
+  return date.getTime() <= Date.now();
+}
+
 export const recipientRequestSchema = z.object({
   patientName: z
     .string()
@@ -32,6 +44,12 @@ export const recipientRequestSchema = z.object({
     .refine((value) => Number(value) >= 1 && Number(value) <= 999, {
       message: "Enter units between 1 and 999",
     }),
+  dob: z
+    .string()
+    .trim()
+    .min(1, "Date of birth is required")
+    .refine((value) => parseIsoDate(value) !== null, "Enter a valid date")
+    .refine(isNotFutureDate, "Date of birth cannot be in the future"),
   hospitalName: z
     .string()
     .trim()
@@ -72,6 +90,7 @@ export function normalizeRecipientForm(
     bloodGroupId: data.bloodGroupId,
     bloodComponentId: data.bloodComponentId,
     requiredUnits: data.requiredUnits.replace(/\D/g, ""),
+    dob: data.dob.trim(),
     hospitalName: data.hospitalName.trim().replace(/\s+/g, " "),
     address: data.address.trim().replace(/\s+/g, " "),
     district: data.district.trim().replace(/\s+/g, " "),

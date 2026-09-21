@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   CalendarDays,
+  CheckCircle2,
   ChevronDown,
   FileCheck2,
   LockKeyhole,
@@ -27,9 +28,14 @@ import type {
   BloodCentreRegistrationInput,
   BloodCentreRegistrationPayload,
 } from "@/types/bloodCenter/bloodCenterTypes";
-import { sendOtp } from "@/services/bloodCenter/bloodCenter.service";
+import {
+  registerBloodCentre,
+  resendOtp,
+  sendOtp,
+  verifyOtp,
+} from "@/services/bloodCenter/bloodCenter.service";
 import { getApiErrorMessage } from "@/services/api/client";
-import { savePendingRegistration } from "@/services/bloodCenter/registrationStorage";
+import { RegistrationSuccessModal } from "./RegistrationSuccessModal";
 
 const defaultValues: BloodCentreRegistrationInput = {
   bloodCentreName: "",
@@ -46,6 +52,8 @@ const defaultValues: BloodCentreRegistrationInput = {
   pinCode: "",
 };
 
+type OtpStatus = "idle" | "sending" | "sent" | "verifying" | "verified";
+
 export function BloodCentreRegistrationForm() {
   const router = useRouter();
 
@@ -53,10 +61,18 @@ export function BloodCentreRegistrationForm() {
   const [selectedCategory, setSelectedCategory] = useState(
     defaultValues.category,
   );
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const [otpStatus, setOtpStatus] = useState<OtpStatus>("idle");
+  const [otpValue, setOtpValue] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [resendSeconds, setResendSeconds] = useState(0);
 
   const {
     register,
     handleSubmit,
+    trigger,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<BloodCentreRegistrationInput>({
     resolver: zodResolver(
@@ -68,43 +84,137 @@ export function BloodCentreRegistrationForm() {
     defaultValues,
   });
 
+  useEffect(() => {
+    if (otpStatus !== "sent" || resendSeconds <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setResendSeconds((value) => value - 1);
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [otpStatus, resendSeconds]);
+
+  const resetOtpState = () => {
+    if (otpStatus === "idle") return;
+    setOtpStatus("idle");
+    setOtpValue("");
+    setOtpError("");
+    setResendSeconds(0);
+  };
+
+  const handleSendOtp = async () => {
+    const isEmailValid = await trigger("email");
+    if (!isEmailValid) return;
+
+    const email = getValues("email").trim().toLowerCase();
+
+    setOtpError("");
+    setOtpStatus("sending");
+
+    try {
+      await sendOtp({ email });
+
+      setOtpValue("");
+      setOtpStatus("sent");
+      setResendSeconds(30);
+    } catch (error) {
+      console.error("Blood Centre send OTP error:", error);
+
+      setOtpError(
+        getApiErrorMessage(error, "Unable to send OTP. Please try again."),
+      );
+      setOtpStatus("idle");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendSeconds > 0 || otpStatus === "sending") return;
+
+    const email = getValues("email").trim().toLowerCase();
+
+    setOtpError("");
+    setOtpStatus("sending");
+
+    try {
+      await resendOtp(email);
+
+      setOtpValue("");
+      setOtpStatus("sent");
+      setResendSeconds(30);
+    } catch (error) {
+      console.error("Blood Centre resend OTP error:", error);
+
+      setOtpError(
+        getApiErrorMessage(error, "Unable to resend OTP. Please try again."),
+      );
+      setOtpStatus("sent");
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!/^\d{6}$/.test(otpValue)) {
+      setOtpError("Enter the 6-digit OTP");
+      return;
+    }
+
+    setOtpError("");
+    setOtpStatus("verifying");
+
+    try {
+      const email = getValues("email").trim().toLowerCase();
+      await verifyOtp({ email, otp: otpValue });
+
+      setOtpStatus("verified");
+    } catch (error) {
+      console.error("Blood Centre verify OTP error:", error);
+
+      setOtpError(getApiErrorMessage(error, "Invalid OTP. Please try again."));
+      setOtpStatus("sent");
+    }
+  };
+
   const onSubmit = async (rawData: BloodCentreRegistrationInput) => {
     setSubmitError(null);
 
+    if (otpStatus !== "verified") {
+      setSubmitError(
+        "Please verify your email address with the OTP before registering.",
+      );
+      return;
+    }
+
     const data = normalizeBloodCentreForm(rawData);
 
-    // Backend requires the email to be OTP-verified before the account can
-    // be created, so registration itself is submitted later, from the OTP
-    // verification screen — this step only sends the OTP.
     const payload: BloodCentreRegistrationPayload = {
-      bloodCentreName: data?.bloodCentreName,
-      bloodBankCategory: data?.category as BloodCentreCategory,
-      bloodCentreLicenceNumber: data?.licenseNumber,
-      licenceExpiryDate: data?.dateOfExpiry,
-      email: data?.email,
-      mobileNumber: data?.mobileNumber,
-      password: data?.password,
-      address: data?.address,
-      district: data?.district,
-      city: data?.city,
-      pincode: data?.pinCode,
+      bloodCentreName: data.bloodCentreName,
+      bloodBankCategory: data.category as BloodCentreCategory,
+      bloodCentreLicenceNumber: data.licenseNumber,
+      licenceExpiryDate: data.dateOfExpiry,
+      email: data.email,
+      mobileNumber: data.mobileNumber,
+      password: data.password,
+      address: data.address,
+      district: data.district,
+      city: data.city,
+      pincode: data.pinCode,
     };
 
     try {
-      await sendOtp({ email: data?.email });
+      await registerBloodCentre(payload);
 
-      savePendingRegistration(payload);
-
-      router.push(
-        `/blood-centre/verify?email=${encodeURIComponent(data?.email)}`,
-      );
+      setShowSuccessModal(true);
     } catch (error) {
-      console.error("Blood Centre OTP Send Error:", error);
+      console.error("Blood Centre registration error:", error);
 
       setSubmitError(
-        getApiErrorMessage(error, "Unable to send OTP. Please try again."),
+        getApiErrorMessage(error, "Unable to register. Please try again."),
       );
     }
+  };
+
+  const handleSuccessConfirm = () => {
+    setShowSuccessModal(false);
+    router.replace("/blood-centre/login");
   };
 
   return (
@@ -305,18 +415,134 @@ export function BloodCentreRegistrationForm() {
             error={errors.dateOfExpiry?.message}
           />
 
-          <FormInput
-            id="email"
-            icon={Mail}
-            label="Email Address"
-            placeholder="Enter email address"
-            type="email"
-            maxLength={254}
-            inputMode="email"
-            autoComplete="email"
-            {...register("email")}
-            error={errors.email?.message}
-          />
+          <div className="w-full">
+            <FormInput
+              id="email"
+              icon={Mail}
+              label="Email Address"
+              placeholder="Enter email address"
+              type="email"
+              maxLength={254}
+              inputMode="email"
+              autoComplete="email"
+              readOnly={otpStatus === "verified"}
+              {...register("email", { onChange: resetOtpState })}
+              error={errors.email?.message}
+              rightElement={
+                otpStatus === "verified" ? (
+                  <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-[var(--color-success)]">
+                    <CheckCircle2 size={15} strokeWidth={2} />
+                    Verified
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={
+                      otpStatus === "sent" ? handleResendOtp : handleSendOtp
+                    }
+                    disabled={
+                      otpStatus === "sending" ||
+                      (otpStatus === "sent" && resendSeconds > 0)
+                    }
+                    className="
+                      whitespace-nowrap
+                      rounded-md
+                      bg-[var(--color-primary)]
+                      px-2.5
+                      py-1.5
+                      text-[12px]
+                      font-semibold
+                      text-white
+                      transition-colors
+                      duration-200
+                      hover:bg-[var(--color-primary-hover)]
+                      disabled:cursor-not-allowed
+                      disabled:opacity-60
+                    "
+                  >
+                    {otpStatus === "sending"
+                      ? "Sending..."
+                      : otpStatus === "sent"
+                        ? resendSeconds > 0
+                          ? `Resend (${resendSeconds}s)`
+                          : "Resend OTP"
+                        : "Send OTP"}
+                  </button>
+                )
+              }
+            />
+
+            {(otpStatus === "sent" || otpStatus === "verifying") && (
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otpValue}
+                  onChange={(event) => {
+                    setOtpValue(
+                      event.target.value.replace(/\D/g, "").slice(0, 6),
+                    );
+                    if (otpError) setOtpError("");
+                  }}
+                  placeholder="Enter 6-digit OTP"
+                  className="
+                    h-10
+                    w-full
+                    min-w-0
+                    flex-1
+                    rounded-lg
+                    border
+                    border-[var(--color-border)]
+                    bg-white
+                    px-3.5
+                    text-[14px]
+                    text-[var(--color-text-body)]
+                    outline-none
+                    transition-all
+                    duration-200
+                    placeholder:text-[var(--color-input-placeholder)]
+                    hover:border-[#c7c7c7]
+                    focus:border-[var(--color-primary)]
+                    focus:ring-2
+                    focus:ring-[var(--color-primary)]/15
+                  "
+                />
+
+                <button
+                  type="button"
+                  onClick={handleVerifyOtp}
+                  disabled={otpStatus === "verifying"}
+                  className="
+                    h-10
+                    shrink-0
+                    rounded-lg
+                    bg-[var(--color-primary)]
+                    px-4
+                    text-[13px]
+                    font-semibold
+                    text-white
+                    transition-colors
+                    duration-200
+                    hover:bg-[var(--color-primary-hover)]
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
+                >
+                  {otpStatus === "verifying" ? "Verifying..." : "Verify"}
+                </button>
+              </div>
+            )}
+
+            {otpError && (
+              <p
+                role="alert"
+                className="mt-1.5 px-1 text-[12px] leading-4 text-red-500"
+              >
+                {otpError}
+              </p>
+            )}
+          </div>
 
           <FormInput
             id="mobileNumber"
@@ -450,12 +676,21 @@ export function BloodCentreRegistrationForm() {
               md:w-[240px]
             "
           >
-            <AppButton type="submit" loading={isSubmitting}>
-              Send OTP
+            <AppButton
+              type="submit"
+              loading={isSubmitting}
+              disabled={otpStatus !== "verified"}
+            >
+              Register
             </AppButton>
           </div>
         </div>
       </form>
+
+      <RegistrationSuccessModal
+        open={showSuccessModal}
+        onConfirm={handleSuccessConfirm}
+      />
     </>
   );
 }

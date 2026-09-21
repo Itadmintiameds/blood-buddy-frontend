@@ -260,6 +260,100 @@ export function AddAvailabilityScreen() {
                   </p>
                 )}
 
+                <div className="w-full">
+                  <label
+                    htmlFor="bloodGroup"
+                    className="
+                      block
+                      text-[13px]
+                      font-medium
+                      text-[var(--color-text-body)]
+                    "
+                  >
+                    Blood Group
+                  </label>
+
+                  <div className="relative mt-2">
+                    <Droplets
+                      size={17}
+                      strokeWidth={1.7}
+                      className="
+                        pointer-events-none
+                        absolute
+                        left-3
+                        top-1/2
+                        z-10
+                        -translate-y-1/2
+                        text-[var(--color-icon-accent)]
+                      "
+                    />
+
+                    <select
+                      id="bloodGroup"
+                      value={bloodGroupId}
+                      disabled={mastersLoading}
+                      onChange={(event) => {
+                        setBloodGroupId(
+                          event.target.value ? Number(event.target.value) : "",
+                        );
+                        clearError();
+                      }}
+                      className={`
+                        h-11
+                        w-full
+                        appearance-none
+                        rounded-lg
+                        border
+                        bg-white
+                        pl-10
+                        pr-10
+                        text-[14px]
+                        outline-none
+                        transition-all
+                        duration-200
+
+                        ${
+                          error && !bloodGroupId
+                            ? "border-red-400"
+                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
+                        }
+
+                        focus:border-[var(--color-primary)]
+                        focus:ring-2
+                        focus:ring-[var(--color-primary)]/20
+
+                        ${bloodGroupId ? "text-[var(--color-text-body)]" : "text-[var(--color-text-placeholder-alt)]"}
+                      `}
+                    >
+                      <option value="">
+                        {mastersLoading ? "Loading..." : "Select Blood Group"}
+                      </option>
+
+                      {bloodGroups.map((group) => (
+                        <option
+                          key={group.bloodGroupId}
+                          value={group.bloodGroupId}
+                        >
+                          {group.bloodGroupName}
+                        </option>
+                      ))}
+                    </select>
+
+                    <ChevronDown
+                      size={17}
+                      strokeWidth={1.8}
+                      className="
+                        pointer-events-none
+                        absolute
+                        right-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-[var(--color-text-quaternary)]
+                      "
+                    />
+                  </div>
+                </div>
+
                 <div className="mt-5 w-full">
                   <label
                     htmlFor="bloodType"

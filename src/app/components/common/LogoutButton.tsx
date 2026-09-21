@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { logoutBloodCentre } from "@/services/auth/authStorage";
+import { logoutServerSide } from "@/services/auth/authService";
 
 interface LogoutButtonProps {
   className?: string;
@@ -22,11 +23,12 @@ export function LogoutButton({ className = "" }: LogoutButtonProps) {
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (loggingOut) return;
 
     setLoggingOut(true);
 
+    await logoutServerSide();
     logoutBloodCentre();
 
     router.replace("/blood-centre/login");
