@@ -295,7 +295,7 @@ export function WelcomeScreen() {
                 {/* Super Admin */}
                 <div className="mt-3 text-center sm:mt-4">
                   <Link
-                    href="/blood-centre/login"
+                    href="/blood-centre/super-admin/login"
                     className="
                       !inline-block
                       !text-[#FF3B3B]

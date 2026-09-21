@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
@@ -38,8 +38,6 @@ import type {
 
 export function RecipientRegistrationForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const prefillMobile = searchParams.get("mobile") || "";
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
@@ -51,7 +49,7 @@ export function RecipientRegistrationForm() {
 
   const defaultValues: RecipientRequestInput = {
     patientName: "",
-    mobileNumber: prefillMobile,
+    mobileNumber: "",
     bloodGroupId: "",
     bloodComponentId: "",
     requiredUnits: "",
@@ -148,7 +146,7 @@ export function RecipientRegistrationForm() {
 
   const handleSuccessConfirm = () => {
     setSuccessMessage(null);
-    router.push("/recipient/search");
+    router.push("/recipient");
   };
 
   return (

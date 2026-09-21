@@ -88,8 +88,8 @@ export function RegistrationSuccessModal({
         </h2>
 
         <p className="mt-2 text-[13px] leading-5 text-[var(--color-text-muted)]">
-          Your Blood Centre registration was successful. Please verify your
-          mobile number using the OTP.
+          Your Blood Centre registration was successful. You can now log in
+          to your account.
         </p>
 
         <button

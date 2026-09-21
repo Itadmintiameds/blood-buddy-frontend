@@ -15,36 +15,11 @@ export interface SuperAdminRegistrationResponse {
   message: string;
 }
 
-export interface SuperAdminLoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface SuperAdminLoginResponse {
-  loginSuccessful: string;
-  id: number;
-  name: string;
-  email: string;
-  role: string;
-  accessToken: string;
-}
-
 export async function registerSuperAdmin(
   payload: SuperAdminRegistrationRequest,
 ): Promise<SuperAdminRegistrationResponse> {
   const response = await api.post<SuperAdminRegistrationResponse>(
     "/superadmin/adduser",
-    payload,
-  );
-
-  return response.data;
-}
-
-export async function loginSuperAdmin(
-  payload: SuperAdminLoginRequest,
-): Promise<SuperAdminLoginResponse> {
-  const response = await api.post<SuperAdminLoginResponse>(
-    "/superadmin/login",
     payload,
   );
 
