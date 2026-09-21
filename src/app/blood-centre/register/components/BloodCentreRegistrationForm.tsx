@@ -464,8 +464,8 @@ export function BloodCentreRegistrationForm() {
                       whitespace-nowrap
                       rounded-md
                       bg-[var(--color-primary)]
-                      px-3
-                      py-2
+                      px-2
+                      py-1
                       text-[13px]
                       font-semibold
                       text-white

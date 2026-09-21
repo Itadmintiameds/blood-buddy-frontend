@@ -40,9 +40,9 @@ export function WelcomeScreen() {
               "
             >
               {/* Language selector */}
-              <div className="absolute left-4 top-3 z-10 sm:left-6 sm:top-4 lg:hidden">
+              {/* <div className="absolute left-4 top-3 z-10 sm:left-6 sm:top-4 lg:hidden">
                 <LanguageSelector />
-              </div>
+              </div> */}
 
               <div
                 className="
@@ -134,7 +134,7 @@ export function WelcomeScreen() {
                     sm:mt-2.5
                     sm:text-[14px]
                     sm:leading-relaxed
-                    md:text-[15px]
+                    md:text-[14px]
                   "
                 >
                   A simple and reliable platform connecting blood centres,
@@ -150,8 +150,8 @@ export function WelcomeScreen() {
                     gap-2
                     text-[12px]
                     text-[#888888]
-                    sm:mt-4
-                    sm:text-[13px]
+                    sm:mt-3
+                    sm:text-[12px]
                   "
                 >
                   <span className="h-px w-5 bg-[#dddddd]" />
@@ -194,9 +194,9 @@ export function WelcomeScreen() {
                 "
               >
                 {/* Language selector for desktop */}
-                <div className="mb-2 hidden w-full justify-end lg:flex">
+                {/* <div className="mb-2 hidden w-full justify-end lg:flex">
                   <LanguageSelector />
-                </div>
+                </div> */}
 
                 {/* Portal icon */}
                 <div
