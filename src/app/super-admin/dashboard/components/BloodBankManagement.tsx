@@ -1540,7 +1540,7 @@ function BloodBankCard({
           </div>
 
           <div className="min-w-0">
-            <p className="text-[10px] text-[var(--color-text-placeholder)]">
+            <p className="text-[11px] text-[var(--color-text-placeholder)]">
               S.No {index + 1}
             </p>
 
@@ -1594,7 +1594,7 @@ function BloodBankCard({
 
       <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border-lighter)] px-4 py-3.5 sm:grid-cols-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
             Address
           </p>
           <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
@@ -1603,7 +1603,7 @@ function BloodBankCard({
         </div>
 
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
             City
           </p>
           <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
@@ -1612,7 +1612,7 @@ function BloodBankCard({
         </div>
 
         <div className="min-w-0 sm:col-span-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
             Phone
           </p>
           <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
@@ -1831,7 +1831,7 @@ function StatCard({
         <p
           className="
             truncate
-            text-[9px]
+            text-[11px]
             font-medium
             uppercase
             tracking-wide
@@ -2112,7 +2112,7 @@ function UpdateUnitsModal({
               htmlFor="updateUnits"
               className="
                 block
-                text-[10px]
+                text-[12px]
                 font-semibold
                 text-[var(--color-text-secondary)]
               "
@@ -2163,7 +2163,7 @@ function UpdateUnitsModal({
                   right-3
                   top-1/2
                   -translate-y-1/2
-                  text-[10px]
+                  text-[12px]
                   text-[var(--color-text-placeholder-alt)]
                 "
               >
@@ -2415,7 +2415,7 @@ function AddStockModal({
           <div className="mt-5">
             <label
               htmlFor="addStockUnits"
-              className="block text-[10px] font-semibold text-[var(--color-text-secondary)]"
+              className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
             >
               Units to Add
             </label>
@@ -2454,7 +2454,7 @@ function AddStockModal({
                 `}
               />
 
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[var(--color-text-placeholder-alt)]">
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--color-text-placeholder-alt)]">
                 Units
               </span>
             </div>
@@ -2463,7 +2463,7 @@ function AddStockModal({
           <div className="mt-4">
             <label
               htmlFor="addStockRemarks"
-              className="block text-[10px] font-semibold text-[var(--color-text-secondary)]"
+              className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
             >
               Remarks (optional)
             </label>

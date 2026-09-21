@@ -282,7 +282,7 @@ export function RecipientManagement() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[10px] text-[var(--color-text-placeholder)]">S.No {index + 1}</p>
+                    <p className="text-[11px] text-[var(--color-text-placeholder)]">S.No {index + 1}</p>
 
                     <h3 className="truncate text-[15px] font-bold text-[var(--color-text-body)]">
                       {request.recipientName}
@@ -864,7 +864,7 @@ function MobileInfoRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-semibold text-[var(--color-text-placeholder)]">{label}</p>
+        <p className="text-[11px] font-semibold text-[var(--color-text-placeholder)]">{label}</p>
 
         <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
           {value}

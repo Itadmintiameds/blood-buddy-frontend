@@ -203,14 +203,13 @@ export function BloodCentreDashboardScreen() {
                 bg-[var(--color-surface-alt)]
                 px-4
                 py-2.5
-                text-[11px]
+                text-[12px]
                 font-semibold
                 uppercase
                 tracking-wide
                 text-[var(--color-text-secondary)]
                 md:px-5
                 md:py-3
-                md:text-[12px]
               "
             >
               <div className="text-left">Blood Group</div>
@@ -292,8 +291,8 @@ export function BloodCentreDashboardScreen() {
                       disabled={row.bloodGroupId === undefined || row.bloodComponentId === undefined}
                       className="
                         flex
-                        h-7
-                        w-7
+                        h-9
+                        w-9
                         items-center
                         justify-center
                         rounded-lg
@@ -311,7 +310,7 @@ export function BloodCentreDashboardScreen() {
                       "
                       aria-label={`Adjust ${row.bloodGroup} ${row.bloodType} stock`}
                     >
-                      <Pencil size={12} />
+                      <Pencil size={14} />
                     </button>
                   </div>
                 </div>
@@ -769,11 +768,11 @@ function Stat({
 
       <div
         className="
-          text-[10px]
+          text-[11px]
           font-medium
           leading-4
           opacity-90
-          sm:text-[11px]
+          sm:text-[12px]
         "
       >
         {label}

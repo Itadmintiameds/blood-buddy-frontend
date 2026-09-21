@@ -264,7 +264,7 @@ export function ResetPasswordScreen() {
               Enter your OTP code here
             </p>
 
-            <div className="mt-3 flex gap-2 md:gap-3">
+            <div className="mt-3 flex w-full max-w-[320px] justify-center gap-2 md:max-w-[360px] md:gap-3">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -282,8 +282,10 @@ export function ResetPasswordScreen() {
                     )
                   }
                   className={`
-                    h-11
-                    w-11
+                    aspect-square
+                    min-w-0
+                    max-w-[44px]
+                    flex-1
                     rounded-lg
                     border
                     border-[var(--color-border)]
@@ -298,8 +300,7 @@ export function ResetPasswordScreen() {
                     focus:border-[var(--color-primary)]
                     focus:ring-2
                     focus:ring-[var(--color-primary)]/20
-                    md:h-12
-                    md:w-12
+                    md:max-w-[48px]
                     md:text-[18px]
                     ${poppedIndex === index ? "animate-otp-pop" : ""}
                   `}
@@ -314,6 +315,9 @@ export function ResetPasswordScreen() {
                 disabled={seconds > 0 || resendLoading}
                 onClick={handleResendOtp}
                 className="
+                  -my-2
+                  px-1
+                  py-2
                   font-medium
                   text-[var(--color-primary)]
                   disabled:cursor-not-allowed

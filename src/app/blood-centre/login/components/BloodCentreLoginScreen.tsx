@@ -261,6 +261,9 @@ export function BloodCentreLoginScreen() {
               type="button"
               onClick={handleBloodCentreRegistration}
               className="
+                -my-2
+                px-1
+                py-2
                 font-medium
                 text-[var(--color-primary)]
                 underline-offset-2

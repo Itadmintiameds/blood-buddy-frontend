@@ -118,11 +118,11 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             placeholder={placeholder}
             aria-invalid={Boolean(error)}
             className={`
+              h-full
               min-w-0
               flex-1
               border-0
               bg-transparent
-              text-[14px]
               font-normal
               text-[var(--color-text-body)]
               outline-none
@@ -146,10 +146,10 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
               }
               onClick={() => setShowPassword((value) => !value)}
               className="
-                ml-2
+                ml-1
                 flex
-                h-7
-                w-7
+                h-10
+                w-10
                 shrink-0
                 items-center
                 justify-center
