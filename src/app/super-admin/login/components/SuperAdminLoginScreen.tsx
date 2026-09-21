@@ -23,7 +23,7 @@ export function SuperAdminLoginScreen() {
     const session = getSuperAdminSession();
 
     if (session) {
-      router.replace("/blood-centre/super-admin/dashboard");
+      router.replace("/super-admin/dashboard");
     }
   }, [router]);
 
@@ -67,7 +67,7 @@ export function SuperAdminLoginScreen() {
         throw new Error("This login is for Super Admin accounts only.");
       }
 
-      router.replace("/blood-centre/super-admin/dashboard");
+      router.replace("/super-admin/dashboard");
     } catch (loginError) {
       console.error("Super Admin Login Error:", loginError);
 

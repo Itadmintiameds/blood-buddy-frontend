@@ -12,5 +12,7 @@ export const routes = {
   recipient: "/recipient",
   recipientRegister: "/recipient/register",
   recipientSearch: "/recipient/search",
+  superAdminLogin: "/super-admin/login",
+  superAdminRegister: "/super-admin/register",
   superAdminDashboard: "/super-admin/dashboard",
 } as const;

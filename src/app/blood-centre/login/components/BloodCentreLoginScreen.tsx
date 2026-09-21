@@ -8,7 +8,7 @@ import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
-import { getAuthSession } from "@/services/auth/authStorage";
+import { getBloodCentreSession } from "@/services/auth/authStorage";
 import { loginCommon } from "@/services/bloodCenter/commonLoginService";
 import { RegistrationTypeModal } from "./RegistrationTypeModal";
 
@@ -21,20 +21,13 @@ export function BloodCentreLoginScreen() {
   const [loading, setLoading] = useState(false);
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
 
+  // Only skip the form for an existing BLOOD_CENTRE session. A Super Admin
+  // session logged in elsewhere (another tab, earlier browsing) must NOT
+  // bounce this page away — Blood Centre and Super Admin are separate
+  // areas, and visiting this page should always show the Blood Centre
+  // login form regardless of what's signed in on the Super Admin side.
   useEffect(() => {
-    const session = getAuthSession();
-
-    if (!session) {
-      return;
-    }
-
-    if (session.userType === "SUPER_ADMIN") {
-      router.replace("/blood-centre/super-admin/dashboard");
-
-      return;
-    }
-
-    if (session.userType === "BLOOD_CENTRE") {
+    if (getBloodCentreSession()) {
       router.replace("/blood-centre/dashboard");
     }
   }, [router]);
@@ -83,7 +76,7 @@ export function BloodCentreLoginScreen() {
 
       // SUPER ADMIN
       if (result.userType === "SUPER_ADMIN") {
-        router.replace("/blood-centre/super-admin/dashboard");
+        router.replace("/super-admin/dashboard");
 
         return;
       }
@@ -142,7 +135,7 @@ export function BloodCentreLoginScreen() {
   const handleSuperAdminRegistration = () => {
     setRegistrationModalOpen(false);
 
-    router.push("/blood-centre/super-admin/register");
+    router.push("/super-admin/register");
   };
 
   const handleBloodCentreRegistration = () => {

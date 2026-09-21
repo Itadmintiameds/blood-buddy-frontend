@@ -14,9 +14,9 @@ interface SuperAdminAuthGuardProps {
 /**
  * Wrap any protected Super Admin screen with this component.
  *
- * - Redirects to /blood-centre/login if there is no active Super Admin
+ * - Redirects to /super-admin/login if there is no active Super Admin
  *   session (a Blood Centre session sends the user to their own dashboard
- *   instead of a bare login prompt).
+ *   instead of the Super Admin login prompt).
  * - Re-checks the session whenever the page becomes visible again
  *   (browser back/forward button, or the tab being restored from the
  *   browser's bfcache) so a logged-out user can never land back on a
@@ -38,7 +38,7 @@ export function SuperAdminAuthGuard({ children }: SuperAdminAuthGuardProps) {
       if (session?.userType === "BLOOD_CENTRE") {
         router.replace("/blood-centre/dashboard");
       } else {
-        router.replace("/blood-centre/login");
+        router.replace("/super-admin/login");
       }
 
       return false;

@@ -220,7 +220,7 @@ export function BloodCentreRegistrationForm() {
       // A Super Admin registered this centre from their own dashboard —
       // keep them signed in and send them back there, instead of logging
       // them out into a login prompt meant for the newly registered centre.
-      router.replace("/blood-centre/super-admin/dashboard");
+      router.replace("/super-admin/dashboard");
       return;
     }
 
