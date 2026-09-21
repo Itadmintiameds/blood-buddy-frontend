@@ -34,6 +34,7 @@ import {
   sendOtp,
   verifyOtp,
 } from "@/services/bloodCenter/bloodCenter.service";
+import { getSuperAdminSession, logout } from "@/services/auth/authStorage";
 import { getApiErrorMessage } from "@/services/api/client";
 import { RegistrationSuccessModal } from "./RegistrationSuccessModal";
 
@@ -214,6 +215,21 @@ export function BloodCentreRegistrationForm() {
 
   const handleSuccessConfirm = () => {
     setShowSuccessModal(false);
+
+    if (getSuperAdminSession()) {
+      // A Super Admin registered this centre from their own dashboard —
+      // keep them signed in and send them back there, instead of logging
+      // them out into a login prompt meant for the newly registered centre.
+      router.replace("/super-admin/dashboard");
+      return;
+    }
+
+    // Otherwise this is a public/anonymous registration — clear any stale
+    // session (e.g. a leftover Super Admin login from earlier browsing) so
+    // the login screen actually prompts for the account that was just
+    // registered instead of auto-redirecting into whoever was previously
+    // signed in.
+    logout();
     router.replace("/blood-centre/login");
   };
 

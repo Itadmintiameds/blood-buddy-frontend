@@ -24,8 +24,8 @@ export function SuperAdminLogoutButton() {
     // Remove Super Admin session
     logout();
 
-    // Always return to common Login screen
-    router.replace("/blood-centre/login");
+    // Return to the dedicated Super Admin login screen
+    router.replace("/super-admin/login");
   };
 
   return (
