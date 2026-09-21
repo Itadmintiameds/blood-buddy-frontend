@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
+import { logout } from "@/services/auth/authStorage";
 
 // Super Admin accounts are provisioned by the backend on startup from
 // SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD (see SuperAdminSeeder) — there is
@@ -77,7 +78,10 @@ export function SuperAdminRegistrationScreen() {
         <div className="mt-8 w-full max-w-[280px]">
           <AppButton
             type="button"
-            onClick={() => router.replace("/blood-centre/login")}
+            onClick={() => {
+              logout();
+              router.replace("/blood-centre/login");
+            }}
           >
             Back to Login
           </AppButton>

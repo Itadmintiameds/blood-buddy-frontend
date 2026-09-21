@@ -11,6 +11,7 @@ import {
   forgotPassword,
   resetPassword,
 } from "@/services/bloodCenter/bloodCenter.service";
+import { logout } from "@/services/auth/authStorage";
 import { getApiErrorMessage } from "@/services/api/client";
 import { ResetPasswordSuccessModal } from "./ResetPasswordSuccessModal";
 
@@ -159,6 +160,9 @@ export function ResetPasswordScreen() {
   const handleSuccessConfirm = () => {
     setShowSuccessModal(false);
 
+    // Clear any stale session so the login screen prompts fresh instead of
+    // auto-redirecting into whoever was previously signed in.
+    logout();
     router.replace("/blood-centre/login");
   };
 
