@@ -17,6 +17,9 @@ export interface DonorRegistrationPayload {
   alternativeMobileNumber?: string;
   bloodGroupId: number;
   dob: string;
+  address?: string;
+  city: string;
+  district: string;
   pincode: string;
   lastBloodDonationDate?: string;
 }
