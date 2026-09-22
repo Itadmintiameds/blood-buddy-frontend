@@ -422,8 +422,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="dateOfExpiry"
             icon={CalendarDays}
-            label="Date of Expiry"
-            placeholder="Select date of expiry"
+            label="Date of License Expiry"
+            placeholder="Select date of license expiry"
             type="date"
             typeof=""
             autoComplete="off"
