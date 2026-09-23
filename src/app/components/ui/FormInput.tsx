@@ -14,7 +14,7 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   }>;
   error?: string;
   name?: string;
-  label?: string;
+  label?: ReactNode;
   /** Optional inline control (e.g. a "Send OTP" button) rendered inside the input box. */
   rightElement?: ReactNode;
 }

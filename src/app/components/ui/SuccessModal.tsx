@@ -1,14 +1,16 @@
 "use client";
 
 import { CheckCircle2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import { BilingualInline } from "@/app/components/common/Bilingual";
 
 interface SuccessModalProps {
   open: boolean;
-  title: string;
-  description?: string;
-  confirmLabel?: string;
+  title: ReactNode;
+  description?: ReactNode;
+  confirmLabel?: ReactNode;
   onConfirm: () => void;
 }
 
@@ -16,7 +18,7 @@ export function SuccessModal({
   open,
   title,
   description,
-  confirmLabel = "OK",
+  confirmLabel = <BilingualInline tKey="common.ok" />,
   onConfirm,
 }: SuccessModalProps) {
   const { rendered, visible } = useExitTransition(open, 200);
@@ -99,8 +101,9 @@ export function SuccessModal({
           className="
             mt-6
             flex
-            h-11
+            min-h-11
             w-full
+            py-2
             items-center
             justify-center
             rounded-lg

@@ -69,7 +69,7 @@ export default function LanguageSelector() {
       >
         <Languages size={15} strokeWidth={1.7} />
 
-        <span>{language === "kn" ? "English / ಕನ್ನಡ" : "English"}</span>
+        <span>{language === "kn" ? "ಕನ್ನಡ" : "English"}</span>
 
         <ChevronDown
           size={14}

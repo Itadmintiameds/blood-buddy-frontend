@@ -8,12 +8,13 @@ import {
   type ReactNode,
 } from "react";
 
-import { translations, type Language } from "@/translations/translations";
+import type { Language } from "@/translations/translations";
+import { interpolate, resolveTranslation } from "@/utils/i18n";
 
 type LanguageContextType = {
   language: Language;
   setLanguage: (language: Language) => void;
-  t: (key: string) => string;
+  t: (key: string, params?: Record<string, string | number>) => string;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -21,22 +22,6 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 const STORAGE_KEY = "bloodBuddyLanguage";
-
-function getTranslation(language: Language, key: string): string {
-  const keys = key.split(".");
-
-  let current: unknown = translations[language];
-
-  for (const part of keys) {
-    if (current && typeof current === "object" && part in current) {
-      current = (current as Record<string, unknown>)[part];
-    } else {
-      return key;
-    }
-  }
-
-  return typeof current === "string" ? current : key;
-}
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>("en");
@@ -60,8 +45,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, newLanguage);
   };
 
-  const t = (key: string) => {
-    return getTranslation(language, key);
+  const t = (key: string, params?: Record<string, string | number>) => {
+    return interpolate(resolveTranslation(language, key), params);
   };
 
   useEffect(() => {
