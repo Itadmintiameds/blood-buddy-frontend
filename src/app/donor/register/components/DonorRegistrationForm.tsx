@@ -26,6 +26,11 @@ import { registerDonor } from "@/services/donor/donorRegistrationService";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import type { MasterBloodGroup } from "@/types/master.types";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 const defaultValues: DonorRegistrationInput = {
   fullName: "",
@@ -42,6 +47,15 @@ const defaultValues: DonorRegistrationInput = {
 
 export function DonorRegistrationForm() {
   const router = useRouter();
+  const enterFullName = useBilingualText("common.enterFullName");
+  const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
+  const enterAlternateMobile = useBilingualText("donor.enterAlternateMobile");
+  const selectBloodGroupText = useBilingualText("bloodCentre.selectBloodGroup");
+  const loadingText = useBilingualText("bloodCentre.loadingOptions");
+  const enterAddress = useBilingualText("common.enterAddress");
+  const enterDistrict = useBilingualText("common.enterDistrict");
+  const enterCity = useBilingualText("common.enterCity");
+  const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -127,8 +141,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="fullName"
             icon={UserRound}
-            label="Full Name"
-            placeholder="Enter your full name"
+            label={<Bilingual tKey="common.fullName" as="span" />}
+            placeholder={enterFullName}
             maxLength={100}
             autoComplete="name"
             {...register("fullName")}
@@ -138,8 +152,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="mobileNumber"
             icon={Phone}
-            label="Mobile Number"
-            placeholder="Enter 10-digit mobile number"
+            label={<Bilingual tKey="common.mobileNumber" as="span" />}
+            placeholder={enter10DigitMobile}
             type="tel"
             inputMode="numeric"
             maxLength={10}
@@ -157,8 +171,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="alternativeMobileNumber"
             icon={Phone}
-            label="Alternate Mobile Number (Optional)"
-            placeholder="Enter alternate mobile number"
+            label={<Bilingual tKey="donor.alternateMobileOptional" as="span" />}
+            placeholder={enterAlternateMobile}
             type="tel"
             inputMode="numeric"
             maxLength={10}
@@ -176,7 +190,7 @@ export function DonorRegistrationForm() {
           <FormInput
             id="dob"
             icon={CalendarDays}
-            label="Date of Birth"
+            label={<Bilingual tKey="donor.dateOfBirth" as="span" />}
             type="date"
             max={new Date().toISOString().slice(0, 10)}
             autoComplete="bday"
@@ -185,12 +199,12 @@ export function DonorRegistrationForm() {
           />
 
           <div className="w-full">
-            <label
+            <Bilingual
+              tKey="bloodCentre.bloodGroup"
+              as="label"
               htmlFor="bloodGroupId"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            >
-              Blood Group
-            </label>
+            />
 
             <div className="relative">
               <Droplets
@@ -234,7 +248,7 @@ export function DonorRegistrationForm() {
                 `}
               >
                 <option value="" disabled>
-                  {mastersLoading ? "Loading..." : "Select blood group"}
+                  {mastersLoading ? loadingText : selectBloodGroupText}
                 </option>
 
                 {bloodGroups.map((group) => (
@@ -261,8 +275,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="address"
             icon={MapPin}
-            label="Address (Optional)"
-            placeholder="Enter address"
+            label={<Bilingual tKey="donor.addressOptional" as="span" />}
+            placeholder={enterAddress}
             maxLength={200}
             autoComplete="street-address"
             {...register("address")}
@@ -272,8 +286,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="district"
             icon={MapPinned}
-            label="District"
-            placeholder="Enter district"
+            label={<Bilingual tKey="common.district" as="span" />}
+            placeholder={enterDistrict}
             maxLength={100}
             autoComplete="address-level2"
             {...register("district")}
@@ -283,8 +297,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="city"
             icon={MapPinned}
-            label="City"
-            placeholder="Enter city"
+            label={<Bilingual tKey="common.city" as="span" />}
+            placeholder={enterCity}
             maxLength={100}
             autoComplete="address-level2"
             {...register("city")}
@@ -294,8 +308,8 @@ export function DonorRegistrationForm() {
           <FormInput
             id="pincode"
             icon={MapPinned}
-            label="Pin Code"
-            placeholder="Enter 6-digit pin code"
+            label={<Bilingual tKey="common.pinCode" as="span" />}
+            placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}
             autoComplete="postal-code"
@@ -312,7 +326,7 @@ export function DonorRegistrationForm() {
           <FormInput
             id="lastBloodDonationDate"
             icon={CalendarDays}
-            label="Last Blood Donation Date (Optional)"
+            label={<Bilingual tKey="donor.lastBloodDonationDateOptional" as="span" />}
             type="date"
             max={new Date().toISOString().slice(0, 10)}
             {...register("lastBloodDonationDate")}
@@ -332,7 +346,10 @@ export function DonorRegistrationForm() {
         <div className="mt-7 flex w-full justify-center">
           <div className="w-full md:w-[240px]">
             <AppButton type="submit" loading={isSubmitting}>
-              Register
+              <BilingualInline
+                tKey="common.register"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </AppButton>
           </div>
         </div>
@@ -340,8 +357,10 @@ export function DonorRegistrationForm() {
 
       <SuccessModal
         open={showSuccessModal}
-        title="Registration Successful"
-        description="Donor registered successfully."
+        title={<Bilingual tKey="bloodCentre.registrationSuccess" as="span" />}
+        description={
+          <Bilingual tKey="donor.donorRegisteredSuccessfully" as="span" />
+        }
         onConfirm={handleSuccessConfirm}
       />
     </>

@@ -6,6 +6,10 @@ import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { logout } from "@/services/auth/authStorage";
+import {
+  Bilingual,
+  BilingualInline,
+} from "@/app/components/common/Bilingual";
 
 // Super Admin accounts are provisioned by the backend on startup from
 // SUPERADMIN_EMAIL / SUPERADMIN_PASSWORD (see SuperAdminSeeder) — there is
@@ -50,18 +54,20 @@ export function SuperAdminRegistrationScreen() {
           />
         </div>
 
-        <h1
+        <Bilingual
+          tKey="superAdmin.registrationTitle"
+          as="h1"
           className="
             mt-4
             text-[20px]
             font-semibold
             text-[var(--color-text-primary)]
           "
-        >
-          Super Admin Registration
-        </h1>
+        />
 
-        <p
+        <Bilingual
+          tKey="superAdmin.registrationDescription"
+          as="p"
           className="
             mt-3
             max-w-[360px]
@@ -69,11 +75,7 @@ export function SuperAdminRegistrationScreen() {
             leading-5
             text-[var(--color-text-tertiary)]
           "
-        >
-          Super Admin accounts are set up by the system administrator and
-          can&apos;t be created from this app. If you need access, ask your
-          administrator for the Super Admin login credentials.
-        </p>
+        />
 
         <div className="mt-8 w-full max-w-[280px]">
           <AppButton
@@ -83,7 +85,10 @@ export function SuperAdminRegistrationScreen() {
               router.replace("/blood-centre/login");
             }}
           >
-            Back to Login
+            <BilingualInline
+              tKey="bloodCentre.backToLogin"
+              enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+            />
           </AppButton>
         </div>
       </section>

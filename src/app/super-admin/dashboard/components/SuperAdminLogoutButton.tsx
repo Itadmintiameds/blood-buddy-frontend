@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { logout } from "@/services/auth/authStorage";
 import { logoutServerSide } from "@/services/auth/authService";
+import { BilingualInline } from "@/app/components/common/Bilingual";
 
 export function SuperAdminLogoutButton() {
   const router = useRouter();
@@ -55,9 +56,9 @@ export function SuperAdminLogoutButton() {
         disabled:opacity-60
       "
     >
-      <LogOut size={18} strokeWidth={1.8} />
+      <LogOut size={18} strokeWidth={1.8} className="shrink-0" />
 
-      <span>{loading ? "Logging out..." : "Logout"}</span>
+      <BilingualInline tKey={loading ? "common.loggingOut" : "common.logout"} />
     </button>
   );
 }

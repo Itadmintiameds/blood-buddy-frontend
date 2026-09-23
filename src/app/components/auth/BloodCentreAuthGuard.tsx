@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { getBloodCentreSession } from "@/services/auth/authStorage";
+import { Bilingual } from "@/app/components/common/Bilingual";
 
 interface BloodCentreAuthGuardProps {
   children: React.ReactNode;
@@ -73,7 +74,11 @@ export function BloodCentreAuthGuard({ children }: BloodCentreAuthGuardProps) {
   if (checking) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <p className="text-[12px] text-[var(--color-text-muted)]">Loading...</p>
+        <Bilingual
+          tKey="bloodCentre.loadingOptions"
+          as="p"
+          className="text-[12px] text-[var(--color-text-muted)]"
+        />
       </div>
     );
   }

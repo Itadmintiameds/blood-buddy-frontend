@@ -14,12 +14,19 @@ import {
 import { logout } from "@/services/auth/authStorage";
 import { getApiErrorMessage } from "@/services/api/client";
 import { ResetPasswordSuccessModal } from "./ResetPasswordSuccessModal";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function ResetPasswordScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const email = searchParams.get("email") || "";
+  const newPasswordPlaceholder = useBilingualText("common.enterNewPassword");
+  const confirmPasswordPlaceholder = useBilingualText("common.reenterPassword");
 
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [newPassword, setNewPassword] = useState("");
@@ -186,7 +193,7 @@ export function ResetPasswordScreen() {
     <>
       <ScreenShell>
         <BrandHeader
-          title="Reset Password"
+          title={<Bilingual tKey="bloodCentre.resetPasswordTitle" as="span" />}
           showBackButton
           backHref="/blood-centre/forgot-password"
         />
@@ -227,7 +234,9 @@ export function ResetPasswordScreen() {
               />
             </div>
 
-            <h1
+            <Bilingual
+              tKey="bloodCentre.resetYourPassword"
+              as="h1"
               className="
                 mt-5
                 text-center
@@ -236,11 +245,11 @@ export function ResetPasswordScreen() {
                 text-[var(--color-text-primary)]
                 md:text-[22px]
               "
-            >
-              Reset your password
-            </h1>
+            />
 
-            <p
+            <Bilingual
+              tKey="bloodCentre.resetPasswordDescription"
+              as="p"
               className="
                 mt-2
                 max-w-[300px]
@@ -250,9 +259,7 @@ export function ResetPasswordScreen() {
                 text-[var(--color-text-placeholder-alt)]
                 md:text-[14px]
               "
-            >
-              Enter the OTP sent to your email and choose a new password
-            </p>
+            />
 
             {email && (
               <p className="mt-2 text-[13px] font-medium text-[var(--color-text-secondary)]">
@@ -260,9 +267,11 @@ export function ResetPasswordScreen() {
               </p>
             )}
 
-            <p className="mt-6 text-[13px] font-medium text-[var(--color-text-body)]">
-              Enter your OTP code here
-            </p>
+            <Bilingual
+              tKey="bloodCentre.enterOtp"
+              as="p"
+              className="mt-6 text-[13px] font-medium text-[var(--color-text-body)]"
+            />
 
             <div className="mt-3 flex w-full max-w-[320px] justify-center gap-2 md:max-w-[360px] md:gap-3">
               {otp.map((digit, index) => (
@@ -309,7 +318,7 @@ export function ResetPasswordScreen() {
             </div>
 
             <div className="mt-3 text-center text-[13px] text-[var(--color-text-secondary)]">
-              Didn&apos;t receive the OTP?{" "}
+              <BilingualInline tKey="bloodCentre.resendOtp" />{" "}
               <button
                 type="button"
                 disabled={seconds > 0 || resendLoading}
@@ -324,7 +333,11 @@ export function ResetPasswordScreen() {
                   disabled:text-[var(--color-text-placeholder)]
                 "
               >
-                {resendLoading ? "Sending..." : "Resend OTP"}
+                {resendLoading ? (
+                  <BilingualInline tKey="bloodCentre.sending" />
+                ) : (
+                  <BilingualInline tKey="common.resend" />
+                )}
 
                 {!resendLoading && seconds > 0 && ` (${seconds}s)`}
               </button>
@@ -336,10 +349,10 @@ export function ResetPasswordScreen() {
                   id="newPassword"
                   name="newPassword"
                   icon={LockKeyhole}
-                  label="New Password"
+                  label={<Bilingual tKey="common.newPassword" as="span" />}
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Enter new password"
+                  placeholder={newPasswordPlaceholder}
                   value={newPassword}
                   onChange={(event) =>
                     handleNewPasswordChange(event.target.value)
@@ -351,10 +364,10 @@ export function ResetPasswordScreen() {
                 id="confirmPassword"
                 name="confirmPassword"
                 icon={LockKeyhole}
-                label="Confirm Password"
+                label={<Bilingual tKey="common.confirmPassword" as="span" />}
                 type="password"
                 autoComplete="new-password"
-                placeholder="Re-enter new password"
+                placeholder={confirmPasswordPlaceholder}
                 value={confirmPassword}
                 onChange={(event) =>
                   handleConfirmPasswordChange(event.target.value)
@@ -380,7 +393,10 @@ export function ResetPasswordScreen() {
             <div className="mt-8 flex w-full justify-center">
               <div className="w-full max-w-[320px] md:max-w-[300px]">
                 <AppButton type="button" loading={loading} onClick={submit}>
-                  Reset Password
+                  <BilingualInline
+                    tKey="bloodCentre.resetPasswordTitle"
+                    enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+                  />
                 </AppButton>
               </div>
             </div>

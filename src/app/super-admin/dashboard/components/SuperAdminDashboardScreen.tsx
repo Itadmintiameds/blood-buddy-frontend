@@ -17,12 +17,16 @@ import BloodBankManagement from "./BloodBankManagement";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { SuperAdminLogoutButton } from "./SuperAdminLogoutButton";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import {
+  Bilingual,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 type ActiveSection = "blood-bank" | "donor" | "recipient";
 
 interface NavigationItem {
   id: ActiveSection;
-  label: string;
+  tKey: string;
   icon: typeof Building2;
 }
 
@@ -67,22 +71,26 @@ function rubberband(overshoot: number, dimension: number, constant = 0.55) {
 const navigationItems: NavigationItem[] = [
   {
     id: "blood-bank",
-    label: "Blood Bank",
+    tKey: "superAdmin.bloodBank",
     icon: Building2,
   },
   {
     id: "donor",
-    label: "Donor",
+    tKey: "donor.donor",
     icon: Users,
   },
   {
     id: "recipient",
-    label: "Recipient",
+    tKey: "recipient.recipient",
     icon: UserRound,
   },
 ];
 
 export function SuperAdminDashboard() {
+  const closeNavigationLabel = useBilingualText("accessibility.closeNavigation");
+  const closeMenuLabel = useBilingualText("accessibility.closeMenu");
+  const openMenuLabel = useBilingualText("accessibility.openMenu");
+
   const [activeSection, setActiveSection] =
     useState<ActiveSection>("blood-bank");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -279,7 +287,7 @@ export function SuperAdminDashboard() {
         <button
           ref={scrimRef}
           type="button"
-          aria-label="Close navigation"
+          aria-label={closeNavigationLabel}
           onClick={() => setMobileMenuOpen(false)}
           className={`
             motion-scrim
@@ -328,7 +336,7 @@ export function SuperAdminDashboard() {
             type="button"
             onClick={() => setMobileMenuOpen(false)}
             className="absolute right-4 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--color-text-tertiary)] transition hover:bg-[var(--color-surface-hover)] lg:hidden"
-            aria-label="Close menu"
+            aria-label={closeMenuLabel}
           >
             <X size={19} />
           </button>
@@ -346,22 +354,28 @@ export function SuperAdminDashboard() {
             </div>
 
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold text-[var(--color-text-body)]">
-                Super Admin
-              </p>
+              <Bilingual
+                tKey="superAdmin.superAdmin"
+                as="p"
+                className="truncate text-[13px] font-semibold text-[var(--color-text-body)]"
+              />
 
-              <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
-                Administrator
-              </p>
+              <Bilingual
+                tKey="superAdmin.administrator"
+                as="p"
+                className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]"
+              />
             </div>
           </div>
         </div>
 
         {/* Navigation */}
         <div className="px-5 pt-7">
-          <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-placeholder)]">
-            Management
-          </p>
+          <Bilingual
+            tKey="superAdmin.management"
+            as="p"
+            className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--color-text-placeholder)]"
+          />
 
           <nav className="space-y-1.5">
             {navigationItems.map((item) => {
@@ -397,13 +411,13 @@ export function SuperAdminDashboard() {
                     }
                   />
 
-                  <span
+                  <Bilingual
+                    tKey={item.tKey}
+                    as="span"
                     className={`flex-1 text-[14px] ${
                       isActive ? "font-semibold" : "font-medium"
                     }`}
-                  >
-                    {item.label}
-                  </span>
+                  />
 
                   {isActive && (
                     <ChevronRight
@@ -424,9 +438,11 @@ export function SuperAdminDashboard() {
             <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
               Blood Buddy
             </p>
-            <p className="mt-1 text-[12px] text-[var(--color-text-placeholder-alt)]">
-              Super Admin Portal
-            </p>
+            <Bilingual
+              tKey="superAdmin.superAdminPortal"
+              as="p"
+              className="mt-1 text-[12px] text-[var(--color-text-placeholder-alt)]"
+            />
           </div>
 
           <div className="border-t border-[var(--color-border-lighter)] pt-3">
@@ -445,7 +461,7 @@ export function SuperAdminDashboard() {
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
-                aria-label="Open menu"
+                aria-label={openMenuLabel}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-hover)] lg:hidden"
               >
                 <Menu size={20} />
@@ -456,18 +472,22 @@ export function SuperAdminDashboard() {
                   Blood Buddy
                 </p>
 
-                <h1 className="truncate text-[20px] font-bold tracking-[-0.3px] text-[var(--color-text-primary)] sm:text-[24px]">
-                  Super Admin Dashboard
-                </h1>
+                <Bilingual
+                  tKey="superAdmin.superAdminDashboard"
+                  as="h1"
+                  className="text-[20px] font-bold tracking-[-0.3px] text-[var(--color-text-primary)] sm:text-[24px]"
+                />
               </div>
             </div>
 
             <div className="hidden items-center gap-2 rounded-full border border-[var(--color-border-light)] bg-white px-3.5 py-2 shadow-sm sm:flex">
               <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
 
-              <span className="text-[12px] font-medium text-[var(--color-text-quaternary)]">
-                Super Admin
-              </span>
+              <Bilingual
+                tKey="superAdmin.superAdmin"
+                as="span"
+                className="text-[12px] font-medium text-[var(--color-text-quaternary)]"
+              />
             </div>
           </div>
         </header>

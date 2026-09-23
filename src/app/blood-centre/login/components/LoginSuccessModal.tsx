@@ -3,6 +3,10 @@
 import { CheckCircle2 } from "lucide-react";
 
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import {
+  Bilingual,
+  BilingualInline,
+} from "@/app/components/common/Bilingual";
 
 interface LoginSuccessModalProps {
   open: boolean;
@@ -83,7 +87,9 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
         </div>
 
         {/* Title */}
-        <h2
+        <Bilingual
+          tKey="bloodCentre.loginSuccess"
+          as="h2"
           id="login-success-title"
           className="
             text-[18px]
@@ -92,32 +98,30 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
             tracking-[-0.01em]
             text-[var(--color-text-primary)]
           "
-        >
-          Login Successful
-        </h2>
+        />
 
         {/* Description */}
-        <p
+        <Bilingual
+          tKey="bloodCentre.loggedInMessage"
+          as="p"
           className="
             mt-2
             text-[13px]
             leading-5
             text-[var(--color-text-muted)]
           "
-        >
-          You have logged in successfully.
-        </p>
+        />
 
-        <p
+        <Bilingual
+          tKey="bloodCentre.welcomeMessage"
+          as="p"
           className="
             mt-1
             text-[13px]
             leading-5
             text-[var(--color-text-muted)]
           "
-        >
-          Welcome to Blood Buddy.
-        </p>
+        />
 
         {/* OK */}
         <button
@@ -126,12 +130,14 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
           className="
             mt-6
             flex
-            h-11
+            min-h-11
             w-full
             items-center
             justify-center
             rounded-lg
             bg-[var(--color-primary)]
+            px-4
+            py-2
             text-[14px]
             font-semibold
             text-white
@@ -146,7 +152,10 @@ export function LoginSuccessModal({ open, onConfirm }: LoginSuccessModalProps) {
             focus:ring-offset-2
           "
         >
-          OK
+          <BilingualInline
+            tKey="common.ok"
+            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+          />
         </button>
       </div>
     </div>

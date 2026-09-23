@@ -22,9 +22,16 @@ import {
   updateSuperAdminBloodUnits,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export default function BloodBankManagement() {
   const router = useRouter();
+  const searchPlaceholder = useBilingualText("superAdmin.searchBloodCentre");
+  const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
 
   const [bloodBanks, setBloodBanks] = useState<SuperAdminBloodBank[]>([]);
   const [expandedBankId, setExpandedBankId] = useState<number | null>(null);
@@ -355,29 +362,28 @@ export default function BloodBankManagement() {
             </div>
 
             <div className="min-w-0">
-              <h2
+              <Bilingual
+                tKey="superAdmin.bloodBankManagement"
+                as="h2"
                 className="
-                  truncate
                   text-[19px]
                   font-bold
                   tracking-[-0.01em]
                   text-[var(--color-text-primary)]
                   sm:text-[22px]
                 "
-              >
-                Blood Bank Management
-              </h2>
+              />
 
-              <p
+              <Bilingual
+                tKey="superAdmin.bloodBankManagementDescription"
+                as="p"
                 className="
                   mt-0.5
                   text-[12px]
                   text-[var(--color-text-placeholder-alt)]
                   sm:text-[13px]
                 "
-              >
-                Manage registered blood banks and blood availability.
-              </p>
+              />
             </div>
           </div>
         </div>
@@ -394,21 +400,21 @@ export default function BloodBankManagement() {
       >
         <StatCard
           icon={Building2}
-          label="Blood Banks"
+          tKey="superAdmin.bloodBanksStat"
           value={String(totalBloodBanks)}
           color="warning"
         />
 
         <StatCard
           icon={Droplets}
-          label="Blood Types"
+          tKey="superAdmin.bloodTypesStat"
           value={String(totalBloodTypes)}
           color="success"
         />
 
         <StatCard
           icon={Droplets}
-          label="Available Units"
+          tKey="superAdmin.availableUnitsStat"
           value={String(totalBloodUnits)}
           color="danger"
         />
@@ -460,7 +466,7 @@ export default function BloodBankManagement() {
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search blood centre..."
+            placeholder={searchPlaceholder}
             className="
               h-11
               w-full
@@ -504,7 +510,7 @@ export default function BloodBankManagement() {
                 hover:bg-[var(--color-surface-hover)]
                 hover:text-[var(--color-text-secondary)]
               "
-              aria-label="Clear search"
+              aria-label={clearSearchLabel}
             >
               <X size={14} />
             </button>
@@ -518,7 +524,7 @@ export default function BloodBankManagement() {
           onClick={() => router.push("/blood-centre/register")}
           className="
             flex
-            h-11
+            min-h-11
             w-full
             shrink-0
             items-center
@@ -527,6 +533,7 @@ export default function BloodBankManagement() {
             rounded-lg
             bg-[var(--color-primary)]
             px-4
+            py-2
             text-[13px]
             font-semibold
             text-white
@@ -544,8 +551,11 @@ export default function BloodBankManagement() {
             sm:text-[14px]
           "
         >
-          <Plus size={16} />
-          Add Blood Centre
+          <Plus size={16} className="shrink-0" />
+          <BilingualInline
+            tKey="superAdmin.addBloodCentre"
+            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+          />
         </button>
       </div>
 
@@ -629,7 +639,7 @@ export default function BloodBankManagement() {
                     sm:text-[13px]
                   "
                 >
-                  S.No
+                  <Bilingual tKey="superAdmin.sNo" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
                 </th>
 
                 <th
@@ -648,7 +658,7 @@ export default function BloodBankManagement() {
                     sm:text-[13px]
                   "
                 >
-                  Blood Bank
+                  <Bilingual tKey="superAdmin.bloodBankColumn" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
                 </th>
 
                 <th
@@ -667,7 +677,7 @@ export default function BloodBankManagement() {
                     sm:text-[13px]
                   "
                 >
-                  Category
+                  <Bilingual tKey="bloodCentre.category" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
                 </th>
 
                 <th
@@ -686,7 +696,7 @@ export default function BloodBankManagement() {
                     sm:text-[13px]
                   "
                 >
-                  Address
+                  <Bilingual tKey="common.address" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
                 </th>
 
                 <th
@@ -705,7 +715,7 @@ export default function BloodBankManagement() {
                     sm:text-[13px]
                   "
                 >
-                  City
+                  <Bilingual tKey="common.city" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
                 </th>
 
                 <th
@@ -724,7 +734,7 @@ export default function BloodBankManagement() {
                     sm:text-[13px]
                   "
                 >
-                  Phone
+                  <Bilingual tKey="superAdmin.phone" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
                 </th>
               </tr>
             </thead>
@@ -742,15 +752,15 @@ export default function BloodBankManagement() {
                         "
                       />
 
-                      <p
+                      <Bilingual
+                        tKey="superAdmin.loadingBloodBanks"
+                        as="p"
                         className="
                           mt-3
                           text-[11px]
                           text-[var(--color-text-tertiary)]
                         "
-                      >
-                        Loading blood banks...
-                      </p>
+                      />
                     </div>
                   </td>
                 </tr>
@@ -766,26 +776,26 @@ export default function BloodBankManagement() {
                         className="text-[var(--color-border)]"
                       />
 
-                      <p
+                      <Bilingual
+                        tKey="superAdmin.noBloodBanksFound"
+                        as="p"
                         className="
                             mt-3
                             text-[12px]
                             font-semibold
                             text-[var(--color-text-quaternary)]
                           "
-                      >
-                        No blood banks found
-                      </p>
+                      />
 
-                      <p
+                      <Bilingual
+                        tKey="superAdmin.tryChangingSearch"
+                        as="p"
                         className="
                             mt-1
                             text-[10px]
                             text-[var(--color-text-placeholder)]
                           "
-                      >
-                        Try changing your search.
-                      </p>
+                      />
                     </div>
                   </td>
                 </tr>
@@ -838,9 +848,11 @@ export default function BloodBankManagement() {
               className="animate-spin text-[var(--color-primary)]"
             />
 
-            <p className="mt-3 text-[13px] text-[var(--color-text-placeholder-alt)]">
-              Loading blood banks...
-            </p>
+            <Bilingual
+              tKey="superAdmin.loadingBloodBanks"
+              as="p"
+              className="mt-3 text-[13px] text-[var(--color-text-placeholder-alt)]"
+            />
           </div>
         )}
 
@@ -862,13 +874,17 @@ export default function BloodBankManagement() {
           >
             <Building2 size={28} className="text-[var(--color-border)]" />
 
-            <p className="mt-3 text-[14px] font-semibold text-[var(--color-text-quaternary)]">
-              No blood banks found
-            </p>
+            <Bilingual
+              tKey="superAdmin.noBloodBanksFound"
+              as="p"
+              className="mt-3 text-[14px] font-semibold text-[var(--color-text-quaternary)]"
+            />
 
-            <p className="mt-1 text-[12px] text-[var(--color-text-placeholder)]">
-              Try changing your search.
-            </p>
+            <Bilingual
+              tKey="superAdmin.tryChangingSearch"
+              as="p"
+              className="mt-1 text-[12px] text-[var(--color-text-placeholder)]"
+            />
           </div>
         )}
 
@@ -1017,16 +1033,17 @@ function BloodBankTableSection({
                 {bank?.bloodBankName}
               </p>
 
-              <p
+              <Bilingual
+                tKey="superAdmin.bloodTypesCount"
+                params={{ count: bank?.availability?.length ?? 0 }}
+                as="p"
                 className="
                   mt-0.5
                   text-[11px]
                   text-[var(--color-text-placeholder-alt)]
                   sm:text-[12px]
                 "
-              >
-                {bank?.availability?.length} blood types
-              </p>
+              />
             </div>
           </div>
         </td>
@@ -1167,7 +1184,9 @@ function BloodBankTableSection({
                       className="shrink-0 text-[var(--color-primary)]"
                     />
 
-                    <span
+                    <Bilingual
+                      tKey="bloodCentre.bloodAvailabilityTitle"
+                      as="span"
                       className="
                         truncate
                         text-[12px]
@@ -1175,9 +1194,7 @@ function BloodBankTableSection({
                         text-[var(--color-text-body)]
                         sm:text-[13px]
                       "
-                    >
-                      Blood Availability
-                    </span>
+                    />
                   </div>
 
                   <span
@@ -1234,7 +1251,7 @@ function BloodBankTableSection({
                             sm:text-[13px]
                           "
                         >
-                          Blood Group
+                          <Bilingual tKey="bloodCentre.bloodGroup" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
                         </th>
 
                         <th
@@ -1254,7 +1271,7 @@ function BloodBankTableSection({
                             sm:text-[13px]
                           "
                         >
-                          Blood Type
+                          <Bilingual tKey="bloodCentre.bloodType" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
                         </th>
 
                         <th
@@ -1274,7 +1291,7 @@ function BloodBankTableSection({
                             sm:text-[13px]
                           "
                         >
-                          Units
+                          <Bilingual tKey="bloodCentre.units" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
                         </th>
 
                         <th
@@ -1294,7 +1311,7 @@ function BloodBankTableSection({
                             sm:text-[13px]
                           "
                         >
-                          Actions
+                          <Bilingual tKey="superAdmin.actions" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
                         </th>
                       </tr>
                     </thead>
@@ -1366,15 +1383,15 @@ function BloodBankTableSection({
                                 {availability?.units}
                               </span>
 
-                              <span
+                              <Bilingual
+                                tKey="bloodCentre.units"
+                                as="span"
                                 className="
                                     text-[11px]
                                     text-[var(--color-text-placeholder-alt)]
                                     sm:text-[12px]
                                   "
-                              >
-                                Units
-                              </span>
+                              />
                             </div>
                           </td>
 
@@ -1465,7 +1482,7 @@ function BloodBankTableSection({
                               text-[var(--color-text-placeholder-alt)]
                             "
                           >
-                            No blood availability found.
+                            <Bilingual tKey="superAdmin.noBloodAvailabilityFound" as="span" />
                           </td>
                         </tr>
                       )}
@@ -1542,9 +1559,12 @@ function BloodBankCard({
           </div>
 
           <div className="min-w-0">
-            <p className="text-[11px] text-[var(--color-text-placeholder)]">
-              S.No {index + 1}
-            </p>
+            <Bilingual
+              tKey="superAdmin.sNoValue"
+              params={{ index: index + 1 }}
+              as="p"
+              className="text-[11px] text-[var(--color-text-placeholder)]"
+            />
 
             <p className="mt-0.5 break-words text-[14px] font-bold leading-5 text-[var(--color-text-body)]">
               {bank?.bloodBankName}
@@ -1596,27 +1616,33 @@ function BloodBankCard({
 
       <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border-lighter)] px-4 py-3.5 sm:grid-cols-2">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
-            Address
-          </p>
+          <Bilingual
+            tKey="common.address"
+            as="p"
+            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
+          />
           <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
             {bank?.address}
           </p>
         </div>
 
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
-            City
-          </p>
+          <Bilingual
+            tKey="common.city"
+            as="p"
+            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
+          />
           <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
             {bank?.city}
           </p>
         </div>
 
         <div className="min-w-0 sm:col-span-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
-            Phone
-          </p>
+          <Bilingual
+            tKey="superAdmin.phone"
+            as="p"
+            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
+          />
           <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
             {bank?.phoneNumber}
           </p>
@@ -1627,9 +1653,11 @@ function BloodBankCard({
         <div className="border-t border-[#e7e7e9] bg-[#f7f7f8] px-4 py-4 shadow-[inset_0_1px_0_rgba(0,0,0,0.02)]">
           <div className="mb-3 flex items-center gap-2">
             <Droplets size={15} className="text-[var(--color-primary)]" />
-            <span className="text-[12px] font-bold text-[#222222]">
-              Blood Availability
-            </span>
+            <Bilingual
+              tKey="bloodCentre.bloodAvailabilityTitle"
+              as="span"
+              className="text-[12px] font-bold text-[#222222]"
+            />
           </div>
 
           <div className="space-y-2.5">
@@ -1674,7 +1702,7 @@ function BloodBankCard({
                       {availability?.bloodType}
                     </p>
                     <p className="text-[12px] font-bold text-[var(--color-text-body)]">
-                      {availability?.units} Units
+                      {availability?.units} <BilingualInline tKey="bloodCentre.units" />
                     </p>
                   </div>
                 </div>
@@ -1744,9 +1772,11 @@ function BloodBankCard({
             ))}
 
             {bank?.availability?.length === 0 && (
-              <p className="px-2 py-4 text-center text-[12px] text-[var(--color-text-placeholder)]">
-                No blood availability found.
-              </p>
+              <Bilingual
+                tKey="superAdmin.noBloodAvailabilityFound"
+                as="p"
+                className="px-2 py-4 text-center text-[12px] text-[var(--color-text-placeholder)]"
+              />
             )}
           </div>
         </div>
@@ -1758,12 +1788,12 @@ function BloodBankCard({
 // STAT CARD
 function StatCard({
   icon: Icon,
-  label,
+  tKey,
   value,
   color,
 }: {
   icon: typeof Building2;
-  label: string;
+  tKey: string;
   value: string;
   color: "warning" | "success" | "danger";
 }) {
@@ -1831,7 +1861,9 @@ function StatCard({
       </div>
 
       <div className="min-w-0">
-        <p
+        <Bilingual
+          tKey={tKey}
+          as="p"
           className="
             truncate
             text-[11px]
@@ -1839,12 +1871,9 @@ function StatCard({
             uppercase
             tracking-wide
           "
-          style={{
-            color: styles.text,
-          }}
-        >
-          {label}
-        </p>
+          style={{ color: styles.text }}
+          enClassName="mt-0.5 block text-[0.75em] font-normal leading-tight opacity-80"
+        />
 
         <p
           className="
@@ -1886,6 +1915,7 @@ function UpdateUnitsModal({
   onSave: () => void;
 }) {
   const { rendered, visible } = useExitTransition(open, 200);
+  const closeLabel = useBilingualText("common.close");
 
   const availability = bank?.availability.find(
     (item) => item?.id === availabilityId,
@@ -1967,26 +1997,26 @@ function UpdateUnitsModal({
               </div>
 
               <div className="min-w-0">
-                <h2
+                <Bilingual
+                  tKey="superAdmin.updateBloodUnits"
+                  as="h2"
                   id="update-units-title"
                   className="
                     text-[14px]
                     font-bold
                     text-[var(--color-text-primary)]
                   "
-                >
-                  Update Blood Units
-                </h2>
+                />
 
-                <p
+                <Bilingual
+                  tKey="superAdmin.updateCurrentAvailability"
+                  as="p"
                   className="
                     mt-0.5
                     text-[12px]
                     text-[var(--color-text-placeholder-alt)]
                   "
-                >
-                  Update current availability
-                </p>
+                />
               </div>
             </div>
           </div>
@@ -2010,7 +2040,7 @@ function UpdateUnitsModal({
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
-            aria-label="Close"
+            aria-label={closeLabel}
           >
             <X size={17} />
           </button>
@@ -2027,7 +2057,9 @@ function UpdateUnitsModal({
               p-4
             "
           >
-            <p
+            <Bilingual
+              tKey="superAdmin.bloodBankColumn"
+              as="p"
               className="
                 text-[12px]
                 font-medium
@@ -2035,9 +2067,7 @@ function UpdateUnitsModal({
                 tracking-wide
                 text-[var(--color-text-placeholder-alt)]
               "
-            >
-              Blood Bank
-            </p>
+            />
 
             <p
               className="
@@ -2063,9 +2093,11 @@ function UpdateUnitsModal({
                 p-3
               "
             >
-              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
-                Blood Group
-              </p>
+              <Bilingual
+                tKey="bloodCentre.bloodGroup"
+                as="p"
+                className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+              />
 
               <p
                 className="
@@ -2088,9 +2120,11 @@ function UpdateUnitsModal({
                 p-3
               "
             >
-              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
-                Blood Type
-              </p>
+              <Bilingual
+                tKey="bloodCentre.bloodType"
+                as="p"
+                className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+              />
 
               <p
                 className="
@@ -2111,7 +2145,9 @@ function UpdateUnitsModal({
           {/* UNITS */}
 
           <div className="mt-5">
-            <label
+            <Bilingual
+              tKey="superAdmin.availableUnitsField"
+              as="label"
               htmlFor="updateUnits"
               className="
                 block
@@ -2119,9 +2155,7 @@ function UpdateUnitsModal({
                 font-semibold
                 text-[var(--color-text-secondary)]
               "
-            >
-              Available Units
-            </label>
+            />
 
             <div className="relative mt-2">
               <input
@@ -2170,7 +2204,7 @@ function UpdateUnitsModal({
                   text-[var(--color-text-placeholder-alt)]
                 "
               >
-                Units
+                <BilingualInline tKey="bloodCentre.units" />
               </span>
             </div>
 
@@ -2206,12 +2240,14 @@ function UpdateUnitsModal({
             onClick={onClose}
             disabled={saving}
             className="
-              h-[40px]
+              min-h-[40px]
               flex-1
               rounded-lg
               border
               border-[var(--color-border)]
               bg-white
+              px-3
+              py-1.5
               text-[11px]
               font-semibold
               text-[var(--color-text-quaternary)]
@@ -2221,7 +2257,7 @@ function UpdateUnitsModal({
               disabled:opacity-50
             "
           >
-            Cancel
+            <BilingualInline tKey="common.cancel" />
           </button>
 
           <button
@@ -2230,13 +2266,15 @@ function UpdateUnitsModal({
             disabled={saving}
             className="
               flex
-              h-[40px]
+              min-h-[40px]
               flex-1
               items-center
               justify-center
               gap-2
               rounded-lg
               bg-[var(--color-primary)]
+              px-3
+              py-1.5
               text-[11px]
               font-semibold
               text-white
@@ -2247,9 +2285,13 @@ function UpdateUnitsModal({
               disabled:opacity-60
             "
           >
-            {saving && <Loader2 size={14} className="animate-spin" />}
+            {saving && <Loader2 size={14} className="animate-spin shrink-0" />}
 
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? (
+              <BilingualInline tKey="common.saving" />
+            ) : (
+              <BilingualInline tKey="superAdmin.saveChanges" />
+            )}
           </button>
         </div>
       </div>
@@ -2284,6 +2326,7 @@ function AddStockModal({
   onSave: () => void;
 }) {
   const { rendered, visible } = useExitTransition(open, 200);
+  const closeLabel = useBilingualText("common.close");
 
   const availability = bank?.availability.find(
     (item) => item?.id === availabilityId,
@@ -2343,16 +2386,18 @@ function AddStockModal({
               </div>
 
               <div className="min-w-0">
-                <h2
+                <Bilingual
+                  tKey="superAdmin.addStock"
+                  as="h2"
                   id="add-stock-title"
                   className="text-[14px] font-bold text-[var(--color-text-primary)]"
-                >
-                  Add Stock
-                </h2>
+                />
 
-                <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
-                  Add units to this centre&apos;s inventory
-                </p>
+                <Bilingual
+                  tKey="superAdmin.addUnitsToInventory"
+                  as="p"
+                  className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]"
+                />
               </div>
             </div>
           </div>
@@ -2376,7 +2421,7 @@ function AddStockModal({
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
-            aria-label="Close"
+            aria-label={closeLabel}
           >
             <X size={17} />
           </button>
@@ -2384,9 +2429,11 @@ function AddStockModal({
 
         <div className="overflow-y-auto px-5 py-5">
           <div className="rounded-xl border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] p-4">
-            <p className="text-[12px] font-medium uppercase tracking-wide text-[var(--color-text-placeholder-alt)]">
-              Blood Bank
-            </p>
+            <Bilingual
+              tKey="superAdmin.bloodBankColumn"
+              as="p"
+              className="text-[12px] font-medium uppercase tracking-wide text-[var(--color-text-placeholder-alt)]"
+            />
 
             <p className="mt-1 break-words text-[12px] font-bold text-[var(--color-text-body)]">
               {bank.bloodBankName}
@@ -2395,9 +2442,11 @@ function AddStockModal({
 
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="min-w-0 rounded-lg border border-[var(--color-border-lighter)] p-3">
-              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
-                Blood Group
-              </p>
+              <Bilingual
+                tKey="bloodCentre.bloodGroup"
+                as="p"
+                className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+              />
 
               <p className="mt-1 text-[13px] font-bold text-[var(--color-primary)]">
                 {availability?.bloodGroup}
@@ -2405,9 +2454,11 @@ function AddStockModal({
             </div>
 
             <div className="min-w-0 rounded-lg border border-[var(--color-border-lighter)] p-3">
-              <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
-                Blood Type
-              </p>
+              <Bilingual
+                tKey="bloodCentre.bloodType"
+                as="p"
+                className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+              />
 
               <p className="mt-1 break-words text-[11px] font-bold uppercase leading-4 text-[var(--color-text-secondary)]">
                 {availability?.bloodType}
@@ -2416,19 +2467,19 @@ function AddStockModal({
           </div>
 
           <p className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]">
-            Current stock:{" "}
+            <BilingualInline tKey="superAdmin.currentStock" />{" "}
             <span className="font-bold text-[var(--color-text-body)]">
-              {availability?.units} units
+              {availability?.units} <BilingualInline tKey="recipient.unitsSuffix" />
             </span>
           </p>
 
           <div className="mt-5">
-            <label
+            <Bilingual
+              tKey="superAdmin.unitsToAdd"
+              as="label"
               htmlFor="addStockUnits"
               className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
-            >
-              Units to Add
-            </label>
+            />
 
             <div className="relative mt-2">
               <input
@@ -2467,18 +2518,18 @@ function AddStockModal({
               />
 
               <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-[var(--color-text-placeholder-alt)]">
-                Units
+                <BilingualInline tKey="bloodCentre.units" />
               </span>
             </div>
           </div>
 
           <div className="mt-4">
-            <label
+            <Bilingual
+              tKey="bloodCentre.remarksOptional"
+              as="label"
               htmlFor="addStockRemarks"
               className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
-            >
-              Remarks (optional)
-            </label>
+            />
 
             <textarea
               id="addStockRemarks"
@@ -2520,12 +2571,14 @@ function AddStockModal({
             onClick={onClose}
             disabled={saving}
             className="
-              h-[40px]
+              min-h-[40px]
               flex-1
               rounded-lg
               border
               border-[var(--color-border)]
               bg-white
+              px-3
+              py-1.5
               text-[11px]
               font-semibold
               text-[var(--color-text-quaternary)]
@@ -2535,7 +2588,7 @@ function AddStockModal({
               disabled:opacity-50
             "
           >
-            Cancel
+            <BilingualInline tKey="common.cancel" />
           </button>
 
           <button
@@ -2544,13 +2597,15 @@ function AddStockModal({
             disabled={saving}
             className="
               flex
-              h-[40px]
+              min-h-[40px]
               flex-1
               items-center
               justify-center
               gap-2
               rounded-lg
               bg-[var(--color-primary)]
+              px-3
+              py-1.5
               text-[11px]
               font-semibold
               text-white
@@ -2561,9 +2616,13 @@ function AddStockModal({
               disabled:opacity-60
             "
           >
-            {saving && <Loader2 size={14} className="animate-spin" />}
+            {saving && <Loader2 size={14} className="animate-spin shrink-0" />}
 
-            {saving ? "Adding..." : "Add Stock"}
+            {saving ? (
+              <BilingualInline tKey="superAdmin.adding" />
+            ) : (
+              <BilingualInline tKey="superAdmin.addStock" />
+            )}
           </button>
         </div>
       </div>

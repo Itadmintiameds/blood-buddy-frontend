@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -27,6 +27,11 @@ import type {
 } from "@/types/bloodCenter/bloodCenterTypes";
 import { mergeBloodAvailabilityRows } from "@/utils/bloodAvailability";
 import { routes } from "@/config/routes";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function BloodCentreDashboardScreen() {
   const [rows, setRows] = useState<BloodAvailabilityItem[]>([]);
@@ -37,6 +42,7 @@ export function BloodCentreDashboardScreen() {
   const [reloadToken, setReloadToken] = useState(0);
 
   const session = getBloodCentreSession();
+  const unitsWordText = useBilingualText("bloodCentre.units");
 
   useEffect(() => {
     let cancelled = false;
@@ -137,7 +143,9 @@ export function BloodCentreDashboardScreen() {
                     </div>
 
                     <div className="min-w-0">
-                      <h1
+                      <Bilingual
+                        tKey="bloodCentre.dashboard"
+                        as="h1"
                         className="
                           text-[20px]
                           font-bold
@@ -147,11 +155,14 @@ export function BloodCentreDashboardScreen() {
                           sm:text-[22px]
                           lg:text-[24px]
                         "
-                      >
-                        Blood Centre Dashboard
-                      </h1>
+                      />
 
-                      <p
+                      <Bilingual
+                        tKey="bloodCentre.welcomeUser"
+                        params={{
+                          suffix: session?.email ? `, ${session.email}` : "",
+                        }}
+                        as="p"
                         className="
                           mt-1
                           truncate
@@ -159,10 +170,7 @@ export function BloodCentreDashboardScreen() {
                           text-[#777]
                           sm:text-[13px]
                         "
-                      >
-                        Welcome
-                        {session?.email ? `, ${session.email}` : ""}
-                      </p>
+                      />
                     </div>
                   </div>
                 </div>
@@ -187,21 +195,39 @@ export function BloodCentreDashboardScreen() {
                 <Stat
                   icon={Droplets}
                   value={String(totalGroupsListed)}
-                  label="Blood Groups Listed"
+                  label={
+                    <Bilingual
+                      tKey="bloodCentre.bloodGroupsListed"
+                      as="span"
+                      enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+                    />
+                  }
                   color="#FF3B3B"
                 />
 
                 <Stat
                   icon={Package}
                   value={String(totalUnits)}
-                  label="Total Units Available"
+                  label={
+                    <Bilingual
+                      tKey="bloodCentre.totalUnitsAvailable"
+                      as="span"
+                      enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+                    />
+                  }
                   color="#378200"
                 />
 
                 <Stat
                   icon={AlertTriangle}
                   value={String(lowStockCount)}
-                  label="Low Stock Alerts"
+                  label={
+                    <Bilingual
+                      tKey="bloodCentre.lowStockAlerts"
+                      as="span"
+                      enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+                    />
+                  }
                   color="#FDC000"
                 />
               </div>
@@ -237,16 +263,16 @@ export function BloodCentreDashboardScreen() {
                   "
                 >
                   <div>
-                    <h2
+                    <Bilingual
+                      tKey="bloodCentre.bloodAvailability"
+                      as="h2"
                       className="
                         text-[16px]
                         font-bold
                         text-[#222]
                         sm:text-[17px]
                       "
-                    >
-                      Blood Availability Overview
-                    </h2>
+                    />
 
                     <p className="mt-1 text-[11px] text-[#888] sm:text-[12px]">
                       Current blood stock available at your centre
@@ -297,10 +323,26 @@ export function BloodCentreDashboardScreen() {
                       sm:text-[11px]
                     "
                   >
-                    <div className="text-left">Blood Group</div>
-                    <div className="text-center">Blood Type</div>
-                    <div className="text-right">Blood Units</div>
-                    <div className="text-right">Adjust</div>
+                    <Bilingual
+                      tKey="bloodCentre.bloodGroup"
+                      as="div"
+                      className="text-left"
+                    />
+                    <Bilingual
+                      tKey="bloodCentre.bloodType"
+                      as="div"
+                      className="text-center"
+                    />
+                    <Bilingual
+                      tKey="bloodCentre.bloodUnits"
+                      as="div"
+                      className="text-right"
+                    />
+                    <Bilingual
+                      tKey="bloodCentre.adjust"
+                      as="div"
+                      className="text-right"
+                    />
                   </div>
 
                   {loading && (
@@ -320,9 +362,11 @@ export function BloodCentreDashboardScreen() {
                         className="animate-spin text-[#ff3b3f]"
                       />
 
-                      <p className="text-[12px] text-[#888]">
-                        Loading availability...
-                      </p>
+                      <Bilingual
+                        tKey="bloodCentre.loadingAvailability"
+                        as="p"
+                        className="text-[12px] text-[#888]"
+                      />
                     </div>
                   )}
 
@@ -375,9 +419,11 @@ export function BloodCentreDashboardScreen() {
                         />
                       </div>
 
-                      <p className="mt-3 text-[13px] font-medium text-[#555]">
-                        No availability added yet.
-                      </p>
+                      <Bilingual
+                        tKey="bloodCentre.noAvailabilityYet"
+                        as="p"
+                        className="mt-3 text-[13px] font-medium text-[#555]"
+                      />
 
                       <p className="mt-1 text-[11px] text-[#999]">
                         Add blood availability to see the current stock here.
@@ -472,7 +518,7 @@ export function BloodCentreDashboardScreen() {
                               sm:text-[12px]
                             "
                           >
-                            {row.unitsAvailable} Units
+                            {row.unitsAvailable} {unitsWordText}
                           </span>
                         </div>
 
@@ -558,7 +604,10 @@ export function BloodCentreDashboardScreen() {
                   "
                 >
                   <Plus size={17} strokeWidth={2} />
-                  Add Availability
+                  <BilingualInline
+                    tKey="bloodCentre.addAvailability"
+                    enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+                  />
                 </Link>
               </div>
             </div>
@@ -599,6 +648,18 @@ function AdjustStockModal({
   const [formError, setFormError] = useState("");
 
   const isCorrection = movement === "CORRECTION";
+  const closeLabel = useBilingualText("common.close");
+  const movementIssueText = useBilingualText("bloodCentre.movementIssue");
+  const movementDiscardText = useBilingualText("bloodCentre.movementDiscard");
+  const movementCorrectionText = useBilingualText(
+    "bloodCentre.movementCorrection",
+  );
+  const egNumberPlaceholder = useBilingualText(
+    "bloodCentre.egNumberPlaceholder",
+  );
+  const unitsAvailableSuffix = useBilingualText(
+    "bloodCentre.unitsAvailableSuffix",
+  );
 
   const submit = async () => {
     if (row.bloodGroupId === undefined || row.bloodComponentId === undefined) {
@@ -697,16 +758,16 @@ function AdjustStockModal({
           "
         >
           <div className="min-w-0">
-            <h2
+            <Bilingual
+              tKey="bloodCentre.adjustStock"
+              as="h2"
               id="adjust-stock-title"
               className="text-[14px] font-bold text-[#222]"
-            >
-              Adjust Stock
-            </h2>
+            />
 
             <p className="mt-1 text-[11px] text-[#888]">
-              {row.bloodGroup} · {row.bloodType} · {row.unitsAvailable} units
-              available
+              {row.bloodGroup} · {row.bloodType} · {row.unitsAvailable}{" "}
+              {unitsAvailableSuffix}
             </p>
           </div>
 
@@ -729,19 +790,19 @@ function AdjustStockModal({
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
-            aria-label="Close"
+            aria-label={closeLabel}
           >
             <X size={17} />
           </button>
         </div>
 
         <div className="px-5 py-5">
-          <label
+          <Bilingual
+            tKey="bloodCentre.movement"
+            as="label"
             htmlFor="movement"
             className="block text-[13px] font-medium text-[#444]"
-          >
-            Movement
-          </label>
+          />
 
           <div className="relative mt-2">
             <select
@@ -771,11 +832,9 @@ function AdjustStockModal({
                 focus:ring-[#ff3b3f]/15
               "
             >
-              <option value="ISSUE">Issue (dispatch units)</option>
-
-              <option value="DISCARD">Discard (expired / unusable)</option>
-
-              <option value="CORRECTION">Correction (set exact total)</option>
+              <option value="ISSUE">{movementIssueText}</option>
+              <option value="DISCARD">{movementDiscardText}</option>
+              <option value="CORRECTION">{movementCorrectionText}</option>
             </select>
 
             <ChevronDown
@@ -792,12 +851,14 @@ function AdjustStockModal({
             />
           </div>
 
-          <label
+          <Bilingual
+            tKey={
+              isCorrection ? "bloodCentre.newTotalUnits" : "bloodCentre.units"
+            }
+            as="label"
             htmlFor="adjustUnits"
             className="mt-4 block text-[13px] font-medium text-[#444]"
-          >
-            {isCorrection ? "New Total Units" : "Units"}
-          </label>
+          />
 
           <input
             id="adjustUnits"
@@ -811,7 +872,9 @@ function AdjustStockModal({
               setFormError("");
             }}
             placeholder={
-              isCorrection ? "e.g. 25" : "Units to " + movement.toLowerCase()
+              isCorrection
+                ? egNumberPlaceholder
+                : "Units to " + movement.toLowerCase()
             }
             className="
               mt-2
@@ -833,12 +896,12 @@ function AdjustStockModal({
             "
           />
 
-          <label
+          <Bilingual
+            tKey="bloodCentre.remarksOptional"
+            as="label"
             htmlFor="remarks"
             className="mt-4 block text-[13px] font-medium text-[#444]"
-          >
-            Remarks (optional)
-          </label>
+          />
 
           <textarea
             id="remarks"
@@ -890,12 +953,14 @@ function AdjustStockModal({
             onClick={onClose}
             disabled={saving}
             className="
-              h-[40px]
+              min-h-[40px]
               flex-1
               rounded-lg
               border
               border-[#dddddd]
               bg-white
+              px-3
+              py-1.5
               text-[13px]
               font-semibold
               text-[#666]
@@ -905,7 +970,7 @@ function AdjustStockModal({
               disabled:opacity-50
             "
           >
-            Cancel
+            <BilingualInline tKey="common.cancel" />
           </button>
 
           <button
@@ -914,13 +979,15 @@ function AdjustStockModal({
             disabled={saving}
             className="
               flex
-              h-[40px]
+              min-h-[40px]
               flex-1
               items-center
               justify-center
               gap-2
               rounded-lg
               bg-[#ff3b3f]
+              px-3
+              py-1.5
               text-[13px]
               font-semibold
               text-white
@@ -931,9 +998,15 @@ function AdjustStockModal({
               disabled:opacity-60
             "
           >
-            {saving && <Loader2 size={14} className="animate-spin" />}
-
-            {saving ? "Saving..." : "Apply"}
+            {saving && <Loader2 size={14} className="animate-spin shrink-0" />}
+            {saving ? (
+              <BilingualInline tKey="common.saving" />
+            ) : (
+              <BilingualInline
+                tKey="bloodCentre.apply"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
+            )}
           </button>
         </div>
       </div>
@@ -951,7 +1024,7 @@ function Stat({
 }: {
   icon: typeof Droplets;
   value: string;
-  label: string;
+  label: ReactNode;
   color: string;
 }) {
   return (

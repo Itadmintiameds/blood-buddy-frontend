@@ -2,6 +2,10 @@
 
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { CheckCircle2 } from "lucide-react";
+import {
+  Bilingual,
+  BilingualInline,
+} from "@/app/components/common/Bilingual";
 
 interface ResetPasswordSuccessModalProps {
   open: boolean;
@@ -86,7 +90,9 @@ export function ResetPasswordSuccessModal({
         </div>
 
         {/* Title */}
-        <h2
+        <Bilingual
+          tKey="bloodCentre.passwordResetTitle"
+          as="h2"
           id="reset-password-success-title"
           className="
             text-[18px]
@@ -95,32 +101,30 @@ export function ResetPasswordSuccessModal({
             tracking-[-0.01em]
             text-[var(--color-text-primary)]
           "
-        >
-          Password Reset
-        </h2>
+        />
 
         {/* Message */}
-        <p
+        <Bilingual
+          tKey="bloodCentre.passwordResetMessage"
+          as="p"
           className="
             mt-2
             text-[13px]
             leading-5
             text-[var(--color-text-muted)]
           "
-        >
-          Your password has been reset successfully.
-        </p>
+        />
 
-        <p
+        <Bilingual
+          tKey="bloodCentre.passwordResetLoginHint"
+          as="p"
           className="
             mt-1
             text-[13px]
             leading-5
             text-[var(--color-text-muted)]
           "
-        >
-          You can now login with your new password.
-        </p>
+        />
 
         {/* OK Button */}
         <button
@@ -129,12 +133,14 @@ export function ResetPasswordSuccessModal({
           className="
             mt-6
             flex
-            h-11
+            min-h-11
             w-full
             items-center
             justify-center
             rounded-lg
             bg-[var(--color-primary)]
+            px-4
+            py-2
             text-[14px]
             font-semibold
             text-white
@@ -149,7 +155,10 @@ export function ResetPasswordSuccessModal({
             focus:ring-offset-2
           "
         >
-          OK
+          <BilingualInline
+            tKey="common.ok"
+            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+          />
         </button>
       </div>
     </div>

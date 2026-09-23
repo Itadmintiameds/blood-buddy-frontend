@@ -14,6 +14,11 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import type { SuperAdminDonor } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import { getSuperAdminDonors } from "@/services/bloodCenter/superAdmin/dashboardService";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 function formatDate(value: string | null): string {
   if (!value) {
@@ -30,6 +35,8 @@ function formatDate(value: string | null): string {
 }
 
 export function DonorManagement() {
+  const searchPlaceholder = useBilingualText("superAdmin.searchDonor");
+
   const [donors, setDonors] = useState<SuperAdminDonor[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -93,17 +100,23 @@ export function DonorManagement() {
     <div className="space-y-6">
       {/* Page Title */}
       <div>
-        <p className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]">
-          Management
-        </p>
+        <Bilingual
+          tKey="superAdmin.management"
+          as="p"
+          className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]"
+        />
 
-        <h2 className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
-          Donor Details
-        </h2>
+        <Bilingual
+          tKey="superAdmin.donorDetails"
+          as="h2"
+          className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]"
+        />
 
-        <p className="mt-1 text-[13px] text-[var(--color-text-placeholder-alt)]">
-          Manage registered blood donors and their donation information.
-        </p>
+        <Bilingual
+          tKey="superAdmin.donorDetailsDescription"
+          as="p"
+          className="mt-1 text-[13px] text-[var(--color-text-placeholder-alt)]"
+        />
       </div>
 
       {/* Search */}
@@ -119,7 +132,7 @@ export function DonorManagement() {
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search donor..."
+            placeholder={searchPlaceholder}
             className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
           />
         </div>
@@ -153,15 +166,15 @@ export function DonorManagement() {
 
             <thead>
               <tr className="border-b border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)]">
-                <TableHeader>S.No</TableHeader>
-                <TableHeader>Donor Name</TableHeader>
-                <TableHeader>Mobile Number</TableHeader>
-                <TableHeader>Alternate Mobile No</TableHeader>
-                <TableHeader>Blood Group</TableHeader>
-                <TableHeader>Date of Birth</TableHeader>
-                <TableHeader>Address</TableHeader>
-                <TableHeader>Pincode</TableHeader>
-                <TableHeader>Last Blood Donation Date</TableHeader>
+                <TableHeader tKey="superAdmin.sNo" />
+                <TableHeader tKey="superAdmin.donorName" />
+                <TableHeader tKey="common.mobileNumber" />
+                <TableHeader tKey="superAdmin.alternateMobileNo" />
+                <TableHeader tKey="bloodCentre.bloodGroup" />
+                <TableHeader tKey="donor.dateOfBirth" />
+                <TableHeader tKey="common.address" />
+                <TableHeader tKey="superAdmin.pincode" />
+                <TableHeader tKey="superAdmin.lastBloodDonationDate" />
               </tr>
             </thead>
 
@@ -219,7 +232,7 @@ export function DonorManagement() {
               ) : (
                 <tr>
                   <td colSpan={9}>
-                    <EmptyState message="No donor data found" />
+                    <EmptyState tKey="superAdmin.noDonorDataFound" />
                   </td>
                 </tr>
               )}
@@ -261,28 +274,28 @@ export function DonorManagement() {
 
                 <div className="mt-5 grid grid-cols-2 gap-4">
                   <InfoItem
-                    label="Alternate Mobile"
+                    tKey="superAdmin.alternateMobile"
                     value={donor?.alternateMobileNumber}
                   />
 
                   <InfoItem
-                    label="Date of Birth"
+                    tKey="donor.dateOfBirth"
                     value={formatDate(donor?.dateOfBirth)}
                   />
 
-                  <InfoItem label="Address" value={donor?.address} />
+                  <InfoItem tKey="common.address" value={donor?.address} />
 
-                  <InfoItem label="Pincode" value={donor?.pincode} />
+                  <InfoItem tKey="superAdmin.pincode" value={donor?.pincode} />
 
                   <InfoItem
-                    label="Last Donation"
+                    tKey="superAdmin.lastDonation"
                     value={formatDate(donor?.lastBloodDonationDate)}
                   />
                 </div>
               </div>
             ))
           ) : (
-            <EmptyState message="No donor data found" />
+            <EmptyState tKey="superAdmin.noDonorDataFound" />
           )}
         </div>
       </div>
@@ -307,9 +320,12 @@ export function DonorManagement() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[11px] text-[var(--color-text-placeholder)]">
-                      S.No {index + 1}
-                    </p>
+                    <Bilingual
+                      tKey="superAdmin.sNoValue"
+                      params={{ index: index + 1 }}
+                      as="p"
+                      className="text-[11px] text-[var(--color-text-placeholder)]"
+                    />
 
                     <h3 className="break-words text-[15px] font-bold text-[var(--color-text-body)]">
                       {donor.donorName}
@@ -323,54 +339,58 @@ export function DonorManagement() {
               <div className="mt-5 space-y-3">
                 <MobileInfoRow
                   icon={Phone}
-                  label="Mobile Number"
+                  tKey="common.mobileNumber"
                   value={donor.mobileNumber}
                 />
 
                 <MobileInfoRow
                   icon={Phone}
-                  label="Alternate Mobile"
+                  tKey="superAdmin.alternateMobile"
                   value={donor.alternateMobileNumber}
                 />
 
                 <MobileInfoRow
                   icon={CalendarDays}
-                  label="Date of Birth"
+                  tKey="donor.dateOfBirth"
                   value={formatDate(donor.dateOfBirth)}
                 />
 
                 <MobileInfoRow
                   icon={MapPin}
-                  label="Address"
+                  tKey="common.address"
                   value={donor.address}
                 />
 
                 <MobileInfoRow
                   icon={MapPin}
-                  label="Pincode"
+                  tKey="superAdmin.pincode"
                   value={donor.pincode}
                 />
 
                 <MobileInfoRow
                   icon={Droplets}
-                  label="Last Blood Donation"
+                  tKey="superAdmin.lastBloodDonation"
                   value={formatDate(donor.lastBloodDonationDate)}
                 />
               </div>
             </div>
           ))
         ) : (
-          <EmptyState message="No donor data found" />
+          <EmptyState tKey="superAdmin.noDonorDataFound" />
         )}
       </div>
     </div>
   );
 }
 
-function TableHeader({ children }: { children: React.ReactNode }) {
+function TableHeader({ tKey }: { tKey: string }) {
   return (
     <th className="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-[0.02em] text-[var(--color-text-secondary)]">
-      {children}
+      <Bilingual
+        tKey={tKey}
+        as="span"
+        enClassName="mt-0.5 block text-[0.75em] font-normal leading-tight opacity-70"
+      />
     </th>
   );
 }
@@ -391,12 +411,14 @@ function BloodGroupBadge({ value }: { value: string }) {
   );
 }
 
-function InfoItem({ label, value }: { label: string; value: string }) {
+function InfoItem({ tKey, value }: { tKey: string; value: string }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
-        {label}
-      </p>
+      <Bilingual
+        tKey={tKey}
+        as="p"
+        className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
+      />
 
       <p className="mt-1 truncate text-[12px] font-medium text-[var(--color-text-secondary)]">
         {value}
@@ -407,11 +429,11 @@ function InfoItem({ label, value }: { label: string; value: string }) {
 
 function MobileInfoRow({
   icon: Icon,
-  label,
+  tKey,
   value,
 }: {
   icon: typeof Phone;
-  label: string;
+  tKey: string;
   value: string;
 }) {
   return (
@@ -423,9 +445,11 @@ function MobileInfoRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold text-[var(--color-text-placeholder)]">
-          {label}
-        </p>
+        <Bilingual
+          tKey={tKey}
+          as="p"
+          className="text-[11px] font-semibold text-[var(--color-text-placeholder)]"
+        />
 
         <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
           {value}
@@ -440,14 +464,16 @@ function LoadingState() {
     <div className="flex min-h-[180px] flex-col items-center justify-center px-5 py-10 text-center">
       <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
 
-      <p className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]">
-        Loading donors...
-      </p>
+      <Bilingual
+        tKey="superAdmin.loadingDonors"
+        as="p"
+        className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]"
+      />
     </div>
   );
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({ tKey }: { tKey: string }) {
   return (
     <div className="flex min-h-[180px] items-center justify-center px-5 py-10 text-center">
       <div>
@@ -455,13 +481,17 @@ function EmptyState({ message }: { message: string }) {
           <Users size={20} className="text-[var(--color-primary)]" />
         </div>
 
-        <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]">
-          {message}
-        </p>
+        <Bilingual
+          tKey={tKey}
+          as="p"
+          className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]"
+        />
 
-        <p className="mt-1 text-[11px] text-[var(--color-text-placeholder)]">
-          Donor records will appear here.
-        </p>
+        <Bilingual
+          tKey="superAdmin.donorRecordsWillAppear"
+          as="p"
+          className="mt-1 text-[11px] text-[var(--color-text-placeholder)]"
+        />
       </div>
     </div>
   );
