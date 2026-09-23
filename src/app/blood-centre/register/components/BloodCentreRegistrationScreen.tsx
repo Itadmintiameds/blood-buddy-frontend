@@ -1,12 +1,13 @@
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
+import { Bilingual } from "@/app/components/common/Bilingual";
 import { BloodCentreRegistrationForm } from "./BloodCentreRegistrationForm";
 
 export function BloodCentreRegistrationScreen() {
   return (
     <ScreenShell>
       <BrandHeader
-        title="Blood Centre Registration"
+        title={<Bilingual tKey="bloodCentre.registration" as="span" />}
         showBackButton
         backHref="/blood-centre/login"
       />

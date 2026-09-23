@@ -9,9 +9,16 @@ import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { getSuperAdminSession } from "@/services/auth/authStorage";
 import { loginCommon } from "@/services/bloodCenter/commonLoginService";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function SuperAdminLoginScreen() {
   const router = useRouter();
+  const emailPlaceholder = useBilingualText("common.enterEmail");
+  const passwordPlaceholder = useBilingualText("common.enterPassword");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -97,9 +104,11 @@ export function SuperAdminLoginScreen() {
           <ShieldIcon />
         </div>
 
-        <h2 className="mt-3 text-[17px] font-medium text-[#222]">
-          Super Admin Login
-        </h2>
+        <Bilingual
+          tKey="superAdmin.loginTitle"
+          as="h2"
+          className="mt-3 text-[17px] font-medium text-[#222]"
+        />
 
         <div className="mt-8 w-full max-w-[360px]">
           <div className="mb-2.5">
@@ -107,11 +116,11 @@ export function SuperAdminLoginScreen() {
               id="superAdminEmail"
               name="email"
               icon={Mail}
-              label="Email"
+              label={<Bilingual tKey="common.email" as="span" />}
               type="email"
               inputMode="email"
               autoComplete="email"
-              placeholder="Enter your email"
+              placeholder={emailPlaceholder}
               value={email}
               onChange={(event) => {
                 setEmail(event.target.value);
@@ -125,10 +134,10 @@ export function SuperAdminLoginScreen() {
             id="superAdminPassword"
             name="password"
             icon={LockKeyhole}
-            label="Password"
+            label={<Bilingual tKey="common.password" as="span" />}
             type="password"
             autoComplete="current-password"
-            placeholder="Enter your password"
+            placeholder={passwordPlaceholder}
             value={password}
             onChange={(event) => {
               setPassword(event.target.value);
@@ -152,13 +161,16 @@ export function SuperAdminLoginScreen() {
               onClick={() => router.push("/welcome")}
               className="px-2 py-2 text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
             >
-              Back to Welcome
+              <BilingualInline tKey="superAdmin.backToWelcome" />
             </button>
           </div>
 
           <div className="mt-28">
             <AppButton type="button" loading={loading} onClick={handleSubmit}>
-              Login
+              <BilingualInline
+                tKey="common.login"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </AppButton>
           </div>
         </div>

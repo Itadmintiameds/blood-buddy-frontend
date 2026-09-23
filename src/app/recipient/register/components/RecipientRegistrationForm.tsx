@@ -35,9 +35,25 @@ import type {
   MasterBloodComponent,
   MasterBloodGroup,
 } from "@/types/master.types";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function RecipientRegistrationForm() {
   const router = useRouter();
+  const enterPatientName = useBilingualText("recipient.enterPatientName");
+  const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
+  const loadingText = useBilingualText("bloodCentre.loadingOptions");
+  const selectBloodGroupText = useBilingualText("recipient.selectBloodGroup");
+  const selectBloodTypeText = useBilingualText("recipient.selectBloodType");
+  const enterUnitsRequired = useBilingualText("recipient.enterUnitsRequired");
+  const enterHospitalName = useBilingualText("recipient.enterHospitalName");
+  const enterAddress = useBilingualText("common.enterAddress");
+  const enterDistrict = useBilingualText("common.enterDistrict");
+  const enterCity = useBilingualText("common.enterCity");
+  const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
@@ -156,8 +172,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="patientName"
             icon={UserRound}
-            label="Patient Name"
-            placeholder="Enter patient name"
+            label={<Bilingual tKey="recipient.patientName" as="span" />}
+            placeholder={enterPatientName}
             maxLength={100}
             autoComplete="name"
             {...register("patientName")}
@@ -167,8 +183,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="mobileNumber"
             icon={Phone}
-            label="Mobile Number"
-            placeholder="Enter 10-digit mobile number"
+            label={<Bilingual tKey="common.mobileNumber" as="span" />}
+            placeholder={enter10DigitMobile}
             type="tel"
             inputMode="numeric"
             maxLength={10}
@@ -184,12 +200,12 @@ export function RecipientRegistrationForm() {
           />
 
           <div className="w-full">
-            <label
+            <Bilingual
+              tKey="recipient.bloodGroupRequired"
+              as="label"
               htmlFor="bloodGroupId"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            >
-              Blood Group Required
-            </label>
+            />
 
             <div className="relative">
               <Droplets
@@ -233,7 +249,7 @@ export function RecipientRegistrationForm() {
                 `}
               >
                 <option value="" disabled>
-                  {mastersLoading ? "Loading..." : "Select blood group"}
+                  {mastersLoading ? loadingText : selectBloodGroupText}
                 </option>
 
                 {bloodGroups.map((group) => (
@@ -258,12 +274,12 @@ export function RecipientRegistrationForm() {
           </div>
 
           <div className="w-full">
-            <label
+            <Bilingual
+              tKey="recipient.bloodTypeRequired"
+              as="label"
               htmlFor="bloodComponentId"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            >
-              Blood Type Required
-            </label>
+            />
 
             <div className="relative">
               <Droplets
@@ -307,7 +323,7 @@ export function RecipientRegistrationForm() {
                 `}
               >
                 <option value="" disabled>
-                  {mastersLoading ? "Loading..." : "Select blood type"}
+                  {mastersLoading ? loadingText : selectBloodTypeText}
                 </option>
 
                 {bloodComponents.map((component) => (
@@ -337,8 +353,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="requiredUnits"
             icon={Package}
-            label="Units Required"
-            placeholder="Enter units required"
+            label={<Bilingual tKey="recipient.unitsRequired" as="span" />}
+            placeholder={enterUnitsRequired}
             inputMode="numeric"
             maxLength={3}
             autoComplete="off"
@@ -355,7 +371,7 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="dob"
             icon={CalendarDays}
-            label="Date of Birth"
+            label={<Bilingual tKey="donor.dateOfBirth" as="span" />}
             type="date"
             max={new Date().toISOString().slice(0, 10)}
             autoComplete="bday"
@@ -366,8 +382,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="hospitalName"
             icon={Hospital}
-            label="Hospital Name (Optional)"
-            placeholder="Enter hospital name"
+            label={<Bilingual tKey="recipient.hospitalNameOptional" as="span" />}
+            placeholder={enterHospitalName}
             maxLength={150}
             autoComplete="off"
             {...register("hospitalName")}
@@ -377,8 +393,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="address"
             icon={MapPin}
-            label="Address (Optional)"
-            placeholder="Enter address"
+            label={<Bilingual tKey="donor.addressOptional" as="span" />}
+            placeholder={enterAddress}
             maxLength={200}
             autoComplete="street-address"
             {...register("address")}
@@ -388,8 +404,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="district"
             icon={MapPinned}
-            label="District"
-            placeholder="Enter district"
+            label={<Bilingual tKey="common.district" as="span" />}
+            placeholder={enterDistrict}
             maxLength={100}
             autoComplete="address-level2"
             {...register("district")}
@@ -399,8 +415,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="city"
             icon={MapPinned}
-            label="City"
-            placeholder="Enter city"
+            label={<Bilingual tKey="common.city" as="span" />}
+            placeholder={enterCity}
             maxLength={100}
             autoComplete="address-level2"
             {...register("city")}
@@ -410,8 +426,8 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="pincode"
             icon={MapPinned}
-            label="Pin Code"
-            placeholder="Enter 6-digit pin code"
+            label={<Bilingual tKey="common.pinCode" as="span" />}
+            placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}
             autoComplete="postal-code"
@@ -438,7 +454,10 @@ export function RecipientRegistrationForm() {
         <div className="mt-7 flex w-full justify-center">
           <div className="w-full md:w-[240px]">
             <AppButton type="submit" loading={isSubmitting}>
-              Submit
+              <BilingualInline
+                tKey="common.submit"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </AppButton>
           </div>
         </div>
@@ -446,7 +465,7 @@ export function RecipientRegistrationForm() {
 
       <SuccessModal
         open={Boolean(successMessage)}
-        title="Request Submitted"
+        title={<Bilingual tKey="recipient.requestSubmitted" as="span" />}
         description={successMessage ?? undefined}
         onConfirm={handleSuccessConfirm}
       />

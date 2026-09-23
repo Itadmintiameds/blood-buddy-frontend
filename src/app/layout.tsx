@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Work_Sans } from "next/font/google";
+import { Inter, Noto_Sans_Kannada, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 
@@ -17,6 +17,13 @@ const inter = Inter({
   display: "swap",
 });
 
+const notoSansKannada = Noto_Sans_Kannada({
+  subsets: ["kannada"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-kannada",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Blood Buddy",
   description: "Blood Buddy blood centre management",
@@ -31,7 +38,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${workSans.variable} ${inter.variable}`}
+      className={`${workSans.variable} ${inter.variable} ${notoSansKannada.variable}`}
     >
       <body>
         <LanguageProvider>{children}</LanguageProvider>

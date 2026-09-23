@@ -27,6 +27,11 @@ import {
   recordBloodRequestDonation,
 } from "@/services/bloodCenter/superAdmin/bloodRequestService";
 import { getApiErrorMessage } from "@/services/api/client";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -43,6 +48,8 @@ function formatDate(value: string | null | undefined): string {
 }
 
 export function RecipientManagement() {
+  const searchPlaceholder = useBilingualText("superAdmin.searchRecipient");
+
   const [requests, setRequests] = useState<SuperAdminBloodRequestSummary[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -105,18 +112,23 @@ export function RecipientManagement() {
     <div className="space-y-6">
       {/* Page Title */}
       <div>
-        <p className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]">
-          Management
-        </p>
+        <Bilingual
+          tKey="superAdmin.management"
+          as="p"
+          className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]"
+        />
 
-        <h2 className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]">
-          Blood Requests
-        </h2>
+        <Bilingual
+          tKey="superAdmin.bloodRequests"
+          as="h2"
+          className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]"
+        />
 
-        <p className="mt-1 text-[13px] text-[var(--color-text-placeholder-alt)]">
-          Review recipient blood requests, matched centres, and record
-          donations.
-        </p>
+        <Bilingual
+          tKey="superAdmin.bloodRequestsDescription"
+          as="p"
+          className="mt-1 text-[13px] text-[var(--color-text-placeholder-alt)]"
+        />
       </div>
 
       {/* Search */}
@@ -132,7 +144,7 @@ export function RecipientManagement() {
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search recipient..."
+            placeholder={searchPlaceholder}
             className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
           />
         </div>
@@ -165,15 +177,15 @@ export function RecipientManagement() {
 
           <thead>
             <tr className="border-b border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)]">
-              <TableHeader>S.No</TableHeader>
-              <TableHeader>Patient Name</TableHeader>
-              <TableHeader>Phone Number</TableHeader>
-              <TableHeader>Blood Group</TableHeader>
-              <TableHeader>Units</TableHeader>
-              <TableHeader>City</TableHeader>
-              <TableHeader>Requested On</TableHeader>
-              <TableHeader>Status</TableHeader>
-              <TableHeader>Action</TableHeader>
+              <TableHeader tKey="superAdmin.sNo" />
+              <TableHeader tKey="recipient.patientName" />
+              <TableHeader tKey="superAdmin.phoneNumber" />
+              <TableHeader tKey="bloodCentre.bloodGroup" />
+              <TableHeader tKey="bloodCentre.units" />
+              <TableHeader tKey="common.city" />
+              <TableHeader tKey="superAdmin.requestedOn" />
+              <TableHeader tKey="superAdmin.status" />
+              <TableHeader tKey="superAdmin.action" />
             </tr>
           </thead>
 
@@ -251,7 +263,7 @@ export function RecipientManagement() {
                         hover:bg-[var(--color-icon-bg-soft)]
                       "
                     >
-                      View
+                      <BilingualInline tKey="superAdmin.view" />
                     </button>
                   </TableCell>
                 </tr>
@@ -259,7 +271,7 @@ export function RecipientManagement() {
             ) : (
               <tr>
                 <td colSpan={9}>
-                  <EmptyState message="No blood requests found" />
+                  <EmptyState tKey="superAdmin.noBloodRequestsFound" />
                 </td>
               </tr>
             )}
@@ -289,9 +301,12 @@ export function RecipientManagement() {
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-[11px] text-[var(--color-text-placeholder)]">
-                      S.No {index + 1}
-                    </p>
+                    <Bilingual
+                      tKey="superAdmin.sNoValue"
+                      params={{ index: index + 1 }}
+                      as="p"
+                      className="text-[11px] text-[var(--color-text-placeholder)]"
+                    />
 
                     <h3 className="truncate text-[15px] font-bold text-[var(--color-text-body)]">
                       {request.recipientName}
@@ -305,22 +320,22 @@ export function RecipientManagement() {
               <div className="mt-5 space-y-3">
                 <MobileInfoRow
                   icon={Phone}
-                  label="Phone Number"
+                  tKey="superAdmin.phoneNumber"
                   value={request.mobileNumber}
                 />
                 <MobileInfoRow
                   icon={Droplets}
-                  label="Units"
+                  tKey="bloodCentre.units"
                   value={String(request.units)}
                 />
                 <MobileInfoRow
                   icon={MapPin}
-                  label="City"
+                  tKey="common.city"
                   value={request.city}
                 />
                 <MobileInfoRow
                   icon={CalendarDays}
-                  label="Requested On"
+                  tKey="superAdmin.requestedOn"
                   value={formatDate(request.createdAt)}
                 />
               </div>
@@ -348,14 +363,14 @@ export function RecipientManagement() {
                     hover:bg-[var(--color-icon-bg-soft)]
                   "
                 >
-                  View Details
+                  <BilingualInline tKey="superAdmin.viewDetails" />
                 </button>
               </div>
             </div>
           ))
         ) : (
           <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white">
-            <EmptyState message="No blood requests found" />
+            <EmptyState tKey="superAdmin.noBloodRequestsFound" />
           </div>
         )}
       </div>
@@ -402,6 +417,8 @@ function BloodRequestDetailModal({
   const [closing, setClosing] = useState(false);
   const [closeRemarks, setCloseRemarks] = useState("");
   const [showCloseForm, setShowCloseForm] = useState(false);
+  const closeLabel = useBilingualText("common.close");
+  const remarksPlaceholder = useBilingualText("bloodCentre.remarksOptional");
 
   useEffect(() => {
     let cancelled = false;
@@ -513,23 +530,26 @@ function BloodRequestDetailModal({
       >
         <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
           <div className="min-w-0">
-            <h2
+            <Bilingual
+              tKey="superAdmin.bloodRequestDetails"
+              as="h2"
               id="blood-request-title"
               className="text-[15px] font-bold text-[var(--color-text-primary)]"
-            >
-              Blood Request Details
-            </h2>
+            />
 
-            <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
-              Request #{bloodRequestId}
-            </p>
+            <Bilingual
+              tKey="superAdmin.requestNumber"
+              params={{ id: bloodRequestId }}
+              as="p"
+              className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]"
+            />
           </div>
 
           <button
             type="button"
             onClick={onClose}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
-            aria-label="Close"
+            aria-label={closeLabel}
           >
             <X size={17} />
           </button>
@@ -565,19 +585,19 @@ function BloodRequestDetailModal({
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <InfoTile label="Blood Group" value={detail.bloodGroup} />
-                <InfoTile label="Blood Component" value={detail.bloodType} />
-                <InfoTile label="Units Required" value={String(detail.units)} />
+                <InfoTile tKey="bloodCentre.bloodGroup" value={detail.bloodGroup} />
+                <InfoTile tKey="superAdmin.bloodComponent" value={detail.bloodType} />
+                <InfoTile tKey="recipient.unitsRequired" value={String(detail.units)} />
                 <InfoTile
-                  label="Date of Birth"
+                  tKey="donor.dateOfBirth"
                   value={formatDate(detail.dateOfBirth)}
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <InfoTile label="Hospital" value={detail.hospitalName || "—"} />
+                <InfoTile tKey="superAdmin.hospital" value={detail.hospitalName || "—"} />
                 <InfoTile
-                  label="Address"
+                  tKey="common.address"
                   value={
                     [
                       detail.address,
@@ -592,7 +612,7 @@ function BloodRequestDetailModal({
               </div>
 
               {detail.remarks && (
-                <InfoTile label="Remarks" value={detail.remarks} />
+                <InfoTile tKey="superAdmin.remarks" value={detail.remarks} />
               )}
 
               {actionError && (
@@ -607,12 +627,15 @@ function BloodRequestDetailModal({
 
               {/* MATCHED CENTRES */}
               <Section
-                title={`Matched Centres (${detail.matchedCentres.length})`}
+                tKey="superAdmin.matchedCentres"
+                params={{ count: detail.matchedCentres.length }}
               >
                 {detail.matchedCentres.length === 0 ? (
-                  <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
-                    No centres matched this request.
-                  </p>
+                  <Bilingual
+                    tKey="superAdmin.noCentresMatched"
+                    as="p"
+                    className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+                  />
                 ) : (
                   <div className="space-y-2">
                     {detail.matchedCentres.map((centre) => (
@@ -635,7 +658,10 @@ function BloodRequestDetailModal({
 
               {/* DONATED BY */}
               {detail.donatedBy.length > 0 && (
-                <Section title={`Donated By (${detail.donatedBy.length})`}>
+                <Section
+                  tKey="superAdmin.donatedBy"
+                  params={{ count: detail.donatedBy.length }}
+                >
                   <div className="space-y-2">
                     {detail.donatedBy.map((donor) => (
                       <div
@@ -663,12 +689,15 @@ function BloodRequestDetailModal({
 
               {/* DONOR CANDIDATES */}
               <Section
-                title={`Donor Candidates (${detail.donorCandidates.length})`}
+                tKey="superAdmin.donorCandidates"
+                params={{ count: detail.donorCandidates.length }}
               >
                 {detail.donorCandidates.length === 0 ? (
-                  <p className="text-[12px] text-[var(--color-text-placeholder-alt)]">
-                    No matching donor candidates found.
-                  </p>
+                  <Bilingual
+                    tKey="superAdmin.noMatchingDonorCandidates"
+                    as="p"
+                    className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+                  />
                 ) : (
                   <div className="space-y-2">
                     {detail.donorCandidates.map((donor) => (
@@ -711,9 +740,9 @@ function BloodRequestDetailModal({
                             "
                           >
                             {recordingDonorId === donor.id && (
-                              <Loader2 size={12} className="animate-spin" />
+                              <Loader2 size={12} className="animate-spin shrink-0" />
                             )}
-                            Record Donation
+                            <BilingualInline tKey="superAdmin.recordDonation" />
                           </button>
                         )}
                       </div>
@@ -724,7 +753,7 @@ function BloodRequestDetailModal({
 
               {/* CLOSE REQUEST */}
               {isOpen && (
-                <Section title="Close Request">
+                <Section tKey="superAdmin.closeRequest">
                   {!showCloseForm ? (
                     <button
                       type="button"
@@ -748,8 +777,8 @@ function BloodRequestDetailModal({
                         hover:text-red-600
                       "
                     >
-                      <XCircle size={15} />
-                      Close this request
+                      <XCircle size={15} className="shrink-0" />
+                      <BilingualInline tKey="superAdmin.closeThisRequest" />
                     </button>
                   ) : (
                     <div className="space-y-3">
@@ -758,7 +787,7 @@ function BloodRequestDetailModal({
                         onChange={(event) =>
                           setCloseRemarks(event.target.value)
                         }
-                        placeholder="Remarks (optional)"
+                        placeholder={remarksPlaceholder}
                         rows={2}
                         disabled={closing}
                         className="
@@ -786,21 +815,25 @@ function BloodRequestDetailModal({
                           type="button"
                           onClick={() => setShowCloseForm(false)}
                           disabled={closing}
-                          className="h-[38px] flex-1 rounded-lg border border-[var(--color-border)] bg-white text-[12px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="min-h-[38px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          Cancel
+                          <BilingualInline tKey="common.cancel" />
                         </button>
 
                         <button
                           type="button"
                           onClick={handleClose}
                           disabled={closing}
-                          className="flex h-[38px] flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(239,68,68,0.22)] transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="flex min-h-[38px] flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(239,68,68,0.22)] transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {closing && (
-                            <Loader2 size={13} className="animate-spin" />
+                            <Loader2 size={13} className="animate-spin shrink-0" />
                           )}
-                          {closing ? "Closing..." : "Confirm Close"}
+                          {closing ? (
+                            <BilingualInline tKey="superAdmin.closing" />
+                          ) : (
+                            <BilingualInline tKey="superAdmin.confirmClose" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -816,28 +849,35 @@ function BloodRequestDetailModal({
 }
 
 function Section({
-  title,
+  tKey,
+  params,
   children,
 }: {
-  title: string;
+  tKey: string;
+  params?: Record<string, string | number>;
   children: React.ReactNode;
 }) {
   return (
     <div>
-      <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]">
-        {title}
-      </p>
+      <Bilingual
+        tKey={tKey}
+        params={params}
+        as="p"
+        className="mb-2 text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]"
+      />
       {children}
     </div>
   );
 }
 
-function InfoTile({ label, value }: { label: string; value: string }) {
+function InfoTile({ tKey, value }: { tKey: string; value: string }) {
   return (
     <div className="min-w-0 rounded-lg border border-[var(--color-border-lighter)] p-3">
-      <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
-        {label}
-      </p>
+      <Bilingual
+        tKey={tKey}
+        as="p"
+        className="text-[11px] text-[var(--color-text-placeholder-alt)]"
+      />
       <p className="mt-1 break-words text-[12px] font-bold text-[var(--color-text-body)]">
         {value}
       </p>
@@ -855,26 +895,30 @@ function StatusBadge({ status }: { status: BloodRequestStatus }) {
     CANCELLED: "border-[#ffd5d5] bg-[#fff5f5] text-[var(--color-primary)]",
   };
 
-  const labels: Record<BloodRequestStatus, string> = {
-    CENTRES_FOUND: "Matched",
-    NO_CENTRES_FOUND: "No Centres",
-    CLOSED: "Closed",
-    CANCELLED: "Cancelled",
+  const tKeys: Record<BloodRequestStatus, string> = {
+    CENTRES_FOUND: "superAdmin.statusMatched",
+    NO_CENTRES_FOUND: "superAdmin.statusNoCentres",
+    CLOSED: "superAdmin.statusClosed",
+    CANCELLED: "superAdmin.statusCancelled",
   };
 
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full border px-2.5 py-1 text-[11px] font-bold ${styles[status]}`}
     >
-      {labels[status]}
+      <BilingualInline tKey={tKeys[status]} />
     </span>
   );
 }
 
-function TableHeader({ children }: { children: React.ReactNode }) {
+function TableHeader({ tKey }: { tKey: string }) {
   return (
     <th className="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-[0.02em] text-[var(--color-text-secondary)]">
-      {children}
+      <Bilingual
+        tKey={tKey}
+        as="span"
+        enClassName="mt-0.5 block text-[0.75em] font-normal leading-tight opacity-70"
+      />
     </th>
   );
 }
@@ -897,11 +941,11 @@ function BloodGroupBadge({ value }: { value: string }) {
 
 function MobileInfoRow({
   icon: Icon,
-  label,
+  tKey,
   value,
 }: {
   icon: typeof Phone;
-  label: string;
+  tKey: string;
   value: string;
 }) {
   return (
@@ -913,9 +957,11 @@ function MobileInfoRow({
       />
 
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold text-[var(--color-text-placeholder)]">
-          {label}
-        </p>
+        <Bilingual
+          tKey={tKey}
+          as="p"
+          className="text-[11px] font-semibold text-[var(--color-text-placeholder)]"
+        />
 
         <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
           {value}
@@ -930,14 +976,16 @@ function LoadingState() {
     <div className="flex min-h-[180px] flex-col items-center justify-center px-5 py-10 text-center">
       <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
 
-      <p className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]">
-        Loading...
-      </p>
+      <Bilingual
+        tKey="bloodCentre.loadingOptions"
+        as="p"
+        className="mt-3 text-[12px] text-[var(--color-text-placeholder-alt)]"
+      />
     </div>
   );
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({ tKey }: { tKey: string }) {
   return (
     <div className="flex min-h-[180px] items-center justify-center px-5 py-10 text-center">
       <div>
@@ -945,13 +993,17 @@ function EmptyState({ message }: { message: string }) {
           <Users size={20} className="text-[var(--color-primary)]" />
         </div>
 
-        <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]">
-          {message}
-        </p>
+        <Bilingual
+          tKey={tKey}
+          as="p"
+          className="mt-3 text-[13px] font-semibold text-[var(--color-text-secondary)]"
+        />
 
-        <p className="mt-1 text-[11px] text-[var(--color-text-placeholder)]">
-          Blood requests will appear here.
-        </p>
+        <Bilingual
+          tKey="superAdmin.bloodRequestsWillAppear"
+          as="p"
+          className="mt-1 text-[11px] text-[var(--color-text-placeholder)]"
+        />
       </div>
     </div>
   );

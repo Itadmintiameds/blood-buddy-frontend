@@ -521,6 +521,10 @@ a {
   font-family: var(--font-open-sans);
 }
 
+@utility font-kannada {
+  font-family: var(--font-kannada), "Noto Sans Kannada", var(--font-noto), Arial, sans-serif;
+}
+
 @utility font-thin {
   font-weight: var(--font-thin);
 }
@@ -572,7 +576,7 @@ a {
   body {
     background-color: var(--base-white);
     color: var(--color-text-body);
-    font-family: var(--font-noto), var(--font-work-sans), Arial, sans-serif;
+    font-family: var(--font-noto), var(--font-work-sans), var(--font-kannada), Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;

@@ -2,12 +2,28 @@ export const translations = {
   en: {
     common: {
       name: "Name",
+      fullName: "Full Name",
       mobileNumber: "Mobile Number",
       email: "Email Address",
       password: "Password",
       confirmPassword: "Confirm Password",
       address: "Address",
       pinCode: "PIN Code",
+      district: "District",
+      city: "City",
+
+      newPassword: "New Password",
+      enterNewPassword: "Enter new password",
+      enterFullName: "Enter your full name",
+      enter10DigitMobile: "Enter 10-digit mobile number",
+      enterAddress: "Enter address",
+      enterDistrict: "Enter district",
+      enterCity: "Enter city",
+      enter6DigitPinCode: "Enter 6-digit pin code",
+      reenterPassword: "Re-enter new password",
+      optional: "Optional",
+
+      saving: "Saving...",
 
       submit: "Submit",
       cancel: "Cancel",
@@ -17,6 +33,7 @@ export const translations = {
 
       login: "Login",
       logout: "Logout",
+      loggingOut: "Logging out...",
       register: "Register",
       continue: "Continue",
       verify: "Verify",
@@ -26,10 +43,16 @@ export const translations = {
       search: "Search",
       close: "Close",
       ok: "OK",
+      pleaseWait: "Please wait...",
+      poweredBy: "Powered by",
 
       selectLanguage: "Select Language",
       english: "English",
       englishKannada: "Kannada / ಕನ್ನಡ",
+      returnToWelcome: "Return to Welcome page",
+      enterEmail: "Enter your email",
+      enterPassword: "Enter your password",
+      registerNow: "Register Now",
     },
 
     welcome: {
@@ -39,6 +62,17 @@ export const translations = {
       bloodCentre: "I am a Blood Centre",
       donor: "I am a Donor",
       recipient: "I am a Recipient",
+
+      heading: "Blood Management Made Simple",
+      description:
+        "A simple and reliable platform connecting blood centres, donors and recipients for better blood availability.",
+      tagline: "Save Lives. Share Blood.",
+
+      portalTitle: "Blood Buddy Portal",
+      portalSubtitle: "Manage blood availability with ease",
+      superAdminLogin: "Super Admin Login Here",
+      secureAccess: "Secure Access",
+      secureAccessDescription: "Authorized access for registered users",
     },
 
     bloodCentre: {
@@ -77,25 +111,239 @@ export const translations = {
 
       loginSuccess: "Login Successful",
       loginSuccessMessage: "You have successfully logged in.",
+      loggedInMessage: "You have logged in successfully.",
+      welcomeMessage: "Welcome to Blood Buddy.",
+
+      registrationSuccessCanLogin:
+        "Your Blood Centre registration was successful. You can now log in to your account.",
+
+      passwordResetTitle: "Password Reset",
+      passwordResetMessage: "Your password has been reset successfully.",
+      passwordResetLoginHint: "You can now login with your new password.",
+
+      registrationTypeTitle: "Registration",
+      registrationTypeDescription:
+        "Do you want registration for Super Admin or Blood Centre?",
+      registerAsSuperAdmin: "Register as Super Admin",
+      bloodCentreRegister: "Blood Centre Register",
+      registerNewBloodCentre: "Register a new blood centre",
 
       otpSuccess: "OTP Verification Successful",
       otpSuccessMessage: "Your mobile number has been successfully verified.",
 
+      welcomeUser: "Welcome{suffix}",
+
+      bloodType: "Blood Type",
+      bloodUnits: "Blood Units",
+      adjust: "Adjust",
+      loadingAvailability: "Loading availability...",
+      noAvailabilityYet: "No availability added yet.",
+      unitsAvailableSuffix: "units available",
+
+      adjustStock: "Adjust Stock",
+      movement: "Movement",
+      movementIssue: "Issue (dispatch units)",
+      movementDiscard: "Discard (expired / unusable)",
+      movementCorrection: "Correction (set exact total)",
+      newTotalUnits: "New Total Units",
+      egNumberPlaceholder: "e.g. 25",
+      remarksOptional: "Remarks (optional)",
+      apply: "Apply",
+
+      addBloodAvailability: "Add Blood Availability",
+      bloodAvailabilityTitle: "Blood Availability",
+      bloodAvailabilityDescription: "Add the currently available blood units.",
+      unitsAvailableLabel: "Units Available",
+      loadingOptions: "Loading...",
+      selectBloodType: "Select Blood Type",
+      availabilitySaved: "Availability Saved",
+      availabilitySavedMessage:
+        "Blood availability has been added successfully.",
+      saveAvailability: "Save Availability",
+
       loginUnable: "Unable to login. Please try again.",
       registrationUnable: "Unable to complete registration. Please try again.",
       otpUnable: "Unable to verify OTP. Please try again.",
+
+      noAccount: "Don't have an account?",
+      forgotPassword: "Forgot your password?",
+
+      category: "Category",
+      selectCategory: "Select category",
+      categoryGovernment: "Government",
+      categoryPrivate: "Private",
+      categoryCharitable: "Charitable",
+      categoryRedcross: "Redcross",
+
+      dateOfExpiry: "Date of Expiry",
+      selectDateOfExpiry: "Select date of expiry",
+      enterEmailAddress: "Enter email address",
+      verified: "Verified",
+      sending: "Sending...",
+      sendOtp: "Send OTP",
+      resendWithSeconds: "Resend ({count}s)",
+      enter6DigitOtp: "Enter 6-digit OTP",
+      verifying: "Verifying...",
+
+      enterBloodCentreName: "Enter blood centre name",
+      enterLicenseNumber: "Enter license number",
+
+      forgotPasswordTitle: "Forgot Password",
+      forgotPasswordDescription:
+        "Enter your registered email and we'll send you an OTP to reset your password",
+      backToLogin: "Back to Login",
+
+      resetPasswordTitle: "Reset Password",
+      resetYourPassword: "Reset your password",
+      resetPasswordDescription:
+        "Enter the OTP sent to your email and choose a new password",
     },
 
     donor: {
       donor: "Donor",
+      donorModule: "Donor Module",
       donorRegistration: "Donor Registration",
       bloodGroup: "Blood Group",
       dateOfBirth: "Date of Birth",
+
+      becomeADonor: "Become a Blood Donor",
+      becomeADonorDescription: "Register as a donor to help save lives.",
+      registerAsDonor: "Register as Donor",
+
+      alternateMobileOptional: "Alternate Mobile Number (Optional)",
+      enterAlternateMobile: "Enter alternate mobile number",
+      addressOptional: "Address (Optional)",
+      lastBloodDonationDateOptional: "Last Blood Donation Date (Optional)",
+      donorRegisteredSuccessfully: "Donor registered successfully.",
     },
 
     recipient: {
       recipient: "Recipient",
+      recipientModule: "Recipient Module",
       recipientRegistration: "Recipient Registration",
+
+      needBlood: "Need Blood?",
+      needBloodDescription:
+        "Submit a blood request and our team will help match it with a nearby blood centre.",
+      requestBlood: "Request Blood",
+
+      recipientProfile: "Recipient Profile",
+      patientName: "Patient Name",
+      enterPatientName: "Enter patient name",
+      bloodGroupRequired: "Blood Group Required",
+      bloodTypeRequired: "Blood Type Required",
+      selectBloodGroup: "Select blood group",
+      selectBloodType: "Select blood type",
+      unitsRequired: "Units Required",
+      enterUnitsRequired: "Enter units required",
+      hospitalNameOptional: "Hospital Name (Optional)",
+      enterHospitalName: "Enter hospital name",
+      requestSubmitted: "Request Submitted",
+
+      searchTitle: "Search Blood Banks & Donors",
+      searchByPincode: "Search by pin code or area",
+      interactiveMapComingSoon: "Interactive map coming soon",
+      bloodBanksTab: "Blood Banks ({count})",
+      donorsTab: "Donors ({count})",
+      searching: "Searching...",
+      noBloodBanksFound: "No blood banks found nearby.",
+      noDonorsFound: "No donors found nearby.",
+      unitsSuffix: "units",
+      availableToDonate: "Available to Donate",
+      notAvailable: "Not Available",
+    },
+
+    superAdmin: {
+      superAdmin: "Super Admin",
+      administrator: "Administrator",
+      management: "Management",
+      bloodBank: "Blood Bank",
+      superAdminPortal: "Super Admin Portal",
+      superAdminDashboard: "Super Admin Dashboard",
+      loginTitle: "Super Admin Login",
+      backToWelcome: "Back to Welcome",
+      registrationTitle: "Super Admin Registration",
+      registrationDescription:
+        "Super Admin accounts are set up by the system administrator and can't be created from this app. If you need access, ask your administrator for the Super Admin login credentials.",
+
+      bloodBankManagement: "Blood Bank Management",
+      bloodBankManagementDescription:
+        "Manage registered blood banks and blood availability.",
+      bloodBanksStat: "Blood Banks",
+      bloodTypesStat: "Blood Types",
+      availableUnitsStat: "Available Units",
+      searchBloodCentre: "Search blood centre...",
+      clearSearch: "Clear search",
+      addBloodCentre: "Add Blood Centre",
+      loadingBloodBanks: "Loading blood banks...",
+      noBloodBanksFound: "No blood banks found",
+      tryChangingSearch: "Try changing your search.",
+      sNo: "S.No",
+      sNoValue: "S.No {index}",
+      bloodBankColumn: "Blood Bank",
+      phone: "Phone",
+      bloodTypesCount: "{count} blood types",
+      actions: "Actions",
+      noBloodAvailabilityFound: "No blood availability found.",
+
+      updateBloodUnits: "Update Blood Units",
+      updateCurrentAvailability: "Update current availability",
+      availableUnitsField: "Available Units",
+      saveChanges: "Save Changes",
+
+      addStock: "Add Stock",
+      addUnitsToInventory: "Add units to this centre's inventory",
+      currentStock: "Current stock:",
+      unitsToAdd: "Units to Add",
+      adding: "Adding...",
+
+      donorDetails: "Donor Details",
+      donorDetailsDescription:
+        "Manage registered blood donors and their donation information.",
+      searchDonor: "Search donor...",
+      donorName: "Donor Name",
+      alternateMobileNo: "Alternate Mobile No",
+      alternateMobile: "Alternate Mobile",
+      pincode: "Pincode",
+      lastBloodDonationDate: "Last Blood Donation Date",
+      lastDonation: "Last Donation",
+      lastBloodDonation: "Last Blood Donation",
+      loadingDonors: "Loading donors...",
+      noDonorDataFound: "No donor data found",
+      donorRecordsWillAppear: "Donor records will appear here.",
+
+      searchRecipient: "Search recipient...",
+      hospital: "Hospital",
+
+      bloodRequests: "Blood Requests",
+      bloodRequestsDescription:
+        "Review recipient blood requests, matched centres, and record donations.",
+      phoneNumber: "Phone Number",
+      requestedOn: "Requested On",
+      status: "Status",
+      action: "Action",
+      view: "View",
+      viewDetails: "View Details",
+      noBloodRequestsFound: "No blood requests found",
+      bloodRequestsWillAppear: "Blood requests will appear here.",
+      bloodRequestDetails: "Blood Request Details",
+      requestNumber: "Request #{id}",
+      bloodComponent: "Blood Component",
+      remarks: "Remarks",
+      matchedCentres: "Matched Centres ({count})",
+      noCentresMatched: "No centres matched this request.",
+      donatedBy: "Donated By ({count})",
+      donorCandidates: "Donor Candidates ({count})",
+      noMatchingDonorCandidates: "No matching donor candidates found.",
+      recordDonation: "Record Donation",
+      closeRequest: "Close Request",
+      closeThisRequest: "Close this request",
+      closing: "Closing...",
+      confirmClose: "Confirm Close",
+      statusMatched: "Matched",
+      statusNoCentres: "No Centres",
+      statusClosed: "Closed",
+      statusCancelled: "Cancelled",
     },
 
     validation: {
@@ -119,6 +367,10 @@ export const translations = {
       hidePassword: "Hide password",
       goBack: "Go back",
       home: "Blood Buddy home",
+      closeRegistrationModal: "Close registration modal",
+      closeNavigation: "Close navigation",
+      closeMenu: "Close menu",
+      openMenu: "Open menu",
     },
 
     poweredBy: {
@@ -128,175 +380,382 @@ export const translations = {
 
   kn: {
     common: {
-      name: "Name/ಹೆಸರು",
-      mobileNumber: "Mobile Number/ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
-      email: "Email Address/ಇಮೇಲ್ ವಿಳಾಸ",
-      password: "Password/ಪಾಸ್‌ವರ್ಡ್",
-      confirmPassword: "Confirm Password/ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
-      address: "Address/ವಿಳಾಸ",
-      pinCode: "PIN Code/ಪಿನ್ ಕೋಡ್",
+      name: "ಹೆಸರು",
+      fullName: "ಪೂರ್ಣ ಹೆಸರು",
+      mobileNumber: "ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
+      email: "ಇಮೇಲ್ ವಿಳಾಸ",
+      password: "ಪಾಸ್‌ವರ್ಡ್",
+      confirmPassword: "ಪಾಸ್‌ವರ್ಡ್ ದೃಢೀಕರಿಸಿ",
+      address: "ವಿಳಾಸ",
+      pinCode: "ಪಿನ್ ಕೋಡ್",
+      district: "ಜಿಲ್ಲೆ",
+      city: "ನಗರ",
 
-      submit: "Submit/ಸಲ್ಲಿಸಿ",
-      cancel: "Cancel/ರದ್ದುಮಾಡಿ",
-      save: "Save/ಉಳಿಸಿ",
-      update: "Update/ನವೀಕರಿಸಿ",
-      delete: "Delete/ಅಳಿಸಿ",
+      newPassword: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್",
+      enterNewPassword: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+      enterFullName: "ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+      enter10DigitMobile: "10 ಅಂಕಿಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
+      enterAddress: "ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ",
+      enterDistrict: "ಜಿಲ್ಲೆಯನ್ನು ನಮೂದಿಸಿ",
+      enterCity: "ನಗರವನ್ನು ನಮೂದಿಸಿ",
+      enter6DigitPinCode: "6 ಅಂಕಿಯ ಪಿನ್ ಕೋಡ್ ನಮೂದಿಸಿ",
+      reenterPassword: "ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಮತ್ತೆ ನಮೂದಿಸಿ",
+      optional: "ಐಚ್ಛಿಕ",
 
-      login: "Login/ಲಾಗಿನ್",
-      logout: "Logout/ಲಾಗ್‌ಔಟ್",
-      register: "Register/ನೋಂದಣಿ",
-      continue: "Continue/ಮುಂದುವರಿಸಿ",
-      verify: "Verify/ಪರಿಶೀಲಿಸಿ",
-      resend: "Resend OTP/OTP ಮರುಕಳುಹಿಸಿ",
-      back: "Back/ಹಿಂದಕ್ಕೆ",
-      next: "Next/ಮುಂದೆ",
-      search: "Search/ಹುಡುಕಿ",
-      close: "Close/ಮುಚ್ಚಿ",
-      ok: "OK/ಸರಿ",
+      saving: "ಉಳಿಸಲಾಗುತ್ತಿದೆ...",
 
-      selectLanguage: "Select Language/ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      submit: "ಸಲ್ಲಿಸಿ",
+      cancel: "ರದ್ದುಮಾಡಿ",
+      save: "ಉಳಿಸಿ",
+      update: "ನವೀಕರಿಸಿ",
+      delete: "ಅಳಿಸಿ",
+
+      login: "ಲಾಗಿನ್",
+      logout: "ಲಾಗ್‌ಔಟ್",
+      loggingOut: "ಲಾಗ್ ಔಟ್ ಆಗುತ್ತಿದೆ...",
+      register: "ನೋಂದಣಿ",
+      continue: "ಮುಂದುವರಿಸಿ",
+      verify: "ಪರಿಶೀಲಿಸಿ",
+      resend: "OTP ಮರುಕಳುಹಿಸಿ",
+      back: "ಹಿಂದಕ್ಕೆ",
+      next: "ಮುಂದೆ",
+      search: "ಹುಡುಕಿ",
+      close: "ಮುಚ್ಚಿ",
+      ok: "ಸರಿ",
+      pleaseWait: "ದಯವಿಟ್ಟು ಕಾಯಿರಿ...",
+      poweredBy: "ಇವರಿಂದ ಚಾಲಿತ",
+
+      selectLanguage: "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
       english: "English",
-      englishKannada: "Kannada / ಕನ್ನಡ",
+      englishKannada: "ಕನ್ನಡ",
+      returnToWelcome: "ಸ್ವಾಗತ ಪುಟಕ್ಕೆ ಹಿಂತಿರುಗಿ",
+      enterEmail: "ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ",
+      enterPassword: "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
+      registerNow: "ಈಗ ನೋಂದಾಯಿಸಿ",
     },
 
     welcome: {
-      title: "Welcome to Blood Buddy/Blood Buddy ಗೆ ಸ್ವಾಗತ",
-      subtitle:
-        "Choose an option to continue/ಮುಂದುವರಿಸಲು ಒಂದು ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ",
+      title: "Blood Buddy ಗೆ ಸ್ವಾಗತ",
+      subtitle: "ಮುಂದುವರಿಸಲು ಒಂದು ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ",
 
-      bloodCentre: "I am a Blood Centre/ನಾನು ರಕ್ತ ಕೇಂದ್ರ",
-      donor: "I am a Donor/ನಾನು ರಕ್ತದಾನಿ",
-      recipient: "I am a Recipient/ನಾನು ರಕ್ತ ಸ್ವೀಕರಿಸುವವರು",
+      bloodCentre: "ನಾನು ರಕ್ತ ಕೇಂದ್ರ",
+      donor: "ನಾನು ರಕ್ತದಾನಿ",
+      recipient: "ನಾನು ರಕ್ತ ಸ್ವೀಕರಿಸುವವರು",
+
+      heading: "ರಕ್ತ ನಿರ್ವಹಣೆ ಸರಳಗೊಳಿಸಲಾಗಿದೆ",
+      description:
+        "ರಕ್ತ ಕೇಂದ್ರಗಳು, ರಕ್ತದಾನಿಗಳು ಮತ್ತು ಸ್ವೀಕರಿಸುವವರನ್ನು ಉತ್ತಮ ರಕ್ತ ಲಭ್ಯತೆಗಾಗಿ ಸಂಪರ್ಕಿಸುವ ಸರಳ ಮತ್ತು ವಿಶ್ವಾಸಾರ್ಹ ವೇದಿಕೆ.",
+      tagline: "ಜೀವ ಉಳಿಸಿ. ರಕ್ತ ಹಂಚಿಕೊಳ್ಳಿ.",
+
+      portalTitle: "Blood Buddy ಪೋರ್ಟಲ್",
+      portalSubtitle: "ರಕ್ತ ಲಭ್ಯತೆಯನ್ನು ಸುಲಭವಾಗಿ ನಿರ್ವಹಿಸಿ",
+      superAdminLogin: "ಸೂಪರ್ ಅಡ್ಮಿನ್ ಲಾಗಿನ್ ಇಲ್ಲಿ",
+      secureAccess: "ಸುರಕ್ಷಿತ ಪ್ರವೇಶ",
+      secureAccessDescription: "ನೋಂದಾಯಿತ ಬಳಕೆದಾರರಿಗೆ ಮಾತ್ರ ಅಧಿಕೃತ ಪ್ರವೇಶ",
     },
 
     bloodCentre: {
-      registration: "Blood Centre Registration/ರಕ್ತ ಕೇಂದ್ರ ನೋಂದಣಿ",
+      registration: "ರಕ್ತ ಕೇಂದ್ರ ನೋಂದಣಿ",
+      bloodCentreName: "ರಕ್ತ ಕೇಂದ್ರದ ಹೆಸರು",
+      licenseNumber: "ಪರವಾನಗಿ ಸಂಖ್ಯೆ",
 
-      bloodCentreName: "Blood Centre Name/ರಕ್ತ ಕೇಂದ್ರದ ಹೆಸರು",
+      login: "ರಕ್ತ ಕೇಂದ್ರ ಲಾಗಿನ್",
+      emailOrUsername: "ಇಮೇಲ್ / ಬಳಕೆದಾರ ಹೆಸರು",
 
-      licenseNumber: "License Number/ಪರವಾನಗಿ ಸಂಖ್ಯೆ",
+      verifyMobile: "ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಪರಿಶೀಲಿಸಿ",
+      otpDescription: "ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಗೆ ಪರಿಶೀಲನಾ ಕೋಡ್ ಕಳುಹಿಸಲಾಗಿದೆ.",
+      enterOtp: "ನಿಮ್ಮ OTP ಕೋಡ್ ಅನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ",
+      resendOtp: "OTP ಸ್ವೀಕರಿಸಲಿಲ್ಲವೇ?",
 
-      login: "Blood Centre Login/ರಕ್ತ ಕೇಂದ್ರ ಲಾಗಿನ್",
+      dashboard: "ರಕ್ತ ಕೇಂದ್ರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+      welcome: "ಸ್ವಾಗತ",
 
-      emailOrUsername: "Email / Username/ಇಮೇಲ್ / ಬಳಕೆದಾರ ಹೆಸರು",
+      bloodGroupsListed: "ಪಟ್ಟಿಯಲ್ಲಿರುವ ರಕ್ತದ ಗುಂಪುಗಳು",
+      totalUnitsAvailable: "ಲಭ್ಯವಿರುವ ಒಟ್ಟು ಯೂನಿಟ್‌ಗಳು",
+      lowStockAlerts: "ಕಡಿಮೆ ಸ್ಟಾಕ್ ಎಚ್ಚರಿಕೆಗಳು",
 
-      verifyMobile: "Verify Mobile Number/ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಪರಿಶೀಲಿಸಿ",
+      bloodAvailability: "ರಕ್ತ ಲಭ್ಯತೆಯ ವಿವರ",
+      addAvailability: "ಲಭ್ಯತೆಯನ್ನು ಸೇರಿಸಿ",
+      myAvailability: "ನನ್ನ ರಕ್ತ ಲಭ್ಯತೆ",
 
-      otpDescription:
-        "We just sent a verification code to your mobile number./ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಗೆ ಪರಿಶೀಲನಾ ಕೋಡ್ ಕಳುಹಿಸಲಾಗಿದೆ.",
+      bloodGroup: "ರಕ್ತದ ಗುಂಪು",
+      units: "ಯೂನಿಟ್‌ಗಳು",
+      selectBloodGroup: "ರಕ್ತದ ಗುಂಪನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      enterUnits: "ಯೂನಿಟ್‌ಗಳನ್ನು ನಮೂದಿಸಿ",
+      contact: "ಸಂಪರ್ಕಿಸಿ",
 
-      enterOtp: "Enter your OTP code here/ನಿಮ್ಮ OTP ಕೋಡ್ ಅನ್ನು ಇಲ್ಲಿ ನಮೂದಿಸಿ",
-
-      resendOtp: "Didn't receive the OTP?/OTP ಸ್ವೀಕರಿಸಲಿಲ್ಲವೇ?",
-
-      dashboard: "Blood Centre Dashboard/ರಕ್ತ ಕೇಂದ್ರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
-
-      welcome: "Welcome/ಸ್ವಾಗತ",
-
-      bloodGroupsListed: "Blood Groups Listed/ಪಟ್ಟಿಯಲ್ಲಿರುವ ರಕ್ತದ ಗುಂಪುಗಳು",
-
-      totalUnitsAvailable: "Total Units Available/ಲಭ್ಯವಿರುವ ಒಟ್ಟು ಯೂನಿಟ್‌ಗಳು",
-
-      lowStockAlerts: "Low Stock Alerts/ಕಡಿಮೆ ಸ್ಟಾಕ್ ಎಚ್ಚರಿಕೆಗಳು",
-
-      bloodAvailability: "Blood Availability Overview/ರಕ್ತ ಲಭ್ಯತೆಯ ವಿವರ",
-
-      addAvailability: "Add Availability/ಲಭ್ಯತೆಯನ್ನು ಸೇರಿಸಿ",
-
-      myAvailability: "My Blood Availability/ನನ್ನ ರಕ್ತ ಲಭ್ಯತೆ",
-
-      bloodGroup: "Blood Group/ರಕ್ತದ ಗುಂಪು",
-
-      units: "Units/ಯೂನಿಟ್‌ಗಳು",
-
-      selectBloodGroup: "Select Blood Group/ರಕ್ತದ ಗುಂಪನ್ನು ಆಯ್ಕೆಮಾಡಿ",
-
-      enterUnits: "Enter units/ಯೂನಿಟ್‌ಗಳನ್ನು ನಮೂದಿಸಿ",
-
-      contact: "Contact/ಸಂಪರ್ಕಿಸಿ",
-
-      registrationSuccess: "Registration Successful/ನೋಂದಣಿ ಯಶಸ್ವಿಯಾಗಿದೆ",
-
+      registrationSuccess: "ನೋಂದಣಿ ಯಶಸ್ವಿಯಾಗಿದೆ",
       registrationSuccessMessage:
-        "Your Blood Centre registration has been completed successfully./ನಿಮ್ಮ ರಕ್ತ ಕೇಂದ್ರದ ನೋಂದಣಿ ಯಶಸ್ವಿಯಾಗಿ ಪೂರ್ಣಗೊಂಡಿದೆ.",
+        "ನಿಮ್ಮ ರಕ್ತ ಕೇಂದ್ರದ ನೋಂದಣಿ ಯಶಸ್ವಿಯಾಗಿ ಪೂರ್ಣಗೊಂಡಿದೆ.",
 
-      loginSuccess: "Login Successful/ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಗಿದೆ",
+      loginSuccess: "ಲಾಗಿನ್ ಯಶಸ್ವಿಯಾಗಿದೆ",
+      loginSuccessMessage: "ನೀವು ಯಶಸ್ವಿಯಾಗಿ ಲಾಗಿನ್ ಆಗಿದ್ದೀರಿ.",
+      loggedInMessage: "ನೀವು ಯಶಸ್ವಿಯಾಗಿ ಲಾಗಿನ್ ಆಗಿದ್ದೀರಿ.",
+      welcomeMessage: "Blood Buddy ಗೆ ಸ್ವಾಗತ.",
 
-      loginSuccessMessage:
-        "You have successfully logged in./ನೀವು ಯಶಸ್ವಿಯಾಗಿ ಲಾಗಿನ್ ಆಗಿದ್ದೀರಿ.",
+      registrationSuccessCanLogin:
+        "ನಿಮ್ಮ ರಕ್ತ ಕೇಂದ್ರದ ನೋಂದಣಿ ಯಶಸ್ವಿಯಾಗಿದೆ. ಈಗ ನೀವು ನಿಮ್ಮ ಖಾತೆಗೆ ಲಾಗಿನ್ ಆಗಬಹುದು.",
 
-      otpSuccess: "OTP Verification Successful/OTP ಪರಿಶೀಲನೆ ಯಶಸ್ವಿಯಾಗಿದೆ",
+      passwordResetTitle: "ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಕೆ",
+      passwordResetMessage: "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಮರುಹೊಂದಿಸಲಾಗಿದೆ.",
+      passwordResetLoginHint:
+        "ಈಗ ನೀವು ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್‌ನೊಂದಿಗೆ ಲಾಗಿನ್ ಆಗಬಹುದು.",
 
-      otpSuccessMessage:
-        "Your mobile number has been successfully verified./ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
+      registrationTypeTitle: "ನೋಂದಣಿ",
+      registrationTypeDescription:
+        "ನೀವು ಸೂಪರ್ ಅಡ್ಮಿನ್ ಅಥವಾ ರಕ್ತ ಕೇಂದ್ರಕ್ಕಾಗಿ ನೋಂದಣಿ ಮಾಡಲು ಬಯಸುವಿರಾ?",
+      registerAsSuperAdmin: "ಸೂಪರ್ ಅಡ್ಮಿನ್ ಆಗಿ ನೋಂದಾಯಿಸಿ",
+      bloodCentreRegister: "ರಕ್ತ ಕೇಂದ್ರ ನೋಂದಣಿ",
+      registerNewBloodCentre: "ಹೊಸ ರಕ್ತ ಕೇಂದ್ರವನ್ನು ನೋಂದಾಯಿಸಿ",
 
-      loginUnable:
-        "Unable to login. Please try again./ಲಾಗಿನ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      otpSuccess: "OTP ಪರಿಶೀಲನೆ ಯಶಸ್ವಿಯಾಗಿದೆ",
+      otpSuccessMessage: "ನಿಮ್ಮ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
 
+      welcomeUser: "ಸ್ವಾಗತ{suffix}",
+
+      bloodType: "ರಕ್ತದ ಪ್ರಕಾರ",
+      bloodUnits: "ರಕ್ತದ ಯೂನಿಟ್‌ಗಳು",
+      adjust: "ಹೊಂದಿಸಿ",
+      loadingAvailability: "ಲಭ್ಯತೆಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+      noAvailabilityYet: "ಇನ್ನೂ ಯಾವುದೇ ಲಭ್ಯತೆಯನ್ನು ಸೇರಿಸಿಲ್ಲ.",
+      unitsAvailableSuffix: "ಯೂನಿಟ್‌ಗಳು ಲಭ್ಯವಿದೆ",
+
+      adjustStock: "ಸ್ಟಾಕ್ ಹೊಂದಿಸಿ",
+      movement: "ಚಲನೆ",
+      movementIssue: "ವಿತರಣೆ (ಯೂನಿಟ್‌ಗಳನ್ನು ಕಳುಹಿಸಿ)",
+      movementDiscard: "ತ್ಯಜಿಸಿ (ಅವಧಿ ಮೀರಿದ / ಬಳಸಲಾಗದ)",
+      movementCorrection: "ತಿದ್ದುಪಡಿ (ನಿಖರ ಒಟ್ಟು ಹೊಂದಿಸಿ)",
+      newTotalUnits: "ಹೊಸ ಒಟ್ಟು ಯೂನಿಟ್‌ಗಳು",
+      egNumberPlaceholder: "ಉದಾ. 25",
+      remarksOptional: "ಟಿಪ್ಪಣಿಗಳು (ಐಚ್ಛಿಕ)",
+      apply: "ಅನ್ವಯಿಸಿ",
+
+      addBloodAvailability: "ರಕ್ತ ಲಭ್ಯತೆಯನ್ನು ಸೇರಿಸಿ",
+      bloodAvailabilityTitle: "ರಕ್ತ ಲಭ್ಯತೆ",
+      bloodAvailabilityDescription: "ಪ್ರಸ್ತುತ ಲಭ್ಯವಿರುವ ರಕ್ತದ ಯೂನಿಟ್‌ಗಳನ್ನು ಸೇರಿಸಿ.",
+      unitsAvailableLabel: "ಲಭ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
+      loadingOptions: "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
+      selectBloodType: "ರಕ್ತದ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      availabilitySaved: "ಲಭ್ಯತೆಯನ್ನು ಉಳಿಸಲಾಗಿದೆ",
+      availabilitySavedMessage:
+        "ರಕ್ತ ಲಭ್ಯತೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ.",
+      saveAvailability: "ಲಭ್ಯತೆಯನ್ನು ಉಳಿಸಿ",
+
+      loginUnable: "ಲಾಗಿನ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       registrationUnable:
-        "Unable to complete registration. Please try again./ನೋಂದಣಿ ಪೂರ್ಣಗೊಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+        "ನೋಂದಣಿ ಪೂರ್ಣಗೊಳಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      otpUnable: "OTP ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
 
-      otpUnable:
-        "Unable to verify OTP. Please try again./OTP ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      noAccount: "ಖಾತೆ ಇಲ್ಲವೇ?",
+      forgotPassword: "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?",
+
+      category: "ವರ್ಗ",
+      selectCategory: "ವರ್ಗವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      categoryGovernment: "ಸರ್ಕಾರಿ",
+      categoryPrivate: "ಖಾಸಗಿ",
+      categoryCharitable: "ದತ್ತಿ",
+      categoryRedcross: "ರೆಡ್‌ಕ್ರಾಸ್",
+
+      dateOfExpiry: "ಮುಕ್ತಾಯ ದಿನಾಂಕ",
+      selectDateOfExpiry: "ಮುಕ್ತಾಯ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      enterEmailAddress: "ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ",
+      verified: "ಪರಿಶೀಲಿಸಲಾಗಿದೆ",
+      sending: "ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...",
+      sendOtp: "OTP ಕಳುಹಿಸಿ",
+      resendWithSeconds: "ಮರುಕಳುಹಿಸಿ ({count}s)",
+      enter6DigitOtp: "6 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ",
+      verifying: "ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...",
+
+      enterBloodCentreName: "ರಕ್ತ ಕೇಂದ್ರದ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+      enterLicenseNumber: "ಪರವಾನಗಿ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
+
+      forgotPasswordTitle: "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ",
+      forgotPasswordDescription:
+        "ನಿಮ್ಮ ನೋಂದಾಯಿತ ಇಮೇಲ್ ನಮೂದಿಸಿ, ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಲು ನಾವು OTP ಕಳುಹಿಸುತ್ತೇವೆ",
+      backToLogin: "ಲಾಗಿನ್‌ಗೆ ಹಿಂತಿರುಗಿ",
+
+      resetPasswordTitle: "ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಕೆ",
+      resetYourPassword: "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಿ",
+      resetPasswordDescription:
+        "ನಿಮ್ಮ ಇಮೇಲ್‌ಗೆ ಕಳುಹಿಸಲಾದ OTP ನಮೂದಿಸಿ ಮತ್ತು ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ",
     },
 
     donor: {
-      donor: "Donor/ರಕ್ತದಾನಿ",
-      donorRegistration: "Donor Registration/ರಕ್ತದಾನಿ ನೋಂದಣಿ",
-      bloodGroup: "Blood Group/ರಕ್ತದ ಗುಂಪು",
-      dateOfBirth: "Date of Birth/ಜನ್ಮ ದಿನಾಂಕ",
+      donor: "ರಕ್ತದಾನಿ",
+      donorModule: "ರಕ್ತದಾನಿ ವಿಭಾಗ",
+      donorRegistration: "ರಕ್ತದಾನಿ ನೋಂದಣಿ",
+      bloodGroup: "ರಕ್ತದ ಗುಂಪು",
+      dateOfBirth: "ಜನ್ಮ ದಿನಾಂಕ",
+
+      becomeADonor: "ರಕ್ತದಾನಿಯಾಗಿ",
+      becomeADonorDescription: "ಜೀವ ಉಳಿಸಲು ಸಹಾಯ ಮಾಡಲು ರಕ್ತದಾನಿಯಾಗಿ ನೋಂದಾಯಿಸಿ.",
+      registerAsDonor: "ರಕ್ತದಾನಿಯಾಗಿ ನೋಂದಾಯಿಸಿ",
+
+      alternateMobileOptional: "ಪರ್ಯಾಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ (ಐಚ್ಛಿಕ)",
+      enterAlternateMobile: "ಪರ್ಯಾಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
+      addressOptional: "ವಿಳಾಸ (ಐಚ್ಛಿಕ)",
+      lastBloodDonationDateOptional: "ಕೊನೆಯ ರಕ್ತದಾನ ದಿನಾಂಕ (ಐಚ್ಛಿಕ)",
+      donorRegisteredSuccessfully: "ರಕ್ತದಾನಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ.",
     },
 
     recipient: {
-      recipient: "Recipient/ರಕ್ತ ಸ್ವೀಕರಿಸುವವರು",
+      recipient: "ರಕ್ತ ಸ್ವೀಕರಿಸುವವರು",
+      recipientModule: "ಸ್ವೀಕರಿಸುವವರ ವಿಭಾಗ",
+      recipientRegistration: "ರಕ್ತ ಸ್ವೀಕರಿಸುವವರ ನೋಂದಣಿ",
 
-      recipientRegistration: "Recipient Registration/ರಕ್ತ ಸ್ವೀಕರಿಸುವವರ ನೋಂದಣಿ",
+      needBlood: "ರಕ್ತ ಬೇಕೇ?",
+      needBloodDescription:
+        "ರಕ್ತದ ಮನವಿಯನ್ನು ಸಲ್ಲಿಸಿ, ನಮ್ಮ ತಂಡ ಹತ್ತಿರದ ರಕ್ತ ಕೇಂದ್ರದೊಂದಿಗೆ ಹೊಂದಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
+      requestBlood: "ರಕ್ತ ಕೋರಿಕೆ",
+
+      recipientProfile: "ಸ್ವೀಕರಿಸುವವರ ಪ್ರೊಫೈಲ್",
+      patientName: "ರೋಗಿಯ ಹೆಸರು",
+      enterPatientName: "ರೋಗಿಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+      bloodGroupRequired: "ಅಗತ್ಯವಿರುವ ರಕ್ತದ ಗುಂಪು",
+      bloodTypeRequired: "ಅಗತ್ಯವಿರುವ ರಕ್ತದ ಪ್ರಕಾರ",
+      selectBloodGroup: "ರಕ್ತದ ಗುಂಪನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      selectBloodType: "ರಕ್ತದ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      unitsRequired: "ಅಗತ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
+      enterUnitsRequired: "ಅಗತ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳನ್ನು ನಮೂದಿಸಿ",
+      hospitalNameOptional: "ಆಸ್ಪತ್ರೆಯ ಹೆಸರು (ಐಚ್ಛಿಕ)",
+      enterHospitalName: "ಆಸ್ಪತ್ರೆಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+      requestSubmitted: "ಮನವಿ ಸಲ್ಲಿಸಲಾಗಿದೆ",
+
+      searchTitle: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳನ್ನು ಹುಡುಕಿ",
+      searchByPincode: "ಪಿನ್ ಕೋಡ್ ಅಥವಾ ಪ್ರದೇಶದ ಮೂಲಕ ಹುಡುಕಿ",
+      interactiveMapComingSoon: "ಸಂವಾದಾತ್ಮಕ ನಕ್ಷೆ ಶೀಘ್ರದಲ್ಲಿ ಬರಲಿದೆ",
+      bloodBanksTab: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ({count})",
+      donorsTab: "ರಕ್ತದಾನಿಗಳು ({count})",
+      searching: "ಹುಡುಕಲಾಗುತ್ತಿದೆ...",
+      noBloodBanksFound: "ಹತ್ತಿರದಲ್ಲಿ ಯಾವುದೇ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+      noDonorsFound: "ಹತ್ತಿರದಲ್ಲಿ ಯಾವುದೇ ರಕ್ತದಾನಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+      unitsSuffix: "ಯೂನಿಟ್‌ಗಳು",
+      availableToDonate: "ದಾನ ಮಾಡಲು ಲಭ್ಯವಿದೆ",
+      notAvailable: "ಲಭ್ಯವಿಲ್ಲ",
+    },
+
+    superAdmin: {
+      superAdmin: "ಸೂಪರ್ ಅಡ್ಮಿನ್",
+      administrator: "ನಿರ್ವಾಹಕ",
+      management: "ನಿರ್ವಹಣೆ",
+      bloodBank: "ರಕ್ತ ಬ್ಯಾಂಕ್",
+      superAdminPortal: "ಸೂಪರ್ ಅಡ್ಮಿನ್ ಪೋರ್ಟಲ್",
+      superAdminDashboard: "ಸೂಪರ್ ಅಡ್ಮಿನ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+      loginTitle: "ಸೂಪರ್ ಅಡ್ಮಿನ್ ಲಾಗಿನ್",
+      backToWelcome: "ಸ್ವಾಗತಕ್ಕೆ ಹಿಂತಿರುಗಿ",
+      registrationTitle: "ಸೂಪರ್ ಅಡ್ಮಿನ್ ನೋಂದಣಿ",
+      registrationDescription:
+        "ಸೂಪರ್ ಅಡ್ಮಿನ್ ಖಾತೆಗಳನ್ನು ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು ಹೊಂದಿಸುತ್ತಾರೆ ಮತ್ತು ಈ ಆ್ಯಪ್‌ನಿಂದ ರಚಿಸಲಾಗುವುದಿಲ್ಲ. ಪ್ರವೇಶ ಬೇಕಿದ್ದರೆ, ಸೂಪರ್ ಅಡ್ಮಿನ್ ಲಾಗಿನ್ ವಿವರಗಳಿಗಾಗಿ ನಿಮ್ಮ ನಿರ್ವಾಹಕರನ್ನು ಕೇಳಿ.",
+
+      bloodBankManagement: "ರಕ್ತ ಬ್ಯಾಂಕ್ ನಿರ್ವಹಣೆ",
+      bloodBankManagementDescription:
+        "ನೋಂದಾಯಿತ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತ ಲಭ್ಯತೆಯನ್ನು ನಿರ್ವಹಿಸಿ.",
+      bloodBanksStat: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು",
+      bloodTypesStat: "ರಕ್ತದ ಪ್ರಕಾರಗಳು",
+      availableUnitsStat: "ಲಭ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
+      searchBloodCentre: "ರಕ್ತ ಕೇಂದ್ರವನ್ನು ಹುಡುಕಿ...",
+      clearSearch: "ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ",
+      addBloodCentre: "ರಕ್ತ ಕೇಂದ್ರವನ್ನು ಸೇರಿಸಿ",
+      loadingBloodBanks: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+      noBloodBanksFound: "ಯಾವುದೇ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+      tryChangingSearch: "ನಿಮ್ಮ ಹುಡುಕಾಟವನ್ನು ಬದಲಾಯಿಸಿ ನೋಡಿ.",
+      sNo: "ಕ್ರ.ಸಂ",
+      sNoValue: "ಕ್ರ.ಸಂ {index}",
+      bloodBankColumn: "ರಕ್ತ ಬ್ಯಾಂಕ್",
+      phone: "ಫೋನ್",
+      bloodTypesCount: "{count} ರಕ್ತದ ಪ್ರಕಾರಗಳು",
+      actions: "ಕ್ರಮಗಳು",
+      noBloodAvailabilityFound: "ಯಾವುದೇ ರಕ್ತ ಲಭ್ಯತೆ ಕಂಡುಬಂದಿಲ್ಲ.",
+
+      updateBloodUnits: "ರಕ್ತದ ಯೂನಿಟ್‌ಗಳನ್ನು ನವೀಕರಿಸಿ",
+      updateCurrentAvailability: "ಪ್ರಸ್ತುತ ಲಭ್ಯತೆಯನ್ನು ನವೀಕರಿಸಿ",
+      availableUnitsField: "ಲಭ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
+      saveChanges: "ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ",
+
+      addStock: "ಸ್ಟಾಕ್ ಸೇರಿಸಿ",
+      addUnitsToInventory: "ಈ ಕೇಂದ್ರದ ದಾಸ್ತಾನಿಗೆ ಯೂನಿಟ್‌ಗಳನ್ನು ಸೇರಿಸಿ",
+      currentStock: "ಪ್ರಸ್ತುತ ಸ್ಟಾಕ್:",
+      unitsToAdd: "ಸೇರಿಸಬೇಕಾದ ಯೂನಿಟ್‌ಗಳು",
+      adding: "ಸೇರಿಸಲಾಗುತ್ತಿದೆ...",
+
+      donorDetails: "ರಕ್ತದಾನಿ ವಿವರಗಳು",
+      donorDetailsDescription:
+        "ನೋಂದಾಯಿತ ರಕ್ತದಾನಿಗಳು ಮತ್ತು ಅವರ ದಾನದ ಮಾಹಿತಿಯನ್ನು ನಿರ್ವಹಿಸಿ.",
+      searchDonor: "ರಕ್ತದಾನಿಯನ್ನು ಹುಡುಕಿ...",
+      donorName: "ರಕ್ತದಾನಿಯ ಹೆಸರು",
+      alternateMobileNo: "ಪರ್ಯಾಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
+      alternateMobile: "ಪರ್ಯಾಯ ಮೊಬೈಲ್",
+      pincode: "ಪಿನ್‌ಕೋಡ್",
+      lastBloodDonationDate: "ಕೊನೆಯ ರಕ್ತದಾನ ದಿನಾಂಕ",
+      lastDonation: "ಕೊನೆಯ ದಾನ",
+      lastBloodDonation: "ಕೊನೆಯ ರಕ್ತದಾನ",
+      loadingDonors: "ರಕ್ತದಾನಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+      noDonorDataFound: "ಯಾವುದೇ ರಕ್ತದಾನಿ ಮಾಹಿತಿ ಕಂಡುಬಂದಿಲ್ಲ",
+      donorRecordsWillAppear: "ರಕ್ತದಾನಿ ದಾಖಲೆಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.",
+
+      searchRecipient: "ಸ್ವೀಕರಿಸುವವರನ್ನು ಹುಡುಕಿ...",
+      hospital: "ಆಸ್ಪತ್ರೆ",
+
+      bloodRequests: "ರಕ್ತದ ಮನವಿಗಳು",
+      bloodRequestsDescription:
+        "ಸ್ವೀಕರಿಸುವವರ ರಕ್ತದ ಮನವಿಗಳು, ಹೊಂದಾಣಿಕೆಯಾದ ಕೇಂದ್ರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ದಾನಗಳನ್ನು ದಾಖಲಿಸಿ.",
+      phoneNumber: "ಫೋನ್ ಸಂಖ್ಯೆ",
+      requestedOn: "ಮನವಿ ಸಲ್ಲಿಸಿದ ದಿನಾಂಕ",
+      status: "ಸ್ಥಿತಿ",
+      action: "ಕ್ರಮ",
+      view: "ವೀಕ್ಷಿಸಿ",
+      viewDetails: "ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+      noBloodRequestsFound: "ಯಾವುದೇ ರಕ್ತದ ಮನವಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+      bloodRequestsWillAppear: "ರಕ್ತದ ಮನವಿಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.",
+      bloodRequestDetails: "ರಕ್ತದ ಮನವಿ ವಿವರಗಳು",
+      requestNumber: "ಮನವಿ #{id}",
+      bloodComponent: "ರಕ್ತದ ಘಟಕ",
+      remarks: "ಟಿಪ್ಪಣಿಗಳು",
+      matchedCentres: "ಹೊಂದಾಣಿಕೆಯಾದ ಕೇಂದ್ರಗಳು ({count})",
+      noCentresMatched: "ಈ ಮನವಿಗೆ ಯಾವುದೇ ಕೇಂದ್ರ ಹೊಂದಾಣಿಕೆಯಾಗಿಲ್ಲ.",
+      donatedBy: "ದಾನ ಮಾಡಿದವರು ({count})",
+      donorCandidates: "ರಕ್ತದಾನಿ ಅಭ್ಯರ್ಥಿಗಳು ({count})",
+      noMatchingDonorCandidates: "ಹೊಂದಾಣಿಕೆಯಾಗುವ ರಕ್ತದಾನಿ ಅಭ್ಯರ್ಥಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+      recordDonation: "ದಾನವನ್ನು ದಾಖಲಿಸಿ",
+      closeRequest: "ಮನವಿಯನ್ನು ಮುಚ್ಚಿ",
+      closeThisRequest: "ಈ ಮನವಿಯನ್ನು ಮುಚ್ಚಿ",
+      closing: "ಮುಚ್ಚಲಾಗುತ್ತಿದೆ...",
+      confirmClose: "ಮುಚ್ಚುವಿಕೆಯನ್ನು ದೃಢೀಕರಿಸಿ",
+      statusMatched: "ಹೊಂದಾಣಿಕೆಯಾಗಿದೆ",
+      statusNoCentres: "ಕೇಂದ್ರಗಳಿಲ್ಲ",
+      statusClosed: "ಮುಚ್ಚಲಾಗಿದೆ",
+      statusCancelled: "ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ",
     },
 
     validation: {
-      required: "This field is required/ಈ ಕ್ಷೇತ್ರವು ಅಗತ್ಯವಿದೆ",
-
-      invalidName: "Please enter a valid name/ದಯವಿಟ್ಟು ಸರಿಯಾದ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
-
-      invalidMobile:
-        "Please enter a valid mobile number/ದಯವಿಟ್ಟು ಸರಿಯಾದ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
-
-      invalidEmail:
-        "Please enter a valid email address/ದಯವಿಟ್ಟು ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ",
-
-      invalidPinCode:
-        "Please enter a valid PIN code/ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪಿನ್ ಕೋಡ್ ನಮೂದಿಸಿ",
-
-      invalidLicense:
-        "Please enter a valid license number/ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪರವಾನಗಿ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
-
+      required: "ಈ ಕ್ಷೇತ್ರವು ಅಗತ್ಯವಿದೆ",
+      invalidName: "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
+      invalidMobile: "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಮೊಬೈಲ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
+      invalidEmail: "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ",
+      invalidPinCode: "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪಿನ್ ಕೋಡ್ ನಮೂದಿಸಿ",
+      invalidLicense: "ದಯವಿಟ್ಟು ಸರಿಯಾದ ಪರವಾನಗಿ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
       invalidPassword:
-        "Password must contain uppercase, lowercase, number and special character/ಪಾಸ್‌ವರ್ಡ್‌ನಲ್ಲಿ ದೊಡ್ಡ ಅಕ್ಷರ, ಸಣ್ಣ ಅಕ್ಷರ, ಸಂಖ್ಯೆ ಮತ್ತು ವಿಶೇಷ ಅಕ್ಷರ ಇರಬೇಕು",
-
-      passwordMismatch:
-        "Passwords do not match/ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ",
-
-      invalidOtp: "Please enter a valid OTP/ದಯವಿಟ್ಟು ಸರಿಯಾದ OTP ನಮೂದಿಸಿ",
-
-      otpRequired: "Please enter the 6-digit OTP/ದಯವಿಟ್ಟು 6 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ",
-
-      numbersOnly: "Only numbers are allowed/ಸಂಖ್ಯೆಗಳನ್ನು ಮಾತ್ರ ನಮೂದಿಸಿ",
-
-      lettersOnly: "Only letters are allowed/ಅಕ್ಷರಗಳನ್ನು ಮಾತ್ರ ನಮೂದಿಸಿ",
+        "ಪಾಸ್‌ವರ್ಡ್‌ನಲ್ಲಿ ದೊಡ್ಡ ಅಕ್ಷರ, ಸಣ್ಣ ಅಕ್ಷರ, ಸಂಖ್ಯೆ ಮತ್ತು ವಿಶೇಷ ಅಕ್ಷರ ಇರಬೇಕು",
+      passwordMismatch: "ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ",
+      invalidOtp: "ದಯವಿಟ್ಟು ಸರಿಯಾದ OTP ನಮೂದಿಸಿ",
+      otpRequired: "ದಯವಿಟ್ಟು 6 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ",
+      numbersOnly: "ಸಂಖ್ಯೆಗಳನ್ನು ಮಾತ್ರ ನಮೂದಿಸಿ",
+      lettersOnly: "ಅಕ್ಷರಗಳನ್ನು ಮಾತ್ರ ನಮೂದಿಸಿ",
     },
 
     accessibility: {
-      showPassword: "Show password/ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ",
-
-      hidePassword: "Hide password/ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ",
-
-      goBack: "Go back/ಹಿಂದಕ್ಕೆ ಹೋಗಿ",
-
-      home: "Blood Buddy home/Blood Buddy ಮುಖಪುಟ",
+      showPassword: "ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಿ",
+      hidePassword: "ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ",
+      goBack: "ಹಿಂದಕ್ಕೆ ಹೋಗಿ",
+      home: "Blood Buddy ಮುಖಪುಟ",
+      closeRegistrationModal: "ನೋಂದಣಿ ಪೇಟಿಕೆಯನ್ನು ಮುಚ್ಚಿ",
+      closeNavigation: "ನ್ಯಾವಿಗೇಶನ್ ಮುಚ್ಚಿ",
+      closeMenu: "ಮೆನು ಮುಚ್ಚಿ",
+      openMenu: "ಮೆನು ತೆರೆಯಿರಿ",
     },
 
     poweredBy: {
-      text: "Powered by/ಇವರಿಂದ ಚಾಲಿತ",
+      text: "ಇವರಿಂದ ಚಾಲಿತ",
     },
   },
 } as const;

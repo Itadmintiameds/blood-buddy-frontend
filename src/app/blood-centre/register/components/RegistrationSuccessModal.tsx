@@ -2,6 +2,10 @@
 
 import { CheckCircle2 } from "lucide-react";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import {
+  Bilingual,
+  BilingualInline,
+} from "@/app/components/common/Bilingual";
 
 interface RegistrationSuccessModalProps {
   open: boolean;
@@ -80,17 +84,18 @@ export function RegistrationSuccessModal({
           />
         </div>
 
-        <h2
+        <Bilingual
+          tKey="bloodCentre.registrationSuccess"
+          as="h2"
           id="registration-success-title"
           className="mt-4 text-[18px] font-semibold tracking-[-0.01em] text-[var(--color-text-primary)]"
-        >
-          Registration Successful
-        </h2>
+        />
 
-        <p className="mt-2 text-[13px] leading-5 text-[var(--color-text-muted)]">
-          Your Blood Centre registration was successful. You can now log in
-          to your account.
-        </p>
+        <Bilingual
+          tKey="bloodCentre.registrationSuccessCanLogin"
+          as="p"
+          className="mt-2 text-[13px] leading-5 text-[var(--color-text-muted)]"
+        />
 
         <button
           type="button"
@@ -98,12 +103,14 @@ export function RegistrationSuccessModal({
           className="
             mt-6
             flex
-            h-11
+            min-h-11
             w-full
             items-center
             justify-center
             rounded-lg
             bg-[var(--color-primary)]
+            px-4
+            py-2
             text-[14px]
             font-semibold
             text-white
@@ -118,7 +125,10 @@ export function RegistrationSuccessModal({
             focus:ring-offset-2
           "
         >
-          OK
+          <BilingualInline
+            tKey="common.ok"
+            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+          />
         </button>
       </div>
     </div>

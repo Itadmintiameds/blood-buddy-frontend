@@ -11,9 +11,16 @@ import { FormInput } from "@/app/components/ui/FormInput";
 import { getBloodCentreSession } from "@/services/auth/authStorage";
 import { loginCommon } from "@/services/bloodCenter/commonLoginService";
 import { RegistrationTypeModal } from "./RegistrationTypeModal";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function BloodCentreLoginScreen() {
   const router = useRouter();
+  const emailPlaceholder = useBilingualText("common.enterEmail");
+  const passwordPlaceholder = useBilingualText("common.enterPassword");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -179,7 +186,9 @@ export function BloodCentreLoginScreen() {
           />
         </div>
 
-        <h2
+        <Bilingual
+          tKey="common.login"
+          as="h2"
           className="
             mt-4
             text-[20px]
@@ -187,9 +196,7 @@ export function BloodCentreLoginScreen() {
             tracking-[-0.01em]
             text-[var(--color-text-primary)]
           "
-        >
-          Login
-        </h2>
+        />
 
         <div
           className="
@@ -203,11 +210,11 @@ export function BloodCentreLoginScreen() {
               id="loginEmail"
               name="email"
               icon={Mail}
-              label="Email"
+              label={<Bilingual tKey="common.email" as="span" />}
               type="email"
               inputMode="email"
               autoComplete="email"
-              placeholder="Enter your email"
+              placeholder={emailPlaceholder}
               value={email}
               onChange={(event) => handleEmailChange(event.target.value)}
               onKeyDown={handleKeyDown}
@@ -218,10 +225,10 @@ export function BloodCentreLoginScreen() {
             id="loginPassword"
             name="password"
             icon={LockKeyhole}
-            label="Password"
+            label={<Bilingual tKey="common.password" as="span" />}
             type="password"
             autoComplete="current-password"
-            placeholder="Enter your password"
+            placeholder={passwordPlaceholder}
             value={password}
             onChange={(event) => handlePasswordChange(event.target.value)}
             onKeyDown={handleKeyDown}
@@ -244,7 +251,10 @@ export function BloodCentreLoginScreen() {
 
           <div className="mt-8">
             <AppButton type="button" loading={loading} onClick={submit}>
-              Login
+              <BilingualInline
+                tKey="common.login"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </AppButton>
           </div>
 
@@ -256,7 +266,7 @@ export function BloodCentreLoginScreen() {
               text-[var(--color-text-secondary)]
             "
           >
-            Don&apos;t have an account?{" "}
+            <BilingualInline tKey="bloodCentre.noAccount" />{" "}
             <button
               type="button"
               onClick={handleBloodCentreRegistration}
@@ -271,7 +281,7 @@ export function BloodCentreLoginScreen() {
                 hover:underline
               "
             >
-              Register Now
+              <BilingualInline tKey="common.registerNow" />
             </button>
           </div>
 
@@ -292,7 +302,7 @@ export function BloodCentreLoginScreen() {
                 hover:text-[var(--color-primary)]
               "
             >
-              Forgot your password?
+              <BilingualInline tKey="bloodCentre.forgotPassword" />
             </Link>
           </div>
 
@@ -315,7 +325,10 @@ export function BloodCentreLoginScreen() {
                 textDecorationColor: "#FF3B3B",
               }}
             >
-              Return to Welcome page
+              <BilingualInline
+                tKey="common.returnToWelcome"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-[#FF3B3B]/70"
+              />
             </Link>
           </div>
         </div>

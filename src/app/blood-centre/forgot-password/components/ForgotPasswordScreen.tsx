@@ -10,9 +10,15 @@ import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { forgotPassword } from "@/services/bloodCenter/bloodCenter.service";
 import { getApiErrorMessage } from "@/services/api/client";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function ForgotPasswordScreen() {
   const router = useRouter();
+  const emailPlaceholder = useBilingualText("common.enterEmail");
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -79,7 +85,7 @@ export function ForgotPasswordScreen() {
   return (
     <ScreenShell>
       <BrandHeader
-        title="Forgot Password"
+        title={<Bilingual tKey="bloodCentre.forgotPasswordTitle" as="span" />}
         showBackButton
         backHref="/blood-centre/login"
       />
@@ -115,7 +121,9 @@ export function ForgotPasswordScreen() {
           />
         </div>
 
-        <h2
+        <Bilingual
+          tKey="bloodCentre.forgotPasswordTitle"
+          as="h2"
           className="
             mt-4
             text-[20px]
@@ -123,11 +131,11 @@ export function ForgotPasswordScreen() {
             tracking-[-0.01em]
             text-[var(--color-text-primary)]
           "
-        >
-          Forgot Password
-        </h2>
+        />
 
-        <p
+        <Bilingual
+          tKey="bloodCentre.forgotPasswordDescription"
+          as="p"
           className="
             mt-2
             max-w-[300px]
@@ -136,10 +144,7 @@ export function ForgotPasswordScreen() {
             leading-5
             text-[var(--color-text-placeholder-alt)]
           "
-        >
-          Enter your registered email and we&apos;ll send you an OTP to reset
-          your password
-        </p>
+        />
 
         <div
           className="
@@ -152,11 +157,11 @@ export function ForgotPasswordScreen() {
             id="forgotPasswordEmail"
             name="email"
             icon={Mail}
-            label="Email"
+            label={<Bilingual tKey="common.email" as="span" />}
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder="Enter your email"
+            placeholder={emailPlaceholder}
             value={email}
             onChange={(event) => handleEmailChange(event.target.value)}
             onKeyDown={handleKeyDown}
@@ -179,7 +184,10 @@ export function ForgotPasswordScreen() {
 
           <div className="mt-8">
             <AppButton type="button" loading={loading} onClick={submit}>
-              Send OTP
+              <BilingualInline
+                tKey="bloodCentre.sendOtp"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </AppButton>
           </div>
 
@@ -200,7 +208,7 @@ export function ForgotPasswordScreen() {
                 hover:text-[var(--color-primary)]
               "
             >
-              Back to Login
+              <BilingualInline tKey="bloodCentre.backToLogin" />
             </Link>
           </div>
         </div>

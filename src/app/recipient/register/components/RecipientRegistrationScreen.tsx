@@ -1,12 +1,13 @@
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
+import { Bilingual } from "@/app/components/common/Bilingual";
 import { RecipientRegistrationForm } from "./RecipientRegistrationForm";
 
 export function RecipientRegistrationScreen() {
   return (
     <ScreenShell>
       <BrandHeader
-        title="Recipient Profile"
+        title={<Bilingual tKey="recipient.recipientProfile" as="span" />}
         showBackButton
         backHref="/recipient"
       />

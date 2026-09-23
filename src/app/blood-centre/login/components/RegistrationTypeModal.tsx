@@ -3,6 +3,11 @@
 import { Building2, ShieldCheck, X } from "lucide-react";
 
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 interface RegistrationTypeModalProps {
   open: boolean;
@@ -18,6 +23,7 @@ export function RegistrationTypeModal({
   onBloodCentre,
 }: RegistrationTypeModalProps) {
   const { rendered, visible } = useExitTransition(open, 200);
+  const closeLabel = useBilingualText("accessibility.closeRegistrationModal");
 
   if (!rendered) {
     return null;
@@ -75,7 +81,7 @@ export function RegistrationTypeModal({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close registration modal"
+          aria-label={closeLabel}
           className="
             absolute
             right-4
@@ -101,7 +107,9 @@ export function RegistrationTypeModal({
         {/* Heading */}
 
         <div className="pr-8">
-          <h2
+          <Bilingual
+            tKey="bloodCentre.registrationTypeTitle"
+            as="h2"
             id="registration-type-title"
             className="
               text-[19px]
@@ -109,20 +117,18 @@ export function RegistrationTypeModal({
               tracking-[-0.01em]
               text-[var(--color-text-primary)]
             "
-          >
-            Registration
-          </h2>
+          />
 
-          <p
+          <Bilingual
+            tKey="bloodCentre.registrationTypeDescription"
+            as="p"
             className="
               mt-1
               text-[13px]
               leading-5
               text-gray-500
             "
-          >
-            Do you want registration for Super Admin or Blood Centre?
-          </p>
+          />
         </div>
 
         {/* Registration Options */}
@@ -175,26 +181,26 @@ export function RegistrationTypeModal({
             </div>
 
             <div className="min-w-0">
-              <p
+              <Bilingual
+                tKey="superAdmin.superAdmin"
+                as="p"
                 className="
                   text-[14px]
                   font-semibold
                   text-[#222]
                 "
-              >
-                Super Admin
-              </p>
+              />
 
-              <p
+              <Bilingual
+                tKey="bloodCentre.registerAsSuperAdmin"
+                as="p"
                 className="
                   mt-0.5
                   text-[12px]
                   leading-4
                   text-gray-500
                 "
-              >
-                Register as Super Admin
-              </p>
+              />
             </div>
           </button>
 
@@ -245,26 +251,26 @@ export function RegistrationTypeModal({
             </div>
 
             <div className="min-w-0">
-              <p
+              <Bilingual
+                tKey="bloodCentre.bloodCentreRegister"
+                as="p"
                 className="
                   text-[14px]
                   font-semibold
                   text-[#222]
                 "
-              >
-                Blood Centre Register
-              </p>
+              />
 
-              <p
+              <Bilingual
+                tKey="bloodCentre.registerNewBloodCentre"
+                as="p"
                 className="
                   mt-0.5
                   text-[12px]
                   leading-4
                   text-gray-500
                 "
-              >
-                Register a new blood centre
-              </p>
+              />
             </div>
           </button>
         </div>
@@ -289,7 +295,7 @@ export function RegistrationTypeModal({
             focus-visible:ring-gray-300
           "
         >
-          Cancel
+          <BilingualInline tKey="common.cancel" />
         </button>
       </div>
     </div>

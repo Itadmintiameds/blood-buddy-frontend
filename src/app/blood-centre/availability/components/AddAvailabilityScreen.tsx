@@ -16,9 +16,18 @@ import type {
   MasterBloodComponent,
   MasterBloodGroup,
 } from "@/types/master.types";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 export function AddAvailabilityScreen() {
   const router = useRouter();
+  const loadingText = useBilingualText("bloodCentre.loadingOptions");
+  const selectBloodTypeText = useBilingualText("bloodCentre.selectBloodType");
+  const selectBloodGroupText = useBilingualText("bloodCentre.selectBloodGroup");
+  const enterUnitsPlaceholder = useBilingualText("bloodCentre.enterUnits");
 
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
   const [bloodComponents, setBloodComponents] = useState<
@@ -148,7 +157,7 @@ export function AddAvailabilityScreen() {
     <>
       <ScreenShell>
         <BrandHeader
-          title="Add Blood Availability"
+          title={<Bilingual tKey="bloodCentre.addBloodAvailability" as="span" />}
           showBackButton
           backHref="/blood-centre/dashboard"
         />
@@ -219,7 +228,9 @@ export function AddAvailabilityScreen() {
                     </div>
 
                     <div>
-                      <h1
+                      <Bilingual
+                        tKey="bloodCentre.bloodAvailabilityTitle"
+                        as="h1"
                         className="
                           text-[18px]
                           font-semibold
@@ -227,11 +238,11 @@ export function AddAvailabilityScreen() {
                           text-[var(--color-text-primary)]
                           md:text-[20px]
                         "
-                      >
-                        Blood Availability
-                      </h1>
+                      />
 
-                      <p
+                      <Bilingual
+                        tKey="bloodCentre.bloodAvailabilityDescription"
+                        as="p"
                         className="
                           mt-1
                           text-[12px]
@@ -239,9 +250,7 @@ export function AddAvailabilityScreen() {
                           text-[var(--color-text-tertiary)]
                           md:text-[13px]
                         "
-                      >
-                        Add the currently available blood units.
-                      </p>
+                      />
                     </div>
                   </div>
                 </div>
@@ -261,7 +270,9 @@ export function AddAvailabilityScreen() {
                 )}
 
                 <div className="mt-5 w-full">
-                  <label
+                  <Bilingual
+                    tKey="bloodCentre.bloodType"
+                    as="label"
                     htmlFor="bloodType"
                     className="
                       block
@@ -269,9 +280,7 @@ export function AddAvailabilityScreen() {
                       font-medium
                       text-[var(--color-text-body)]
                     "
-                  >
-                    Blood Type
-                  </label>
+                  />
 
                   <div className="relative mt-2">
                     <Droplets
@@ -327,7 +336,7 @@ export function AddAvailabilityScreen() {
                       `}
                     >
                       <option value="">
-                        {mastersLoading ? "Loading..." : "Select Blood Type"}
+                        {mastersLoading ? loadingText : selectBloodTypeText}
                       </option>
 
                       {bloodComponents.map((component) => (
@@ -356,7 +365,9 @@ export function AddAvailabilityScreen() {
                 </div>
 
                 <div className="mt-5 w-full">
-                  <label
+                  <Bilingual
+                    tKey="bloodCentre.bloodGroup"
+                    as="label"
                     htmlFor="bloodGroup"
                     className="
                       block
@@ -364,9 +375,7 @@ export function AddAvailabilityScreen() {
                       font-medium
                       text-[var(--color-text-body)]
                     "
-                  >
-                    Blood Group
-                  </label>
+                  />
 
                   <div className="relative mt-2">
                     <Droplets
@@ -421,7 +430,7 @@ export function AddAvailabilityScreen() {
                       `}
                     >
                       <option value="">
-                        {mastersLoading ? "Loading..." : "Select Blood Group"}
+                        {mastersLoading ? loadingText : selectBloodGroupText}
                       </option>
 
                       {bloodGroups.map((group) => (
@@ -450,7 +459,9 @@ export function AddAvailabilityScreen() {
                 </div>
 
                 <div className="mt-5 w-full">
-                  <label
+                  <Bilingual
+                    tKey="bloodCentre.unitsAvailableLabel"
+                    as="label"
                     htmlFor="units"
                     className="
                       block
@@ -458,9 +469,7 @@ export function AddAvailabilityScreen() {
                       font-medium
                       text-[var(--color-text-body)]
                     "
-                  >
-                    Units Available
-                  </label>
+                  />
 
                   <div className="relative mt-2">
                     <Package
@@ -492,7 +501,7 @@ export function AddAvailabilityScreen() {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       maxLength={4}
-                      placeholder="Enter units"
+                      placeholder={enterUnitsPlaceholder}
                       autoComplete="off"
                       className="
                         h-11
@@ -548,7 +557,10 @@ export function AddAvailabilityScreen() {
                     "
                   >
                     <AppButton type="button" loading={loading} onClick={submit}>
-                      Save Availability
+                      <BilingualInline
+                        tKey="bloodCentre.saveAvailability"
+                        enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+                      />
                     </AppButton>
                   </div>
                 </div>
@@ -612,7 +624,9 @@ export function AddAvailabilityScreen() {
               </div>
             </div>
 
-            <h2
+            <Bilingual
+              tKey="bloodCentre.availabilitySaved"
+              as="h2"
               id="availability-success-title"
               className="
                 text-[18px]
@@ -620,20 +634,18 @@ export function AddAvailabilityScreen() {
                 leading-6
                 text-[var(--color-text-primary)]
               "
-            >
-              Availability Saved
-            </h2>
+            />
 
-            <p
+            <Bilingual
+              tKey="bloodCentre.availabilitySavedMessage"
+              as="p"
               className="
                 mt-2
                 text-[13px]
                 leading-5
                 text-[var(--color-text-muted)]
               "
-            >
-              Blood availability has been added successfully.
-            </p>
+            />
 
             <button
               type="button"
@@ -641,12 +653,14 @@ export function AddAvailabilityScreen() {
               className="
                 mt-6
                 flex
-                h-11
+                min-h-11
                 w-full
                 items-center
                 justify-center
                 rounded-lg
                 bg-[var(--color-primary)]
+                px-4
+                py-2
                 text-[14px]
                 font-semibold
                 text-white
@@ -661,7 +675,10 @@ export function AddAvailabilityScreen() {
                 focus:ring-offset-2
               "
             >
-              OK
+              <BilingualInline
+                tKey="common.ok"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </button>
           </div>
         </div>

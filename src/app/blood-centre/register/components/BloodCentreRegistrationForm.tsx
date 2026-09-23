@@ -37,6 +37,11 @@ import {
 import { getSuperAdminSession, logout } from "@/services/auth/authStorage";
 import { getApiErrorMessage } from "@/services/api/client";
 import { RegistrationSuccessModal } from "./RegistrationSuccessModal";
+import {
+  Bilingual,
+  BilingualInline,
+  useBilingualText,
+} from "@/app/components/common/Bilingual";
 
 const defaultValues: BloodCentreRegistrationInput = {
   bloodCentreName: "",
@@ -57,6 +62,28 @@ type OtpStatus = "idle" | "sending" | "sent" | "verifying" | "verified";
 
 export function BloodCentreRegistrationForm() {
   const router = useRouter();
+  const enterBloodCentreName = useBilingualText("bloodCentre.enterBloodCentreName");
+  const enterLicenseNumber = useBilingualText("bloodCentre.enterLicenseNumber");
+  const selectDateOfExpiry = useBilingualText("bloodCentre.selectDateOfExpiry");
+  const enterEmailAddress = useBilingualText("bloodCentre.enterEmailAddress");
+  const enter6DigitOtp = useBilingualText("bloodCentre.enter6DigitOtp");
+  const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
+  const enterPassword = useBilingualText("common.enterPassword");
+  const reenterPassword = useBilingualText("common.reenterPassword");
+  const enterAddress = useBilingualText("common.enterAddress");
+  const enterDistrict = useBilingualText("common.enterDistrict");
+  const enterCity = useBilingualText("common.enterCity");
+  const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
+  const selectCategoryText = useBilingualText("bloodCentre.selectCategory");
+  const categoryGovernmentText = useBilingualText("bloodCentre.categoryGovernment");
+  const categoryPrivateText = useBilingualText("bloodCentre.categoryPrivate");
+  const categoryCharitableText = useBilingualText("bloodCentre.categoryCharitable");
+  const categoryRedcrossText = useBilingualText("bloodCentre.categoryRedcross");
+  const verifiedText = useBilingualText("bloodCentre.verified");
+  const sendingText = useBilingualText("bloodCentre.sending");
+  const resendOtpText = useBilingualText("common.resend");
+  const sendOtpText = useBilingualText("bloodCentre.sendOtp");
+  const verifyingText = useBilingualText("bloodCentre.verifying");
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState(
@@ -68,6 +95,10 @@ export function BloodCentreRegistrationForm() {
   const [otpValue, setOtpValue] = useState("");
   const [otpError, setOtpError] = useState("");
   const [resendSeconds, setResendSeconds] = useState(0);
+  const resendWithSecondsText = useBilingualText(
+    "bloodCentre.resendWithSeconds",
+    { count: resendSeconds },
+  );
 
   const {
     register,
@@ -250,8 +281,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="bloodCentreName"
             icon={Building2}
-            label="Blood Centre Name"
-            placeholder="Enter blood centre name"
+            label={<Bilingual tKey="bloodCentre.bloodCentreName" as="span" />}
+            placeholder={enterBloodCentreName}
             maxLength={100}
             autoComplete="organization"
             {...register("bloodCentreName")}
@@ -261,8 +292,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="licenseNumber"
             icon={FileCheck2}
-            label="License Number"
-            placeholder="Enter license number"
+            label={<Bilingual tKey="bloodCentre.licenseNumber" as="span" />}
+            placeholder={enterLicenseNumber}
             maxLength={30}
             autoComplete="off"
             {...register("licenseNumber")}
@@ -270,8 +301,9 @@ export function BloodCentreRegistrationForm() {
           />
 
           <div className="w-full">
-            <label
-              htmlFor="category"
+            <Bilingual
+              tKey="bloodCentre.category"
+              as="label"
               className="
                 mb-1.5
                 block
@@ -280,9 +312,7 @@ export function BloodCentreRegistrationForm() {
                 leading-4
                 text-[var(--color-text-body)]
               "
-            >
-              Category
-            </label>
+            />
 
             <div className="relative">
               <Tags
@@ -354,7 +384,7 @@ export function BloodCentreRegistrationForm() {
                   disabled
                   className="text-[var(--color-input-placeholder)]"
                 >
-                  Select category
+                  {selectCategoryText}
                 </option>
 
                 {/* Options */}
@@ -362,28 +392,28 @@ export function BloodCentreRegistrationForm() {
                   value="Government"
                   className="text-[var(--color-text-body)]"
                 >
-                  Government
+                  {categoryGovernmentText}
                 </option>
 
                 <option
                   value="Private"
                   className="text-[var(--color-text-body)]"
                 >
-                  Private
+                  {categoryPrivateText}
                 </option>
 
                 <option
                   value="Charitable"
                   className="text-[var(--color-text-body)]"
                 >
-                  Charitable
+                  {categoryCharitableText}
                 </option>
 
                 <option
                   value="Redcross"
                   className="text-[var(--color-text-body)]"
                 >
-                  Redcross
+                  {categoryRedcrossText}
                 </option>
               </select>
 
@@ -422,8 +452,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="dateOfExpiry"
             icon={CalendarDays}
-            label="Date of License Expiry"
-            placeholder="Select date of license expiry"
+            label={<Bilingual tKey="bloodCentre.dateOfExpiry" as="span" />}
+            placeholder={selectDateOfExpiry}
             type="date"
             typeof=""
             autoComplete="off"
@@ -435,8 +465,8 @@ export function BloodCentreRegistrationForm() {
             <FormInput
               id="email"
               icon={Mail}
-              label="Email Address"
-              placeholder="Enter email address"
+              label={<Bilingual tKey="common.email" as="span" />}
+              placeholder={enterEmailAddress}
               type="email"
               maxLength={254}
               inputMode="email"
@@ -448,7 +478,7 @@ export function BloodCentreRegistrationForm() {
                 otpStatus === "verified" ? (
                   <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-[var(--color-success)]">
                     <CheckCircle2 size={15} strokeWidth={2} />
-                    Verified
+                    {verifiedText}
                   </span>
                 ) : (
                   <button
@@ -477,12 +507,12 @@ export function BloodCentreRegistrationForm() {
                     "
                   >
                     {otpStatus === "sending"
-                      ? "Sending..."
+                      ? sendingText
                       : otpStatus === "sent"
                         ? resendSeconds > 0
-                          ? `Resend (${resendSeconds}s)`
-                          : "Resend OTP"
-                        : "Send OTP"}
+                          ? resendWithSecondsText
+                          : resendOtpText
+                        : sendOtpText}
                   </button>
                 )
               }
@@ -501,7 +531,7 @@ export function BloodCentreRegistrationForm() {
                     );
                     if (otpError) setOtpError("");
                   }}
-                  placeholder="Enter 6-digit OTP"
+                  placeholder={enter6DigitOtp}
                   className="
                     h-10
                     w-full
@@ -545,7 +575,12 @@ export function BloodCentreRegistrationForm() {
                     disabled:opacity-60
                   "
                 >
-                  {otpStatus === "verifying" ? "Verifying..." : "Verify"}
+                  {otpStatus === "verifying" ? verifyingText : (
+                    <BilingualInline
+                      tKey="common.verify"
+                      enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+                    />
+                  )}
                 </button>
               </div>
             )}
@@ -563,8 +598,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="mobileNumber"
             icon={Phone}
-            label="Mobile Number"
-            placeholder="Enter 10-digit mobile number"
+            label={<Bilingual tKey="common.mobileNumber" as="span" />}
+            placeholder={enter10DigitMobile}
             type="tel"
             inputMode="numeric"
             maxLength={10}
@@ -582,8 +617,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="password"
             icon={LockKeyhole}
-            label="Password"
-            placeholder="Enter password"
+            label={<Bilingual tKey="common.password" as="span" />}
+            placeholder={enterPassword}
             type="password"
             maxLength={64}
             autoComplete="new-password"
@@ -594,8 +629,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="confirmPassword"
             icon={LockKeyhole}
-            label="Confirm Password"
-            placeholder="Re-enter password"
+            label={<Bilingual tKey="common.confirmPassword" as="span" />}
+            placeholder={reenterPassword}
             type="password"
             maxLength={64}
             autoComplete="new-password"
@@ -606,8 +641,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="address"
             icon={MapPin}
-            label="Address"
-            placeholder="Enter address"
+            label={<Bilingual tKey="common.address" as="span" />}
+            placeholder={enterAddress}
             maxLength={200}
             autoComplete="street-address"
             {...register("address")}
@@ -617,8 +652,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="district"
             icon={MapPinned}
-            label="District"
-            placeholder="Enter district"
+            label={<Bilingual tKey="common.district" as="span" />}
+            placeholder={enterDistrict}
             maxLength={100}
             autoComplete="address-level2"
             {...register("district")}
@@ -628,8 +663,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="city"
             icon={MapPinned}
-            label="City"
-            placeholder="Enter city"
+            label={<Bilingual tKey="common.city" as="span" />}
+            placeholder={enterCity}
             maxLength={100}
             autoComplete="address-level2"
             {...register("city")}
@@ -639,8 +674,8 @@ export function BloodCentreRegistrationForm() {
           <FormInput
             id="pinCode"
             icon={MapPinned}
-            label="Pin Code"
-            placeholder="Enter 6-digit pin code"
+            label={<Bilingual tKey="common.pinCode" as="span" />}
+            placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}
             autoComplete="postal-code"
@@ -697,7 +732,10 @@ export function BloodCentreRegistrationForm() {
               loading={isSubmitting}
               disabled={otpStatus !== "verified"}
             >
-              Register
+              <BilingualInline
+                tKey="common.register"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
             </AppButton>
           </div>
         </div>

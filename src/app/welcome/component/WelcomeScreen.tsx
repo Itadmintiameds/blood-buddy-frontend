@@ -7,7 +7,10 @@ import { ArrowRight, Droplets, HeartPulse, ShieldCheck } from "lucide-react";
 import { PoweredBy } from "@/app/components/common/PoweredBy";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
-import LanguageSelector from "@/app/components/common/LanguageSelector";
+import {
+  Bilingual,
+  BilingualInline,
+} from "@/app/components/common/Bilingual";
 
 export function WelcomeScreen() {
   return (
@@ -39,11 +42,6 @@ export function WelcomeScreen() {
                 xl:px-14
               "
             >
-              {/* Language selector */}
-              {/* <div className="absolute left-4 top-3 z-10 sm:left-6 sm:top-4 lg:hidden">
-                <LanguageSelector />
-              </div> */}
-
               <div
                 className="
                   flex
@@ -101,7 +99,9 @@ export function WelcomeScreen() {
                 </div>
 
                 {/* Heading */}
-                <h6
+                <Bilingual
+                  tKey="welcome.heading"
+                  as="h6"
                   className="
                     mt-3
                     text-center
@@ -116,14 +116,12 @@ export function WelcomeScreen() {
                     lg:text-[29px]
                     xl:text-[20px]
                   "
-                >
-                  Blood Management
-                  <br />
-                  Made Simple
-                </h6>
+                />
 
                 {/* Description */}
-                <p
+                <Bilingual
+                  tKey="welcome.description"
+                  as="p"
                   className="
                     mt-2
                     max-w-[390px]
@@ -136,10 +134,7 @@ export function WelcomeScreen() {
                     sm:leading-relaxed
                     md:text-[14px]
                   "
-                >
-                  A simple and reliable platform connecting blood centres,
-                  donors and recipients for better blood availability.
-                </p>
+                />
 
                 {/* Tagline */}
                 <div
@@ -154,11 +149,11 @@ export function WelcomeScreen() {
                     sm:text-[12px]
                   "
                 >
-                  <span className="h-px w-5 bg-[#dddddd]" />
+                  <span className="h-px w-5 shrink-0 bg-[#dddddd]" />
 
-                  <span>Save Lives. Share Blood.</span>
+                  <BilingualInline tKey="welcome.tagline" />
 
-                  <span className="h-px w-5 bg-[#dddddd]" />
+                  <span className="h-px w-5 shrink-0 bg-[#dddddd]" />
                 </div>
               </div>
             </div>
@@ -193,11 +188,6 @@ export function WelcomeScreen() {
                   justify-center
                 "
               >
-                {/* Language selector for desktop */}
-                {/* <div className="mb-2 hidden w-full justify-end lg:flex">
-                  <LanguageSelector />
-                </div> */}
-
                 {/* Portal icon */}
                 <div
                   className="
@@ -221,7 +211,9 @@ export function WelcomeScreen() {
                 </div>
 
                 {/* Portal title */}
-                <h2
+                <Bilingual
+                  tKey="welcome.portalTitle"
+                  as="h2"
                   className="
                     mt-3
                     text-center
@@ -231,12 +223,12 @@ export function WelcomeScreen() {
                     text-[#222222]
                     sm:text-[23px]
                   "
-                >
-                  Blood Buddy Portal
-                </h2>
+                />
 
                 {/* Subtitle */}
-                <p
+                <Bilingual
+                  tKey="welcome.portalSubtitle"
+                  as="p"
                   className="
                     mt-1
                     mb-5
@@ -246,9 +238,7 @@ export function WelcomeScreen() {
                     text-[#888888]
                     sm:text-[14px]
                   "
-                >
-                  Manage blood availability with ease
-                </p>
+                />
 
                 {/* Blood Centre button */}
 
@@ -257,7 +247,7 @@ export function WelcomeScreen() {
                   className="
                       group
                       flex
-                      h-[50px]
+                      min-h-[50px]
                       w-full
                       items-center
                       justify-center
@@ -265,6 +255,7 @@ export function WelcomeScreen() {
                       rounded-[8px]
                       bg-[#FF3B3B]
                       px-5
+                      py-2.5
                       text-[14px]
                       font-semibold
                       text-white
@@ -280,7 +271,10 @@ export function WelcomeScreen() {
                       focus:ring-offset-2
                     "
                 >
-                  <span>I am a Blood Centre</span>
+                  <BilingualInline
+                    tKey="welcome.bloodCentre"
+                    enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+                  />
 
                   <ArrowRight
                     size={17}
@@ -319,7 +313,10 @@ export function WelcomeScreen() {
                       textDecorationColor: "#FF3B3B",
                     }}
                   >
-                    Super Admin Login Here
+                    <BilingualInline
+                      tKey="welcome.superAdminLogin"
+                      enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-[#FF3B3B]/70 no-underline"
+                    />
                   </Link>
                 </div>
 
@@ -328,9 +325,11 @@ export function WelcomeScreen() {
                   <div className="flex items-center gap-2.5">
                     <div className="h-px flex-1 bg-[#eeeeee]" />
 
-                    <span className="text-[11px] tracking-wider text-[#999999]">
-                      SECURE ACCESS
-                    </span>
+                    <Bilingual
+                      tKey="welcome.secureAccess"
+                      as="span"
+                      className="text-[11px] uppercase tracking-wider text-[#999999]"
+                    />
 
                     <div className="h-px flex-1 bg-[#eeeeee]" />
                   </div>
@@ -342,9 +341,11 @@ export function WelcomeScreen() {
                       className="shrink-0 text-[#FF3B3B]"
                     />
 
-                    <span className="text-[12px] text-[#888888]">
-                      Authorized access for registered users
-                    </span>
+                    <Bilingual
+                      tKey="welcome.secureAccessDescription"
+                      as="span"
+                      className="text-[12px] text-[#888888]"
+                    />
                   </div>
                 </div>
 
