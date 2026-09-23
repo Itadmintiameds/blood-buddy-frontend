@@ -158,6 +158,7 @@ export function ForgotPasswordScreen() {
             name="email"
             icon={Mail}
             label={<Bilingual tKey="common.email" as="span" />}
+            required
             type="email"
             inputMode="email"
             autoComplete="email"

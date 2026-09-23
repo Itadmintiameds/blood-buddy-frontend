@@ -31,6 +31,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
       name,
       placeholder,
       rightElement,
+      required,
       ...props
     },
     ref,
@@ -61,6 +62,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             "
           >
             {label}
+            {required && <span className="text-red-500"> *</span>}
           </label>
         )}
 
@@ -114,6 +116,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             id={inputId}
             name={name}
             {...props}
+            required={required}
             type={actualType}
             placeholder={placeholder}
             aria-invalid={Boolean(error)}

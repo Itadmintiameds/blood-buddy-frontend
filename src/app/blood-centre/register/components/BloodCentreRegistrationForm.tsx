@@ -288,6 +288,7 @@ export function BloodCentreRegistrationForm() {
             id="bloodCentreName"
             icon={Building2}
             label={<Bilingual tKey="bloodCentre.bloodCentreName" as="span" />}
+            required
             placeholder={enterBloodCentreName}
             maxLength={100}
             autoComplete="organization"
@@ -299,6 +300,7 @@ export function BloodCentreRegistrationForm() {
             id="licenseNumber"
             icon={FileCheck2}
             label={<Bilingual tKey="bloodCentre.licenseNumber" as="span" />}
+            required
             placeholder={enterLicenseNumber}
             maxLength={30}
             autoComplete="off"
@@ -307,9 +309,8 @@ export function BloodCentreRegistrationForm() {
           />
 
           <div className="w-full">
-            <Bilingual
-              tKey="bloodCentre.category"
-              as="label"
+            <label
+              htmlFor="category"
               className="
                 mb-1.5
                 block
@@ -318,7 +319,10 @@ export function BloodCentreRegistrationForm() {
                 leading-4
                 text-[var(--color-text-body)]
               "
-            />
+            >
+              <Bilingual tKey="bloodCentre.category" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative">
               <Tags
@@ -459,6 +463,7 @@ export function BloodCentreRegistrationForm() {
             id="dateOfExpiry"
             icon={CalendarDays}
             label={<Bilingual tKey="bloodCentre.dateOfExpiry" as="span" />}
+            required
             placeholder={selectDateOfExpiry}
             type="date"
             typeof=""
@@ -472,6 +477,7 @@ export function BloodCentreRegistrationForm() {
               id="email"
               icon={Mail}
               label={<Bilingual tKey="common.email" as="span" />}
+              required
               placeholder={enterEmailAddress}
               type="email"
               maxLength={254}
@@ -607,6 +613,7 @@ export function BloodCentreRegistrationForm() {
             id="mobileNumber"
             icon={Phone}
             label={<Bilingual tKey="common.mobileNumber" as="span" />}
+            required
             placeholder={enter10DigitMobile}
             type="tel"
             inputMode="numeric"
@@ -626,6 +633,7 @@ export function BloodCentreRegistrationForm() {
             id="password"
             icon={LockKeyhole}
             label={<Bilingual tKey="common.password" as="span" />}
+            required
             placeholder={enterPassword}
             type="password"
             maxLength={64}
@@ -638,6 +646,7 @@ export function BloodCentreRegistrationForm() {
             id="confirmPassword"
             icon={LockKeyhole}
             label={<Bilingual tKey="common.confirmPassword" as="span" />}
+            required
             placeholder={reenterPassword}
             type="password"
             maxLength={64}
@@ -650,6 +659,7 @@ export function BloodCentreRegistrationForm() {
             id="address"
             icon={MapPin}
             label={<Bilingual tKey="common.address" as="span" />}
+            required
             placeholder={enterAddress}
             maxLength={200}
             autoComplete="street-address"
@@ -661,6 +671,7 @@ export function BloodCentreRegistrationForm() {
             id="district"
             icon={MapPinned}
             label={<Bilingual tKey="common.district" as="span" />}
+            required
             placeholder={enterDistrict}
             maxLength={100}
             autoComplete="address-level2"
@@ -672,6 +683,7 @@ export function BloodCentreRegistrationForm() {
             id="city"
             icon={MapPinned}
             label={<Bilingual tKey="common.city" as="span" />}
+            required
             placeholder={enterCity}
             maxLength={100}
             autoComplete="address-level2"
@@ -683,6 +695,7 @@ export function BloodCentreRegistrationForm() {
             id="pinCode"
             icon={MapPinned}
             label={<Bilingual tKey="common.pinCode" as="span" />}
+            required
             placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}

@@ -8,7 +8,7 @@ import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
-import { getBloodCentreSession } from "@/services/auth/authStorage";
+import { getBloodCentreSession, logout } from "@/services/auth/authStorage";
 import { loginCommon } from "@/services/bloodCenter/commonLoginService";
 import { RegistrationTypeModal } from "./RegistrationTypeModal";
 import {
@@ -79,23 +79,17 @@ export function BloodCentreLoginScreen() {
     try {
       const result = await loginCommon(cleanEmail, password);
 
-      console.log("Common Login Result:", result);
+      // This page is for Blood Centre accounts only. loginCommon() saves the
+      // session before we get a chance to validate the role, so a rejected
+      // (e.g. Super Admin) login must clear that session again — otherwise
+      // the account would end up silently signed in with elevated access.
+      if (result.userType !== "BLOOD_CENTRE") {
+        logout();
 
-      // SUPER ADMIN
-      if (result.userType === "SUPER_ADMIN") {
-        router.replace("/super-admin/dashboard");
-
-        return;
+        throw new Error("This login is for Blood Centre accounts only.");
       }
 
-      // BLOOD CENTRE
-      if (result.userType === "BLOOD_CENTRE") {
-        router.replace("/blood-centre/dashboard");
-
-        return;
-      }
-
-      setError("Unable to determine account type.");
+      router.replace("/blood-centre/dashboard");
     } catch (error) {
       console.error("Common Login Error:", error);
 
@@ -211,6 +205,7 @@ export function BloodCentreLoginScreen() {
               name="email"
               icon={Mail}
               label={<Bilingual tKey="common.email" as="span" />}
+              required
               type="email"
               inputMode="email"
               autoComplete="email"
@@ -226,6 +221,7 @@ export function BloodCentreLoginScreen() {
             name="password"
             icon={LockKeyhole}
             label={<Bilingual tKey="common.password" as="span" />}
+            required
             type="password"
             autoComplete="current-password"
             placeholder={passwordPlaceholder}

@@ -2145,9 +2145,7 @@ function UpdateUnitsModal({
           {/* UNITS */}
 
           <div className="mt-5">
-            <Bilingual
-              tKey="superAdmin.availableUnitsField"
-              as="label"
+            <label
               htmlFor="updateUnits"
               className="
                 block
@@ -2155,7 +2153,10 @@ function UpdateUnitsModal({
                 font-semibold
                 text-[var(--color-text-secondary)]
               "
-            />
+            >
+              <Bilingual tKey="superAdmin.availableUnitsField" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative mt-2">
               <input
@@ -2474,12 +2475,13 @@ function AddStockModal({
           </p>
 
           <div className="mt-5">
-            <Bilingual
-              tKey="superAdmin.unitsToAdd"
-              as="label"
+            <label
               htmlFor="addStockUnits"
               className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
-            />
+            >
+              <Bilingual tKey="superAdmin.unitsToAdd" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative mt-2">
               <input

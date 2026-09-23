@@ -35,6 +35,7 @@ import {
 
 export function BloodCentreDashboardScreen() {
   const [rows, setRows] = useState<BloodAvailabilityItem[]>([]);
+  const [bloodCentreName, setBloodCentreName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [adjustingRow, setAdjustingRow] =
@@ -52,10 +53,11 @@ export function BloodCentreDashboardScreen() {
       setError("");
 
       try {
-        const data = await getAvailability();
+        const { items, bloodCentreName: centreName } = await getAvailability();
 
         if (!cancelled) {
-          setRows(mergeBloodAvailabilityRows(data));
+          setRows(mergeBloodAvailabilityRows(items));
+          setBloodCentreName(centreName);
         }
       } catch (fetchError) {
         if (!cancelled) {
@@ -143,19 +145,36 @@ export function BloodCentreDashboardScreen() {
                     </div>
 
                     <div className="min-w-0">
-                      <Bilingual
-                        tKey="bloodCentre.dashboard"
-                        as="h1"
-                        className="
-                          text-[20px]
-                          font-bold
-                          leading-6
-                          tracking-[-0.2px]
-                          text-[#222]
-                          sm:text-[22px]
-                          lg:text-[24px]
-                        "
-                      />
+                      {bloodCentreName ? (
+                        <h1
+                          className="
+                            truncate
+                            text-[20px]
+                            font-bold
+                            leading-6
+                            tracking-[-0.2px]
+                            text-[#222]
+                            sm:text-[22px]
+                            lg:text-[24px]
+                          "
+                        >
+                          {bloodCentreName}
+                        </h1>
+                      ) : (
+                        <Bilingual
+                          tKey="bloodCentre.dashboard"
+                          as="h1"
+                          className="
+                            text-[20px]
+                            font-bold
+                            leading-6
+                            tracking-[-0.2px]
+                            text-[#222]
+                            sm:text-[22px]
+                            lg:text-[24px]
+                          "
+                        />
+                      )}
 
                       <Bilingual
                         tKey="bloodCentre.welcomeUser"

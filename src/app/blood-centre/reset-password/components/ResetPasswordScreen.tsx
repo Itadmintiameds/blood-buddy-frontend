@@ -350,6 +350,7 @@ export function ResetPasswordScreen() {
                   name="newPassword"
                   icon={LockKeyhole}
                   label={<Bilingual tKey="common.newPassword" as="span" />}
+                  required
                   type="password"
                   autoComplete="new-password"
                   placeholder={newPasswordPlaceholder}
@@ -365,6 +366,7 @@ export function ResetPasswordScreen() {
                 name="confirmPassword"
                 icon={LockKeyhole}
                 label={<Bilingual tKey="common.confirmPassword" as="span" />}
+                required
                 type="password"
                 autoComplete="new-password"
                 placeholder={confirmPasswordPlaceholder}

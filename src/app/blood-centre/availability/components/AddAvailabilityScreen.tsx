@@ -270,9 +270,7 @@ export function AddAvailabilityScreen() {
                 )}
 
                 <div className="mt-5 w-full">
-                  <Bilingual
-                    tKey="bloodCentre.bloodType"
-                    as="label"
+                  <label
                     htmlFor="bloodType"
                     className="
                       block
@@ -280,7 +278,10 @@ export function AddAvailabilityScreen() {
                       font-medium
                       text-[var(--color-text-body)]
                     "
-                  />
+                  >
+                    <Bilingual tKey="bloodCentre.bloodType" as="span" />
+                    <span className="text-red-500"> *</span>
+                  </label>
 
                   <div className="relative mt-2">
                     <Droplets
@@ -365,9 +366,7 @@ export function AddAvailabilityScreen() {
                 </div>
 
                 <div className="mt-5 w-full">
-                  <Bilingual
-                    tKey="bloodCentre.bloodGroup"
-                    as="label"
+                  <label
                     htmlFor="bloodGroup"
                     className="
                       block
@@ -375,7 +374,10 @@ export function AddAvailabilityScreen() {
                       font-medium
                       text-[var(--color-text-body)]
                     "
-                  />
+                  >
+                    <Bilingual tKey="bloodCentre.bloodGroup" as="span" />
+                    <span className="text-red-500"> *</span>
+                  </label>
 
                   <div className="relative mt-2">
                     <Droplets
@@ -459,9 +461,7 @@ export function AddAvailabilityScreen() {
                 </div>
 
                 <div className="mt-5 w-full">
-                  <Bilingual
-                    tKey="bloodCentre.unitsAvailableLabel"
-                    as="label"
+                  <label
                     htmlFor="units"
                     className="
                       block
@@ -469,7 +469,10 @@ export function AddAvailabilityScreen() {
                       font-medium
                       text-[var(--color-text-body)]
                     "
-                  />
+                  >
+                    <Bilingual tKey="bloodCentre.unitsAvailableLabel" as="span" />
+                    <span className="text-red-500"> *</span>
+                  </label>
 
                   <div className="relative mt-2">
                     <Package

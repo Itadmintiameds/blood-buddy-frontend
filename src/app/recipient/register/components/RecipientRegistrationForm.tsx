@@ -173,6 +173,7 @@ export function RecipientRegistrationForm() {
             id="patientName"
             icon={UserRound}
             label={<Bilingual tKey="recipient.patientName" as="span" />}
+            required
             placeholder={enterPatientName}
             maxLength={100}
             autoComplete="name"
@@ -184,6 +185,7 @@ export function RecipientRegistrationForm() {
             id="mobileNumber"
             icon={Phone}
             label={<Bilingual tKey="common.mobileNumber" as="span" />}
+            required
             placeholder={enter10DigitMobile}
             type="tel"
             inputMode="numeric"
@@ -200,12 +202,13 @@ export function RecipientRegistrationForm() {
           />
 
           <div className="w-full">
-            <Bilingual
-              tKey="recipient.bloodGroupRequired"
-              as="label"
+            <label
               htmlFor="bloodGroupId"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            />
+            >
+              <Bilingual tKey="recipient.bloodGroupRequired" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative">
               <Droplets
@@ -274,12 +277,13 @@ export function RecipientRegistrationForm() {
           </div>
 
           <div className="w-full">
-            <Bilingual
-              tKey="recipient.bloodTypeRequired"
-              as="label"
+            <label
               htmlFor="bloodComponentId"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            />
+            >
+              <Bilingual tKey="recipient.bloodTypeRequired" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative">
               <Droplets
@@ -354,6 +358,7 @@ export function RecipientRegistrationForm() {
             id="requiredUnits"
             icon={Package}
             label={<Bilingual tKey="recipient.unitsRequired" as="span" />}
+            required
             placeholder={enterUnitsRequired}
             inputMode="numeric"
             maxLength={3}
@@ -372,6 +377,7 @@ export function RecipientRegistrationForm() {
             id="dob"
             icon={CalendarDays}
             label={<Bilingual tKey="donor.dateOfBirth" as="span" />}
+            required
             type="date"
             max={new Date().toISOString().slice(0, 10)}
             autoComplete="bday"
@@ -405,6 +411,7 @@ export function RecipientRegistrationForm() {
             id="district"
             icon={MapPinned}
             label={<Bilingual tKey="common.district" as="span" />}
+            required
             placeholder={enterDistrict}
             maxLength={100}
             autoComplete="address-level2"
@@ -416,6 +423,7 @@ export function RecipientRegistrationForm() {
             id="city"
             icon={MapPinned}
             label={<Bilingual tKey="common.city" as="span" />}
+            required
             placeholder={enterCity}
             maxLength={100}
             autoComplete="address-level2"
@@ -427,6 +435,7 @@ export function RecipientRegistrationForm() {
             id="pincode"
             icon={MapPinned}
             label={<Bilingual tKey="common.pinCode" as="span" />}
+            required
             placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}

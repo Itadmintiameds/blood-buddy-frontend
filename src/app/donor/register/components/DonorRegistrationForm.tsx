@@ -142,6 +142,7 @@ export function DonorRegistrationForm() {
             id="fullName"
             icon={UserRound}
             label={<Bilingual tKey="common.fullName" as="span" />}
+            required
             placeholder={enterFullName}
             maxLength={100}
             autoComplete="name"
@@ -153,6 +154,7 @@ export function DonorRegistrationForm() {
             id="mobileNumber"
             icon={Phone}
             label={<Bilingual tKey="common.mobileNumber" as="span" />}
+            required
             placeholder={enter10DigitMobile}
             type="tel"
             inputMode="numeric"
@@ -191,6 +193,7 @@ export function DonorRegistrationForm() {
             id="dob"
             icon={CalendarDays}
             label={<Bilingual tKey="donor.dateOfBirth" as="span" />}
+            required
             type="date"
             max={new Date().toISOString().slice(0, 10)}
             autoComplete="bday"
@@ -199,12 +202,13 @@ export function DonorRegistrationForm() {
           />
 
           <div className="w-full">
-            <Bilingual
-              tKey="bloodCentre.bloodGroup"
-              as="label"
+            <label
               htmlFor="bloodGroupId"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            />
+            >
+              <Bilingual tKey="bloodCentre.bloodGroup" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative">
               <Droplets
@@ -287,6 +291,7 @@ export function DonorRegistrationForm() {
             id="district"
             icon={MapPinned}
             label={<Bilingual tKey="common.district" as="span" />}
+            required
             placeholder={enterDistrict}
             maxLength={100}
             autoComplete="address-level2"
@@ -298,6 +303,7 @@ export function DonorRegistrationForm() {
             id="city"
             icon={MapPinned}
             label={<Bilingual tKey="common.city" as="span" />}
+            required
             placeholder={enterCity}
             maxLength={100}
             autoComplete="address-level2"
@@ -309,6 +315,7 @@ export function DonorRegistrationForm() {
             id="pincode"
             icon={MapPinned}
             label={<Bilingual tKey="common.pinCode" as="span" />}
+            required
             placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}

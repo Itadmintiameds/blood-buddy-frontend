@@ -7,7 +7,7 @@ import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { AppButton } from "@/app/components/ui/AppButton";
 import { FormInput } from "@/app/components/ui/FormInput";
-import { getSuperAdminSession } from "@/services/auth/authStorage";
+import { getSuperAdminSession, logout } from "@/services/auth/authStorage";
 import { loginCommon } from "@/services/bloodCenter/commonLoginService";
 import {
   Bilingual,
@@ -71,6 +71,8 @@ export function SuperAdminLoginScreen() {
       const result = await loginCommon(cleanEmail, password);
 
       if (result.userType !== "SUPER_ADMIN") {
+        logout();
+
         throw new Error("This login is for Super Admin accounts only.");
       }
 
@@ -117,6 +119,7 @@ export function SuperAdminLoginScreen() {
               name="email"
               icon={Mail}
               label={<Bilingual tKey="common.email" as="span" />}
+              required
               type="email"
               inputMode="email"
               autoComplete="email"
@@ -135,6 +138,7 @@ export function SuperAdminLoginScreen() {
             name="password"
             icon={LockKeyhole}
             label={<Bilingual tKey="common.password" as="span" />}
+            required
             type="password"
             autoComplete="current-password"
             placeholder={passwordPlaceholder}
