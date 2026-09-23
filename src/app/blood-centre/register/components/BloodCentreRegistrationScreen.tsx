@@ -1,15 +1,34 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import { Bilingual } from "@/app/components/common/Bilingual";
+import { getSuperAdminSession } from "@/services/auth/authStorage";
 import { BloodCentreRegistrationForm } from "./BloodCentreRegistrationForm";
 
 export function BloodCentreRegistrationScreen() {
+  // Defaults to the public flow's destination on first render (server and
+  // client must agree, so the session check below has to happen post-mount).
+  // A Super Admin who opened this shared page from their own dashboard (see
+  // BloodBankManagement's "Add Blood Centre" button) should have "back" send
+  // them there instead of a Blood Centre login prompt meant for the newly
+  // registered centre -- same rule handleSuccessConfirm applies after a
+  // successful submit, just also covering the back arrow.
+  const [backHref, setBackHref] = useState("/blood-centre/login");
+
+  useEffect(() => {
+    if (getSuperAdminSession()) {
+      setBackHref("/super-admin/dashboard");
+    }
+  }, []);
+
   return (
     <ScreenShell>
       <BrandHeader
         title={<Bilingual tKey="bloodCentre.registration" as="span" />}
         showBackButton
-        backHref="/blood-centre/login"
+        backHref={backHref}
       />
 
       <main className="w-full bg-[var(--color-surface-alt)]">
