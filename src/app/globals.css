@@ -227,11 +227,6 @@ textarea {
   }
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 .mobile-font-brand {
   font-family: "Times New Roman", Times, serif;
 }
@@ -842,4 +837,20 @@ a {
 
 .animate-rise {
   animation: riseIn 0.42s var(--ease-spring) both;
+}
+
+/* One-shot 360° spin — tactile feedback for a manual refresh, distinct from
+   the continuous `animate-spin` used while data is actually loading. */
+@keyframes spinOnce {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-once {
+  animation: spinOnce 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }

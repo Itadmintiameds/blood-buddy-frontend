@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
   ChevronDown,
   Droplets,
+  History,
   Loader2,
   Package,
   Pencil,
@@ -14,71 +15,88 @@ import {
   Search,
   X,
 } from "lucide-react";
-import { BrandHeader } from "@/app/components/layout/BrandHeader";
-import { ScreenShell } from "@/app/components/ui/ScreenShell";
-import { LogoutButton } from "@/app/components/common/LogoutButton";
-import { getBloodCentreSession } from "@/services/auth/authStorage";
+
 import { getApiErrorMessage } from "@/services/api/client";
+import { getAvailability } from "@/services/bloodCenter/bloodCenter.service";
 import {
-  adjustStock,
-  getAvailability,
-} from "@/services/bloodCenter/bloodCenter.service";
-import type {
-  BloodAvailabilityItem,
-  StockMovement,
-} from "@/types/bloodCenter/bloodCenterTypes";
+  getBloodComponents,
+  getBloodGroups,
+} from "@/services/master/masterService";
+import type { BloodAvailabilityItem } from "@/types/bloodCenter/bloodCenterTypes";
 import { mergeBloodAvailabilityRows } from "@/utils/bloodAvailability";
+import {
+  LOW_STOCK_THRESHOLD,
+  getStockLevel,
+  rowAccent,
+  unitBadgeClass,
+} from "@/utils/bloodStock";
 import { routes } from "@/config/routes";
 import {
   Bilingual,
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+import { BloodCentreStat } from "@/app/blood-centre/components/BloodCentreStat";
+import { AdjustStockModal } from "@/app/blood-centre/components/AdjustStockModal";
+import { AddStockModal } from "@/app/blood-centre/components/AddStockModal";
+import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
 
-const LOW_STOCK_THRESHOLD = 3;
-
-type StockLevel = "healthy" | "low" | "critical";
-
-function getStockLevel(units: number): StockLevel {
-  if (units <= 0) return "critical";
-  if (units <= LOW_STOCK_THRESHOLD) return "low";
-  return "healthy";
-}
-
-// Units-badge colour by stock level — all pulled from the shared design
-// tokens so the availability table reads healthy / low / critical at a glance.
-function unitBadgeClass(level: StockLevel): string {
-  if (level === "critical") {
-    return "bg-[var(--color-icon-bg-soft)] text-[var(--color-stat-red)]";
-  }
-
-  if (level === "low") {
-    return "bg-[var(--danger-50)] text-[var(--danger-700)]";
-  }
-
-  return "bg-[var(--color-success-bg)] text-[var(--color-stat-green)]";
-}
-
-// Left-edge accent colour for low / critical rows (transparent = healthy).
-function rowAccent(level: StockLevel): string {
-  if (level === "critical") return "var(--color-stat-red)";
-  if (level === "low") return "var(--color-stat-yellow)";
-  return "transparent";
-}
+const ALL = "all";
 
 export function BloodCentreDashboardScreen() {
   const [rows, setRows] = useState<BloodAvailabilityItem[]>([]);
-  const [bloodCentreName, setBloodCentreName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [adjustingRow, setAdjustingRow] =
     useState<BloodAvailabilityItem | null>(null);
+  const [addingRow, setAddingRow] = useState<BloodAvailabilityItem | null>(
+    null,
+  );
+  const [historyRow, setHistoryRow] = useState<BloodAvailabilityItem | null>(
+    null,
+  );
   const [reloadToken, setReloadToken] = useState(0);
+
   const [query, setQuery] = useState("");
   const [lowStockOnly, setLowStockOnly] = useState(false);
+  const [groupFilter, setGroupFilter] = useState<string>(ALL);
+  const [componentFilter, setComponentFilter] = useState<string>(ALL);
 
-  const session = getBloodCentreSession();
+  const [masterGroups, setMasterGroups] = useState<string[]>([]);
+  const [masterComponents, setMasterComponents] = useState<string[]>([]);
+  const [spinning, setSpinning] = useState(false);
+
   const unitsWordText = useBilingualText("bloodCentre.units");
+
+  // Filter dropdown options come from the master APIs.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMasters() {
+      try {
+        const [groups, components] = await Promise.all([
+          getBloodGroups(),
+          getBloodComponents(),
+        ]);
+
+        if (!cancelled) {
+          setMasterGroups(groups.map((group) => group.bloodGroupName));
+          setMasterComponents(
+            components.map((component) => component.bloodComponentName),
+          );
+        }
+      } catch {
+        // Non-critical: if the master lists fail to load, the dropdowns fall
+        // back to whatever groups/components appear in the inventory rows.
+      }
+    }
+
+    void loadMasters();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,19 +106,15 @@ export function BloodCentreDashboardScreen() {
       setError("");
 
       try {
-        const { items, bloodCentreName: centreName } = await getAvailability();
+        const { items } = await getAvailability();
 
         if (!cancelled) {
           setRows(mergeBloodAvailabilityRows(items));
-          setBloodCentreName(centreName);
         }
       } catch (fetchError) {
         if (!cancelled) {
           setError(
-            getApiErrorMessage(
-              fetchError,
-              "Unable to load blood availability.",
-            ),
+            getApiErrorMessage(fetchError, "Unable to load blood availability."),
           );
         }
       } finally {
@@ -127,6 +141,20 @@ export function BloodCentreDashboardScreen() {
     (row) => row.unitsAvailable <= LOW_STOCK_THRESHOLD,
   ).length;
 
+  const groupOptions =
+    masterGroups.length > 0
+      ? masterGroups
+      : Array.from(new Set(rows.map((row) => row.bloodGroup))).sort((a, b) =>
+          a.localeCompare(b),
+        );
+
+  const componentOptions =
+    masterComponents.length > 0
+      ? masterComponents
+      : Array.from(new Set(rows.map((row) => row.bloodType))).sort((a, b) =>
+          a.localeCompare(b),
+        );
+
   const normalizedQuery = query.trim().toLowerCase();
 
   const visibleRows = rows.filter((row) => {
@@ -138,734 +166,402 @@ export function BloodCentreDashboardScreen() {
     const matchesLowStock =
       !lowStockOnly || row.unitsAvailable <= LOW_STOCK_THRESHOLD;
 
-    return matchesQuery && matchesLowStock;
+    const matchesGroup = groupFilter === ALL || row.bloodGroup === groupFilter;
+
+    const matchesComponent =
+      componentFilter === ALL || row.bloodType === componentFilter;
+
+    return matchesQuery && matchesLowStock && matchesGroup && matchesComponent;
   });
 
-  const isFiltering = normalizedQuery.length > 0 || lowStockOnly;
+  const isFiltering =
+    normalizedQuery.length > 0 ||
+    lowStockOnly ||
+    groupFilter !== ALL ||
+    componentFilter !== ALL;
 
   const clearFilters = () => {
     setQuery("");
     setLowStockOnly(false);
+    setGroupFilter(ALL);
+    setComponentFilter(ALL);
   };
 
+  // Refresh: reset any active filters, reload the data, and give the icon a
+  // one-shot spin so the click feels responsive even when the fetch is instant.
+  const handleRefresh = () => {
+    setSpinning(true);
+    clearFilters();
+    setReloadToken((token) => token + 1);
+    window.setTimeout(() => setSpinning(false), 500);
+  };
+
+  // Only take over the table with a spinner on the very first load. On a
+  // refresh the existing rows stay put (the refresh icon spins instead) so the
+  // section doesn't collapse and the layout doesn't jump.
+  const initialLoading = loading && rows.length === 0;
+
   return (
-    <ScreenShell>
-      <div className="flex min-h-screen w-full flex-col bg-[var(--color-surface-alt)]">
-        {/* HEADER — pinned to the top while the dashboard scrolls */}
-        <div className="sticky top-0 z-50 shrink-0 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <BrandHeader />
-        </div>
+    <>
+      {/* STAT CARDS */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+        <BloodCentreStat
+          icon={Droplets}
+          value={String(totalGroupsListed)}
+          label={
+            <Bilingual
+              tKey="bloodCentre.bloodGroupsListed"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-red)"
+          index={0}
+        />
 
-        {/* DASHBOARD */}
-        <main className="flex-1">
-          <section className="w-full px-4 py-5 sm:px-6 sm:py-7 lg:px-8 xl:px-10 2xl:px-12">
-            <div className="mx-auto w-full max-w-[1600px]">
-              {/* DASHBOARD HEADER */}
-              <div
-                className="
-                  animate-rise
-                  flex
-                  flex-col
-                  gap-4
-                  rounded-2xl
-                  border
-                  border-[var(--color-border-light)]
-                  bg-white
-                  px-5
-                  py-5
-                  shadow-[0_4px_18px_rgba(0,0,0,0.035)]
-                  sm:px-6
-                  lg:flex-row
-                  lg:items-center
-                  lg:justify-between
-                  lg:px-7
-                  lg:py-6
-                "
-              >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="
-                        flex
-                        h-11
-                        w-11
-                        shrink-0
-                        items-center
-                        justify-center
-                        rounded-xl
-                        bg-[var(--color-icon-bg-soft)]
-                      "
-                    >
-                      <Droplets
-                        size={22}
-                        strokeWidth={1.8}
-                        className="text-[var(--color-primary)]"
-                      />
-                    </div>
+        <BloodCentreStat
+          icon={Package}
+          value={String(totalUnits)}
+          label={
+            <Bilingual
+              tKey="bloodCentre.totalUnitsAvailable"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-green)"
+          index={1}
+        />
 
-                    <div className="min-w-0">
-                      {bloodCentreName ? (
-                        <h1
-                          className="
-                            truncate
-                            text-[20px]
-                            font-bold
-                            leading-6
-                            tracking-[-0.2px]
-                            text-[var(--color-text-primary)]
-                            sm:text-[22px]
-                            lg:text-[24px]
-                          "
-                        >
-                          {bloodCentreName}
-                        </h1>
-                      ) : (
-                        <Bilingual
-                          tKey="bloodCentre.dashboard"
-                          as="h1"
-                          className="
-                            text-[20px]
-                            font-bold
-                            leading-6
-                            tracking-[-0.2px]
-                            text-[var(--color-text-primary)]
-                            sm:text-[22px]
-                            lg:text-[24px]
-                          "
-                        />
-                      )}
-
-                      <Bilingual
-                        tKey="bloodCentre.welcomeUser"
-                        params={{
-                          suffix: session?.email ? `, ${session.email}` : "",
-                        }}
-                        as="p"
-                        className="
-                          mt-1
-                          truncate
-                          text-[12px]
-                          text-[var(--color-text-muted)]
-                          sm:text-[13px]
-                        "
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="shrink-0">
-                  <LogoutButton />
-                </div>
-              </div>
-
-              {/* STAT CARDS */}
-              <div
-                className="
-                  mt-5
-                  grid
-                  grid-cols-1
-                  gap-3
-                  sm:grid-cols-3
-                  sm:gap-4
-                  lg:mt-6
-                "
-              >
-                <Stat
-                  icon={Droplets}
-                  value={String(totalGroupsListed)}
-                  label={
-                    <Bilingual
-                      tKey="bloodCentre.bloodGroupsListed"
-                      as="span"
-                      enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
-                    />
-                  }
-                  color="var(--color-stat-red)"
-                  index={0}
-                />
-
-                <Stat
-                  icon={Package}
-                  value={String(totalUnits)}
-                  label={
-                    <Bilingual
-                      tKey="bloodCentre.totalUnitsAvailable"
-                      as="span"
-                      enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
-                    />
-                  }
-                  color="var(--color-stat-green)"
-                  index={1}
-                />
-
-                <Stat
-                  icon={AlertTriangle}
-                  value={String(lowStockCount)}
-                  label={
-                    <Bilingual
-                      tKey="bloodCentre.lowStockAlerts"
-                      as="span"
-                      enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
-                    />
-                  }
-                  color="var(--color-stat-yellow)"
-                  index={2}
-                  alert={lowStockCount > 0}
-                  active={lowStockOnly}
-                  onClick={
-                    lowStockCount > 0 || lowStockOnly
-                      ? () => setLowStockOnly((value) => !value)
-                      : undefined
-                  }
-                />
-              </div>
-
-              {/* AVAILABILITY SECTION */}
-              <div
-                className="
-                  animate-rise
-                  mt-5
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  border-[var(--color-border-light)]
-                  bg-white
-                  shadow-[0_5px_22px_rgba(0,0,0,0.045)]
-                  lg:mt-6
-                "
-                style={{ animationDelay: "240ms" }}
-              >
-                {/* Section Header */}
-                <div
-                  className="
-                    border-b
-                    border-[var(--color-border-lighter)]
-                    px-5
-                    py-4
-                    sm:px-6
-                    sm:py-5
-                  "
-                >
-                  <div
-                    className="
-                      flex
-                      flex-col
-                      gap-2
-                      sm:flex-row
-                      sm:items-center
-                      sm:justify-between
-                    "
-                  >
-                    <div>
-                      <Bilingual
-                        tKey="bloodCentre.bloodAvailability"
-                        as="h2"
-                        className="
-                          text-[16px]
-                          font-bold
-                          text-[var(--color-text-primary)]
-                          sm:text-[17px]
-                        "
-                      />
-
-                      <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)] sm:text-[12px]">
-                        Current blood stock available at your centre
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setReloadToken((token) => token + 1)}
-                        disabled={loading}
-                        className="
-                          flex
-                          h-9
-                          w-9
-                          items-center
-                          justify-center
-                          rounded-lg
-                          border
-                          border-[var(--color-border-light)]
-                          bg-white
-                          text-[var(--color-text-muted)]
-                          transition-all
-                          duration-150
-                          hover:border-[var(--primary-200)]
-                          hover:bg-[var(--color-icon-bg-soft)]
-                          hover:text-[var(--color-primary)]
-                          active:scale-95
-                          disabled:cursor-not-allowed
-                          disabled:opacity-50
-                        "
-                        aria-label="Refresh availability"
-                      >
-                        <RefreshCw
-                          size={15}
-                          className={loading ? "animate-spin" : ""}
-                        />
-                      </button>
-
-                      <div
-                        className="
-                          flex
-                          w-fit
-                          items-center
-                          gap-1.5
-                          rounded-full
-                          bg-[var(--color-icon-bg-soft)]
-                          px-3
-                          py-1.5
-                          text-[10px]
-                          font-medium
-                          text-[var(--color-primary)]
-                        "
-                      >
-                        <span className="relative flex h-1.5 w-1.5">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-primary)] opacity-75" />
-                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
-                        </span>
-                        Live Availability
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Toolbar: live search + low-stock filter */}
-                  <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                    <div className="relative sm:max-w-[300px] sm:flex-1">
-                      <Search
-                        size={15}
-                        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder)]"
-                      />
-
-                      <input
-                        type="text"
-                        value={query}
-                        onChange={(event) => setQuery(event.target.value)}
-                        placeholder="Search blood group or type"
-                        aria-label="Search availability"
-                        className="
-                          h-10
-                          w-full
-                          rounded-lg
-                          border
-                          border-[var(--color-border-light)]
-                          bg-[var(--color-surface-alt)]
-                          pl-9
-                          pr-9
-                          text-[13px]
-                          text-[var(--color-text-body)]
-                          outline-none
-                          transition-all
-                          placeholder:text-[var(--color-text-placeholder)]
-                          focus:border-[var(--color-primary)]
-                          focus:bg-white
-                          focus:ring-2
-                          focus:ring-[var(--color-primary)]/15
-                        "
-                      />
-
-                      {query && (
-                        <button
-                          type="button"
-                          onClick={() => setQuery("")}
-                          aria-label="Clear search"
-                          className="
-                            absolute
-                            right-2
-                            top-1/2
-                            flex
-                            h-6
-                            w-6
-                            -translate-y-1/2
-                            items-center
-                            justify-center
-                            rounded-md
-                            text-[var(--color-text-placeholder)]
-                            transition
-                            hover:bg-[var(--color-surface-hover)]
-                            hover:text-[var(--color-text-secondary)]
-                          "
-                        >
-                          <X size={13} />
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setLowStockOnly((value) => !value)}
-                        disabled={lowStockCount === 0 && !lowStockOnly}
-                        aria-pressed={lowStockOnly}
-                        className={`flex h-10 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
-                          lowStockOnly
-                            ? "border-transparent bg-[var(--danger-50)] text-[var(--danger-700)]"
-                            : "border-[var(--color-border-light)] bg-white text-[var(--color-text-quaternary)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
-                        }`}
-                      >
-                        <AlertTriangle size={14} strokeWidth={2} />
-                        Low stock
-                        <span
-                          className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
-                            lowStockOnly
-                              ? "bg-[var(--danger-700)] text-white"
-                              : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
-                          }`}
-                        >
-                          {lowStockCount}
-                        </span>
-                      </button>
-
-                      {isFiltering && (
-                        <button
-                          type="button"
-                          onClick={clearFilters}
-                          className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
-                        >
-                          Clear
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table */}
-                <div className="w-full overflow-hidden">
-                  {/* Table Header */}
-                  <div
-                    className="
-                      grid
-                      grid-cols-[1fr_1.4fr_0.9fr_52px]
-                      items-center
-                      border-b
-                      border-[var(--color-border-light)]
-                      bg-[var(--color-surface-alt)]
-                      px-4
-                      py-3
-                      text-[10px]
-                      font-bold
-                      uppercase
-                      tracking-[0.04em]
-                      text-[var(--color-text-quaternary)]
-                      sm:grid-cols-[1fr_1.5fr_1fr_58px]
-                      sm:px-6
-                      sm:py-3.5
-                      sm:text-[11px]
-                    "
-                  >
-                    <Bilingual
-                      tKey="bloodCentre.bloodGroup"
-                      as="div"
-                      className="text-left"
-                    />
-                    <Bilingual
-                      tKey="bloodCentre.bloodType"
-                      as="div"
-                      className="text-center"
-                    />
-                    <Bilingual
-                      tKey="bloodCentre.bloodUnits"
-                      as="div"
-                      className="text-right"
-                    />
-                    <Bilingual
-                      tKey="bloodCentre.adjust"
-                      as="div"
-                      className="text-right"
-                    />
-                  </div>
-
-                  {loading && (
-                    <div
-                      className="
-                        flex
-                        min-h-[190px]
-                        flex-col
-                        items-center
-                        justify-center
-                        gap-3
-                        px-4
-                      "
-                    >
-                      <Loader2
-                        size={22}
-                        className="animate-spin text-[var(--color-primary)]"
-                      />
-
-                      <Bilingual
-                        tKey="bloodCentre.loadingAvailability"
-                        as="p"
-                        className="text-[12px] text-[var(--color-text-tertiary)]"
-                      />
-                    </div>
-                  )}
-
-                  {!loading && error && (
-                    <div
-                      role="alert"
-                      className="
-                        flex
-                        min-h-[190px]
-                        items-center
-                        justify-center
-                        px-5
-                        text-center
-                        text-[12px]
-                        leading-5
-                        text-red-500
-                      "
-                    >
-                      {error}
-                    </div>
-                  )}
-
-                  {!loading && !error && rows.length === 0 && (
-                    <div
-                      className="
-                        flex
-                        min-h-[190px]
-                        flex-col
-                        items-center
-                        justify-center
-                        px-5
-                        text-center
-                      "
-                    >
-                      <div
-                        className="
-                          flex
-                          h-11
-                          w-11
-                          items-center
-                          justify-center
-                          rounded-full
-                          bg-[var(--color-icon-bg-soft)]
-                        "
-                      >
-                        <Droplets
-                          size={20}
-                          className="text-[var(--color-primary)]"
-                          strokeWidth={1.7}
-                        />
-                      </div>
-
-                      <Bilingual
-                        tKey="bloodCentre.noAvailabilityYet"
-                        as="p"
-                        className="mt-3 text-[13px] font-medium text-[var(--color-text-secondary)]"
-                      />
-
-                      <p className="mt-1 text-[11px] text-[var(--color-text-placeholder-alt)]">
-                        Add blood availability to see the current stock here.
-                      </p>
-                    </div>
-                  )}
-
-                  {!loading &&
-                    !error &&
-                    rows.length > 0 &&
-                    visibleRows.length === 0 && (
-                      <div className="flex min-h-[190px] flex-col items-center justify-center px-5 text-center">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-surface-alt)]">
-                          <Search
-                            size={20}
-                            strokeWidth={1.7}
-                            className="text-[var(--color-text-tertiary)]"
-                          />
-                        </div>
-
-                        <p className="mt-3 text-[13px] font-medium text-[var(--color-text-secondary)]">
-                          No matching results
-                        </p>
-
-                        <p className="mt-1 text-[11px] text-[var(--color-text-placeholder-alt)]">
-                          Try a different search or clear the filters.
-                        </p>
-
-                        <button
-                          type="button"
-                          onClick={clearFilters}
-                          className="
-                            mt-3
-                            rounded-lg
-                            border
-                            border-[var(--color-border-light)]
-                            bg-white
-                            px-3
-                            py-1.5
-                            text-[12px]
-                            font-semibold
-                            text-[var(--color-primary)]
-                            transition
-                            hover:bg-[var(--color-icon-bg-soft)]
-                          "
-                        >
-                          Clear filters
-                        </button>
-                      </div>
-                    )}
-
-                  {!loading &&
-                    !error &&
-                    visibleRows.map((row, index) => {
-                      const level = getStockLevel(row.unitsAvailable);
-
-                      return (
-                        <div
-                          key={`${row.bloodGroup}-${row.bloodType}`}
-                          className={`animate-rise grid min-h-[58px] grid-cols-[1fr_1.4fr_0.9fr_52px] items-center border-b border-[var(--color-border-lighter)] px-4 text-[12px] text-[var(--color-text-body)] transition-colors duration-150 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)] sm:min-h-[62px] sm:grid-cols-[1fr_1.5fr_1fr_58px] sm:px-6 sm:text-[13px] ${
-                            index % 2 === 0
-                              ? "bg-[var(--color-white)]"
-                              : "bg-[var(--color-surface-hover)]"
-                          }`}
-                          style={{
-                            boxShadow:
-                              level === "healthy"
-                                ? undefined
-                                : `inset 3px 0 0 0 ${rowAccent(level)}`,
-                            animationDelay: `${Math.min(index, 12) * 35}ms`,
-                          }}
-                        >
-                          {/* Blood Group */}
-                          <div className="flex min-w-0 items-center justify-start">
-                            <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:mr-3">
-                              <Droplets
-                                size={14}
-                                strokeWidth={1.8}
-                                className="text-[var(--color-primary)]"
-                              />
-                            </div>
-
-                            <span className="truncate font-semibold text-[var(--color-text-body)]">
-                              {row.bloodGroup}
-                            </span>
-                          </div>
-
-                          {/* Blood Type */}
-                          <div className="min-w-0 px-2 text-center font-medium text-[var(--color-text-quaternary)]">
-                            <span className="break-words">{row.bloodType}</span>
-                          </div>
-
-                          {/* Units */}
-                          <div className="flex items-center justify-end gap-1.5">
-                            {level !== "healthy" && (
-                              <AlertTriangle
-                                size={13}
-                                strokeWidth={2}
-                                className={
-                                  level === "critical"
-                                    ? "text-[var(--color-stat-red)]"
-                                    : "text-[var(--color-stat-yellow)]"
-                                }
-                              />
-                            )}
-
-                            <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:text-[12px] ${unitBadgeClass(
-                                level,
-                              )}`}
-                            >
-                              {row.unitsAvailable} {unitsWordText}
-                            </span>
-                          </div>
-
-                          {/* Adjust */}
-                          <div className="flex justify-end">
-                            <button
-                              type="button"
-                              onClick={() => setAdjustingRow(row)}
-                              disabled={
-                                row.bloodGroupId === undefined ||
-                                row.bloodComponentId === undefined
-                              }
-                              className="
-                                flex
-                                h-8
-                                w-8
-                                items-center
-                                justify-center
-                                rounded-lg
-                                border
-                                border-[var(--color-border-light)]
-                                bg-white
-                                text-[var(--color-text-muted)]
-                                shadow-[0_1px_4px_rgba(0,0,0,0.03)]
-                                transition-all
-                                duration-150
-                                hover:border-[var(--primary-200)]
-                                hover:bg-[var(--color-icon-bg-soft)]
-                                hover:text-[var(--color-primary)]
-                                active:scale-95
-                                disabled:cursor-not-allowed
-                                disabled:opacity-40
-                                sm:h-9
-                                sm:w-9
-                              "
-                              aria-label={`Adjust ${row.bloodGroup} ${row.bloodType} stock`}
-                            >
-                              <Pencil size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* ADD AVAILABILITY */}
-              <div
-                className="
-                  mt-5
-                  flex
-                  justify-center
-                  pb-4
-                  sm:mt-6
-                  sm:pb-6
-                "
-              >
-                <Link
-                  href={routes.addAvailability}
-                  className="
-                    flex
-                    h-12
-                    w-full
-                    items-center
-                    justify-center
-                    gap-2
-                    rounded-xl
-                    bg-[var(--color-primary)]
-                    px-6
-                    text-[13px]
-                    font-semibold
-                    text-white
-                    shadow-[0_6px_18px_rgba(255,59,63,0.20)]
-                    transition-all
-                    duration-200
-                    hover:-translate-y-px
-                    hover:bg-[var(--color-primary-hover-alt)]
-                    hover:shadow-[0_8px_22px_rgba(255,59,63,0.25)]
-                    active:translate-y-0
-                    focus-visible:outline-none
-                    focus-visible:ring-2
-                    focus-visible:ring-[var(--color-primary)]
-                    focus-visible:ring-offset-2
-                    sm:w-[300px]
-                  "
-                >
-                  <Plus size={17} strokeWidth={2} />
-                  <BilingualInline
-                    tKey="bloodCentre.addAvailability"
-                    enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-                  />
-                </Link>
-              </div>
-            </div>
-          </section>
-        </main>
+        <BloodCentreStat
+          icon={AlertTriangle}
+          value={String(lowStockCount)}
+          label={
+            <Bilingual
+              tKey="bloodCentre.lowStockAlerts"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-yellow)"
+          index={2}
+          alert={lowStockCount > 0}
+          active={lowStockOnly}
+          onClick={
+            lowStockCount > 0 || lowStockOnly
+              ? () => setLowStockOnly((value) => !value)
+              : undefined
+          }
+        />
       </div>
 
-      {/* ADJUST STOCK MODAL */}
+      {/* AVAILABILITY SECTION */}
+      <div className="animate-rise mt-5 overflow-hidden rounded-2xl border border-[var(--color-border-light)] bg-white shadow-[0_5px_22px_rgba(0,0,0,0.045)] lg:mt-6">
+        {/* Section Header */}
+        <div className="border-b border-[var(--color-border-lighter)] px-5 py-4 sm:px-6 sm:py-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <Bilingual
+                tKey="bloodCentre.bloodAvailability"
+                as="h2"
+                className="text-[16px] font-bold text-[var(--color-text-primary)] sm:text-[17px]"
+              />
+
+              <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)] sm:text-[12px]">
+                Current blood stock available at your centre
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={routes.addAvailability}
+                style={{ color: "var(--color-white)" }}
+                className="flex h-9 items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3.5 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(255,59,63,0.20)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-primary-hover-alt)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+              >
+                <Plus size={15} strokeWidth={2.2} />
+                <BilingualInline
+                  tKey="bloodCentre.addAvailability"
+                  enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+                />
+              </Link>
+
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={loading}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Refresh and clear filters"
+                title="Refresh &amp; clear filters"
+              >
+                <RefreshCw
+                  size={15}
+                  className={
+                    spinning
+                      ? "animate-spin-once"
+                      : loading
+                        ? "animate-spin"
+                        : ""
+                  }
+                />
+              </button>
+
+              <div className="hidden w-fit items-center gap-1.5 rounded-full bg-[var(--color-icon-bg-soft)] px-3 py-1.5 text-[10px] font-medium text-[var(--color-primary)] sm:flex">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-primary)] opacity-75" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
+                </span>
+                Live Availability
+              </div>
+            </div>
+          </div>
+
+          {/* Toolbar: search + group / component / low-stock filters */}
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <div className="relative sm:w-[260px]">
+              <Search
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder)]"
+              />
+
+              <input
+                type="text"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search group or component"
+                aria-label="Search availability"
+                className="h-10 w-full truncate rounded-lg border border-[var(--color-border-light)] bg-[var(--color-surface-alt)] pl-9 pr-9 text-[13px] text-[var(--color-text-body)] outline-none transition-all placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primary)]/15"
+              />
+
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Clear search"
+                  className="absolute right-2 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                >
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+
+            <ToolbarSelect
+              value={groupFilter}
+              onChange={(event) => setGroupFilter(event.target.value)}
+              allLabel="All groups"
+              options={groupOptions}
+              ariaLabel="Filter by blood group"
+            />
+
+            <ToolbarSelect
+              value={componentFilter}
+              onChange={(event) => setComponentFilter(event.target.value)}
+              allLabel="All components"
+              options={componentOptions}
+              ariaLabel="Filter by blood component"
+            />
+
+            <button
+              type="button"
+              onClick={() => setLowStockOnly((value) => !value)}
+              disabled={lowStockCount === 0 && !lowStockOnly}
+              aria-pressed={lowStockOnly}
+              className={`flex h-10 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
+                lowStockOnly
+                  ? "border-transparent bg-[var(--danger-50)] text-[var(--danger-700)]"
+                  : "border-[var(--color-border-light)] bg-white text-[var(--color-text-quaternary)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
+              }`}
+            >
+              <AlertTriangle size={14} strokeWidth={2} />
+              Low stock
+              <span
+                className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                  lowStockOnly
+                    ? "bg-[var(--danger-700)] text-white"
+                    : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
+                }`}
+              >
+                {lowStockCount}
+              </span>
+            </button>
+
+            {isFiltering && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="w-full overflow-hidden">
+          {/* Table Header */}
+          <div className="grid grid-cols-[1fr_1.3fr_0.8fr_116px] items-center border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[var(--color-text-quaternary)] sm:grid-cols-[1fr_1.4fr_0.9fr_132px] sm:px-6 sm:py-3.5 sm:text-[11px]">
+            <Bilingual tKey="bloodCentre.bloodGroup" as="div" className="text-left" />
+            <Bilingual tKey="bloodCentre.bloodType" as="div" className="text-left" />
+            <Bilingual tKey="bloodCentre.bloodUnits" as="div" className="text-left" />
+            <div className="text-center">Actions</div>
+          </div>
+
+          {initialLoading && (
+            <div className="flex min-h-[190px] flex-col items-center justify-center gap-3 px-4">
+              <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
+              <Bilingual
+                tKey="bloodCentre.loadingAvailability"
+                as="p"
+                className="text-[12px] text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
+
+          {!initialLoading && error && (
+            <div
+              role="alert"
+              className="flex min-h-[190px] items-center justify-center px-5 text-center text-[12px] leading-5 text-red-500"
+            >
+              {error}
+            </div>
+          )}
+
+          {!initialLoading && !error && rows.length === 0 && (
+            <div className="flex min-h-[190px] flex-col items-center justify-center px-5 text-center">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)]">
+                <Droplets size={20} className="text-[var(--color-primary)]" strokeWidth={1.7} />
+              </div>
+
+              <Bilingual
+                tKey="bloodCentre.noAvailabilityYet"
+                as="p"
+                className="mt-3 text-[13px] font-medium text-[var(--color-text-secondary)]"
+              />
+
+              <p className="mt-1 text-[11px] text-[var(--color-text-placeholder-alt)]">
+                Add blood availability to see the current stock here.
+              </p>
+            </div>
+          )}
+
+          {!error && rows.length > 0 && visibleRows.length === 0 && (
+            <div className="flex min-h-[190px] flex-col items-center justify-center px-5 text-center">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--color-surface-alt)]">
+                <Search size={20} strokeWidth={1.7} className="text-[var(--color-text-tertiary)]" />
+              </div>
+
+              <p className="mt-3 text-[13px] font-medium text-[var(--color-text-secondary)]">
+                No matching results
+              </p>
+
+              <p className="mt-1 text-[11px] text-[var(--color-text-placeholder-alt)]">
+                Try a different search or clear the filters.
+              </p>
+
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="mt-3 rounded-lg border border-[var(--color-border-light)] bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-icon-bg-soft)]"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+
+          {!error &&
+            rows.length > 0 &&
+            visibleRows.map((row, index) => {
+              const level = getStockLevel(row.unitsAvailable);
+
+              return (
+                <div
+                  key={`${reloadToken}-${row.bloodGroup}-${row.bloodType}`}
+                  className={`animate-rise grid min-h-[58px] grid-cols-[1fr_1.3fr_0.8fr_116px] items-center border-b border-[var(--color-border-lighter)] px-4 text-[12px] text-[var(--color-text-body)] transition-colors duration-150 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)] sm:min-h-[62px] sm:grid-cols-[1fr_1.4fr_0.9fr_132px] sm:px-6 sm:text-[13px] ${
+                    index % 2 === 0
+                      ? "bg-[var(--color-white)]"
+                      : "bg-[var(--color-surface-hover)]"
+                  }`}
+                  style={{
+                    boxShadow:
+                      level === "healthy"
+                        ? undefined
+                        : `inset 3px 0 0 0 ${rowAccent(level)}`,
+                    animationDelay: `${Math.min(index, 12) * 35}ms`,
+                  }}
+                >
+                  {/* Blood Group */}
+                  <div className="flex min-w-0 items-center justify-start">
+                    <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:mr-3">
+                      <Droplets size={14} strokeWidth={1.8} className="text-[var(--color-primary)]" />
+                    </div>
+
+                    <span className="truncate font-semibold text-[var(--color-text-body)]">
+                      {row.bloodGroup}
+                    </span>
+                  </div>
+
+                  {/* Blood Type */}
+                  <div className="min-w-0 pr-2 text-left font-medium text-[var(--color-text-quaternary)]">
+                    <span className="break-words">{row.bloodType}</span>
+                  </div>
+
+                  {/* Units */}
+                  <div className="flex items-center justify-start gap-1.5">
+                    {level !== "healthy" && (
+                      <AlertTriangle
+                        size={13}
+                        strokeWidth={2}
+                        className={
+                          level === "critical"
+                            ? "text-[var(--color-stat-red)]"
+                            : "text-[var(--color-stat-yellow)]"
+                        }
+                      />
+                    )}
+
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:text-[12px] ${unitBadgeClass(level)}`}
+                    >
+                      {row.unitsAvailable} {unitsWordText}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-center gap-1 sm:gap-1.5">
+                    <RowActionButton
+                      icon={Plus}
+                      label={`Add ${row.bloodGroup} ${row.bloodType} stock`}
+                      onClick={() => setAddingRow(row)}
+                      disabled={
+                        row.bloodGroupId === undefined ||
+                        row.bloodComponentId === undefined
+                      }
+                    />
+
+                    <RowActionButton
+                      icon={Pencil}
+                      label={`Edit ${row.bloodGroup} ${row.bloodType} stock`}
+                      onClick={() => setAdjustingRow(row)}
+                      disabled={
+                        row.bloodGroupId === undefined ||
+                        row.bloodComponentId === undefined
+                      }
+                    />
+
+                    <RowActionButton
+                      icon={History}
+                      label={`${row.bloodGroup} ${row.bloodType} history`}
+                      onClick={() => setHistoryRow(row)}
+                      disabled={!Number.isFinite(Number(row.id))}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      </div>
+
+      {/* EDIT STOCK MODAL */}
       {adjustingRow && (
         <AdjustStockModal
           row={adjustingRow}
@@ -876,482 +572,96 @@ export function BloodCentreDashboardScreen() {
           }}
         />
       )}
-    </ScreenShell>
-  );
-}
 
-// ADJUST STOCK MODAL
+      {/* ADD STOCK MODAL */}
+      {addingRow && (
+        <AddStockModal
+          row={addingRow}
+          onClose={() => setAddingRow(null)}
+          onSaved={() => {
+            setAddingRow(null);
+            setReloadToken((token) => token + 1);
+          }}
+        />
+      )}
 
-function AdjustStockModal({
-  row,
-  onClose,
-  onSaved,
-}: {
-  row: BloodAvailabilityItem;
-  onClose: () => void;
-  onSaved: () => void;
-}) {
-  const [movement, setMovement] = useState<StockMovement>("ISSUE");
-  const [units, setUnits] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState("");
-
-  const isCorrection = movement === "CORRECTION";
-  const closeLabel = useBilingualText("common.close");
-  const movementIssueText = useBilingualText("bloodCentre.movementIssue");
-  const movementDiscardText = useBilingualText("bloodCentre.movementDiscard");
-  const movementCorrectionText = useBilingualText(
-    "bloodCentre.movementCorrection",
-  );
-  const egNumberPlaceholder = useBilingualText(
-    "bloodCentre.egNumberPlaceholder",
-  );
-  const unitsAvailableSuffix = useBilingualText(
-    "bloodCentre.unitsAvailableSuffix",
-  );
-
-  const submit = async () => {
-    if (row.bloodGroupId === undefined || row.bloodComponentId === undefined) {
-      setFormError(
-        "Unable to identify this stock entry. Please refresh and try again.",
-      );
-      return;
-    }
-
-    if (!units.trim()) {
-      setFormError("Enter units.");
-      return;
-    }
-
-    const parsedUnits = Number(units);
-
-    if (!Number.isInteger(parsedUnits) || parsedUnits < 0) {
-      setFormError("Enter a valid whole number.");
-      return;
-    }
-
-    const changedUnits = isCorrection
-      ? parsedUnits - row.unitsAvailable
-      : -Math.abs(parsedUnits);
-
-    if (changedUnits === 0) {
-      setFormError("No change to apply.");
-      return;
-    }
-
-    if (!isCorrection && Math.abs(changedUnits) > row.unitsAvailable) {
-      setFormError(
-        `Only ${row.unitsAvailable} units are available to ${movement.toLowerCase()}.`,
-      );
-      return;
-    }
-
-    setSaving(true);
-    setFormError("");
-
-    try {
-      await adjustStock({
-        bloodGroupId: row.bloodGroupId,
-        bloodComponentId: row.bloodComponentId,
-        movement,
-        changedUnits,
-        remarks: remarks.trim() || undefined,
-      });
-
-      onSaved();
-    } catch (error) {
-      setFormError(
-        getApiErrorMessage(error, "Unable to adjust stock. Please try again."),
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div
-      className="
-        fixed
-        inset-0
-        z-[100]
-        flex
-        items-center
-        justify-center
-        bg-black/45
-        px-4
-        backdrop-blur-md
-      "
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="adjust-stock-title"
-    >
-      <div
-        className="
-          w-full
-          max-w-[420px]
-          overflow-hidden
-          rounded-2xl
-          bg-white
-          shadow-[0_25px_70px_rgba(0,0,0,0.18)]
-        "
-      >
-        <div
-          className="
-            flex
-            items-start
-            justify-between
-            border-b
-            border-[var(--color-border-lighter)]
-            px-5
-            py-5
-          "
-        >
-          <div className="min-w-0">
-            <Bilingual
-              tKey="bloodCentre.adjustStock"
-              as="h2"
-              id="adjust-stock-title"
-              className="text-[14px] font-bold text-[var(--color-text-primary)]"
-            />
-
-            <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)]">
-              {row.bloodGroup} · {row.bloodType} · {row.unitsAvailable}{" "}
-              {unitsAvailableSuffix}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="
-              flex
-              h-8
-              w-8
-              shrink-0
-              items-center
-              justify-center
-              rounded-lg
-              text-[var(--color-text-placeholder-alt)]
-              transition
-              hover:bg-[var(--color-surface-hover)]
-              hover:text-[var(--color-text-secondary)]
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-            "
-            aria-label={closeLabel}
-          >
-            <X size={17} />
-          </button>
-        </div>
-
-        <div className="px-5 py-5">
-          <Bilingual
-            tKey="bloodCentre.movement"
-            as="label"
-            htmlFor="movement"
-            className="block text-[13px] font-medium text-[var(--color-text-body)]"
-          />
-
-          <div className="relative mt-2">
-            <select
-              id="movement"
-              value={movement}
-              disabled={saving}
-              onChange={(event) => {
-                setMovement(event.target.value as StockMovement);
-                setFormError("");
-              }}
-              className="
-                h-11
-                w-full
-                appearance-none
-                rounded-lg
-                border
-                border-[var(--color-border)]
-                bg-white
-                px-3
-                pr-10
-                text-[13px]
-                text-[var(--color-text-body)]
-                outline-none
-                transition-all
-                focus:border-[var(--color-primary)]
-                focus:ring-2
-                focus:ring-[var(--color-primary)]/15
-              "
-            >
-              <option value="ISSUE">{movementIssueText}</option>
-              <option value="DISCARD">{movementDiscardText}</option>
-              <option value="CORRECTION">{movementCorrectionText}</option>
-            </select>
-
-            <ChevronDown
-              size={17}
-              strokeWidth={1.8}
-              className="
-                pointer-events-none
-                absolute
-                right-3
-                top-1/2
-                -translate-y-1/2
-                text-[var(--color-text-tertiary)]
-              "
-            />
-          </div>
-
-          <Bilingual
-            tKey={
-              isCorrection ? "bloodCentre.newTotalUnits" : "bloodCentre.units"
-            }
-            as="label"
-            htmlFor="adjustUnits"
-            className="mt-4 block text-[13px] font-medium text-[var(--color-text-body)]"
-          />
-
-          <input
-            id="adjustUnits"
-            type="text"
-            inputMode="numeric"
-            value={units}
-            maxLength={4}
-            disabled={saving}
-            onChange={(event) => {
-              setUnits(event.target.value.replace(/\D/g, "").slice(0, 4));
-              setFormError("");
-            }}
-            placeholder={
-              isCorrection
-                ? egNumberPlaceholder
-                : "Units to " + movement.toLowerCase()
-            }
-            className="
-              mt-2
-              h-11
-              w-full
-              rounded-lg
-              border
-              border-[var(--color-border)]
-              bg-white
-              px-3
-              text-[13px]
-              text-[var(--color-text-body)]
-              outline-none
-              transition-all
-              placeholder:text-[var(--color-text-placeholder)]
-              focus:border-[var(--color-primary)]
-              focus:ring-2
-              focus:ring-[var(--color-primary)]/15
-            "
-          />
-
-          <Bilingual
-            tKey="bloodCentre.remarksOptional"
-            as="label"
-            htmlFor="remarks"
-            className="mt-4 block text-[13px] font-medium text-[var(--color-text-body)]"
-          />
-
-          <textarea
-            id="remarks"
-            value={remarks}
-            disabled={saving}
-            onChange={(event) => setRemarks(event.target.value)}
-            rows={2}
-            className="
-              mt-2
-              w-full
-              resize-none
-              rounded-lg
-              border
-              border-[var(--color-border)]
-              bg-white
-              px-3
-              py-2.5
-              text-[13px]
-              text-[var(--color-text-body)]
-              outline-none
-              transition-all
-              placeholder:text-[var(--color-text-placeholder)]
-              focus:border-[var(--color-primary)]
-              focus:ring-2
-              focus:ring-[var(--color-primary)]/15
-            "
-          />
-
-          {formError && (
-            <p role="alert" className="mt-3 text-[12px] leading-5 text-red-500">
-              {formError}
-            </p>
-          )}
-        </div>
-
-        <div
-          className="
-            flex
-            gap-2
-            border-t
-            border-[var(--color-border-lighter)]
-            bg-[var(--color-surface-hover)]
-            px-5
-            py-4
-          "
-        >
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={saving}
-            className="
-              min-h-[40px]
-              flex-1
-              rounded-lg
-              border
-              border-[var(--color-border)]
-              bg-white
-              px-3
-              py-1.5
-              text-[13px]
-              font-semibold
-              text-[var(--color-text-quaternary)]
-              transition
-              hover:bg-[var(--color-surface-hover)]
-              disabled:cursor-not-allowed
-              disabled:opacity-50
-            "
-          >
-            <BilingualInline tKey="common.cancel" />
-          </button>
-
-          <button
-            type="button"
-            onClick={submit}
-            disabled={saving}
-            className="
-              flex
-              min-h-[40px]
-              flex-1
-              items-center
-              justify-center
-              gap-2
-              rounded-lg
-              bg-[var(--color-primary)]
-              px-3
-              py-1.5
-              text-[13px]
-              font-semibold
-              text-white
-              shadow-[0_5px_15px_rgba(255,59,63,0.18)]
-              transition-all
-              hover:bg-[var(--color-primary-hover-alt)]
-              disabled:cursor-not-allowed
-              disabled:opacity-60
-            "
-          >
-            {saving && <Loader2 size={14} className="animate-spin shrink-0" />}
-            {saving ? (
-              <BilingualInline tKey="common.saving" />
-            ) : (
-              <BilingualInline
-                tKey="bloodCentre.apply"
-                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-              />
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// STAT CARD
-
-function Stat({
-  icon: Icon,
-  value,
-  label,
-  color,
-  index = 0,
-  alert = false,
-  active = false,
-  onClick,
-}: {
-  icon: typeof Droplets;
-  value: string;
-  label: ReactNode;
-  color: string;
-  index?: number;
-  alert?: boolean;
-  active?: boolean;
-  onClick?: () => void;
-}) {
-  const interactive = typeof onClick === "function";
-
-  const baseClass =
-    "group animate-rise relative flex min-h-[112px] w-full items-center gap-4 overflow-hidden rounded-2xl px-5 py-5 text-left text-white shadow-[0_6px_20px_rgba(0,0,0,0.10)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_9px_25px_rgba(0,0,0,0.13)] sm:min-h-[120px] sm:px-6";
-
-  const style = {
-    backgroundColor: color,
-    animationDelay: `${index * 80}ms`,
-  };
-
-  const content = (
-    <>
-      {/* Decorative watermark icon */}
-      <Icon
-        size={104}
-        strokeWidth={1.4}
-        className="pointer-events-none absolute -right-3 -top-3 text-white/10 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110"
-      />
-
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 transition-transform duration-200 group-hover:scale-105 sm:h-13 sm:w-13">
-        <Icon size={22} strokeWidth={1.8} />
-
-        {alert && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-white" />
-          </span>
-        )}
-      </div>
-
-      <div className="relative min-w-0">
-        <div className="text-[25px] font-bold leading-7 tracking-[-0.3px] sm:text-[28px]">
-          {value}
-        </div>
-
-        <div className="mt-1 text-[11px] font-medium leading-4 text-white/90 sm:text-[12px]">
-          {label}
-        </div>
-      </div>
-
-      {interactive && (
-        <span className="relative ml-auto hidden shrink-0 self-start rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white sm:inline-block">
-          {active ? "Filtering" : "Filter"}
-        </span>
+      {/* HISTORY MODAL */}
+      {historyRow && (
+        <InventoryHistoryModal
+          inventoryId={Number(historyRow.id)}
+          title={`${historyRow.bloodGroup} · ${historyRow.bloodType}`}
+          onClose={() => setHistoryRow(null)}
+        />
       )}
     </>
   );
+}
 
-  if (interactive) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={active}
-        style={style}
-        className={`${baseClass} cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-2 ${
-          active ? "ring-2 ring-white/80 ring-offset-2" : ""
-        }`}
-      >
-        {content}
-      </button>
-    );
-  }
+function RowActionButton({
+  icon: Icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: typeof Pencil;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] shadow-[0_1px_4px_rgba(0,0,0,0.03)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9"
+    >
+      <Icon size={14} />
+    </button>
+  );
+}
+
+function ToolbarSelect({
+  value,
+  onChange,
+  allLabel,
+  options,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  allLabel: string;
+  options: string[];
+  ariaLabel: string;
+}) {
+  const active = value !== ALL;
 
   return (
-    <div style={style} className={baseClass}>
-      {content}
+    <div className="relative">
+      <select
+        value={value}
+        onChange={onChange}
+        aria-label={ariaLabel}
+        className={`h-10 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+          active
+            ? "border-[var(--primary-200)] font-medium"
+            : "border-[var(--color-border-light)]"
+        }`}
+      >
+        <option value={ALL}>{allLabel}</option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+
+      <ChevronDown
+        size={15}
+        strokeWidth={1.8}
+        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+      />
     </div>
   );
 }

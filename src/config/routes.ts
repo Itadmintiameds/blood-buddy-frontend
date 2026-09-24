@@ -7,6 +7,7 @@ export const routes = {
   bloodCentreDashboard: "/blood-centre/dashboard",
   addAvailability: "/blood-centre/availability/add",
   availability: "/blood-centre/availability",
+  bloodCentreHistory: "/blood-centre/history",
   donor: "/donor",
   donorRegister: "/donor/register",
   recipient: "/recipient",

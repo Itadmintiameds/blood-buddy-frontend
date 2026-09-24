@@ -12,12 +12,14 @@ interface BrandHeaderProps {
   title?: ReactNode;
   showBackButton?: boolean;
   backHref?: string;
+  welcomeName?: string | null;
 }
 
 export function BrandHeader({
   title,
   showBackButton = false,
   backHref = "/welcome",
+  welcomeName,
 }: BrandHeaderProps) {
   const goBackLabel = useBilingualText("accessibility.goBack");
 
@@ -83,6 +85,15 @@ export function BrandHeader({
                 className="h-auto w-[82px] object-contain sm:w-[98px]"
               />
             </div>
+
+            {welcomeName && (
+              <div className="ml-1 hidden min-w-0 items-center border-l border-white/25 pl-3 sm:flex">
+                <p className="truncate text-[13px] font-medium text-white sm:text-[14px]">
+                  Welcome,{" "}
+                  <span className="font-semibold">{welcomeName}</span>
+                </p>
+              </div>
+            )}
           </div>
 
           <LanguageSelector />

@@ -25,6 +25,7 @@ interface AuthResponse {
   username: string;
   role: string;
   bloodCentreId: number | null;
+  bloodCentreName: string | null;
 }
 
 // Single login endpoint for every role — SUPERADMIN and BLOOD_CENTRE accounts
@@ -55,6 +56,7 @@ export async function loginCommon(
       isLoggedIn: true,
       userType,
       id,
+      name: auth.bloodCentreName ?? undefined,
       email: auth.username,
       role,
       accessToken: auth.accessToken,
