@@ -189,7 +189,7 @@ export function DonorManagement() {
                 filteredDonors.map((donor, index) => (
                   <tr
                     key={donor.id}
-                    className="border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[#fff9f9]"
+                    className="border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
                   >
                     <TableCell>{index + 1}</TableCell>
 
@@ -405,7 +405,7 @@ function TableCell({ children }: { children: React.ReactNode }) {
 
 function BloodGroupBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[#ffd5d5] bg-[#fff5f5] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
+    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
       {value}
     </span>
   );
@@ -477,7 +477,7 @@ function EmptyState({ tKey }: { tKey: string }) {
   return (
     <div className="flex min-h-[180px] items-center justify-center px-5 py-10 text-center">
       <div>
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#fff3f3]">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)]">
           <Users size={20} className="text-[var(--color-primary)]" />
         </div>
 

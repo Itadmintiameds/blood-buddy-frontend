@@ -344,7 +344,7 @@ export function SuperAdminDashboard() {
 
         {/* Admin Profile */}
         <div className="px-5 pt-6">
-          <div className="flex items-center gap-3 rounded-xl border border-[#f1dddd] bg-[var(--color-icon-bg-soft)] px-4 py-3">
+          <div className="flex items-center gap-3 rounded-xl border border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] px-4 py-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white">
               <HeartPulse
                 size={18}

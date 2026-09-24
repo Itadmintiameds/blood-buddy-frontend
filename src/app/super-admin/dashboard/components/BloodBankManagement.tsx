@@ -483,7 +483,7 @@ export default function BloodBankManagement() {
               transition-all
               duration-200
               placeholder:text-[var(--color-text-placeholder)]
-              hover:border-[#c7c7c7]
+              hover:border-[var(--color-border)]
               focus:border-[var(--color-primary)]
               focus:ring-2
               focus:ring-[var(--color-primary)]/10
@@ -970,7 +970,7 @@ function BloodBankTableSection({
           bg-white
           transition-all
           duration-200
-          hover:bg-[#fffafa]
+          hover:bg-[var(--color-icon-bg-soft)]
           hover:shadow-[inset_4px_0_0_var(--color-primary)]
         "
       >
@@ -1143,7 +1143,7 @@ function BloodBankTableSection({
                 min-w-0
                 border-b
                 border-[var(--color-border-light)]
-                bg-[#f7f7f8]
+                bg-[var(--color-surface-alt)]
                 px-2
                 py-4
                 sm:px-4
@@ -1157,7 +1157,7 @@ function BloodBankTableSection({
                   overflow-hidden
                   rounded-xl
                   border
-                  border-[#e7e7e9]
+                  border-[var(--color-border-light)]
                   bg-white
                   shadow-[0_5px_18px_rgba(0,0,0,0.07)]
                 "
@@ -1171,8 +1171,8 @@ function BloodBankTableSection({
                     justify-between
                     gap-2
                     border-b
-                    border-[#ffd9d9]
-                    bg-[#fff5f5]
+                    border-[var(--primary-200)]
+                    bg-[var(--color-icon-bg-soft)]
                     px-3
                     py-3
                     sm:px-4
@@ -1230,8 +1230,8 @@ function BloodBankTableSection({
                       <tr
                         className="
                           border-b
-                          border-[#e9e9eb]
-                          bg-[#f3f4f6]
+                          border-[var(--color-border-light)]
+                          bg-[var(--color-surface-alt)]
                         "
                       >
                         <th
@@ -1246,7 +1246,7 @@ function BloodBankTableSection({
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555555]
+                            text-[var(--color-text-secondary)]
                             sm:px-4
                             sm:text-[13px]
                           "
@@ -1266,7 +1266,7 @@ function BloodBankTableSection({
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555555]
+                            text-[var(--color-text-secondary)]
                             sm:px-4
                             sm:text-[13px]
                           "
@@ -1286,7 +1286,7 @@ function BloodBankTableSection({
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555555]
+                            text-[var(--color-text-secondary)]
                             sm:px-3
                             sm:text-[13px]
                           "
@@ -1306,7 +1306,7 @@ function BloodBankTableSection({
                             font-bold
                             uppercase
                             tracking-wide
-                            text-[#555555]
+                            text-[var(--color-text-secondary)]
                             sm:px-3
                             sm:text-[13px]
                           "
@@ -1326,7 +1326,7 @@ function BloodBankTableSection({
                               last:border-b-0
                               transition-all
                               duration-200
-                              hover:bg-[#fff7f7]
+                              hover:bg-[var(--color-icon-bg-soft)]
                             "
                         >
                           {/* BLOOD GROUP */}
@@ -1361,7 +1361,7 @@ function BloodBankTableSection({
                                 font-medium
                                 uppercase
                                 leading-4
-                                text-[#555555]
+                                text-[var(--color-text-secondary)]
                                 sm:px-4
                                 sm:text-[13px]
                               "
@@ -1376,7 +1376,7 @@ function BloodBankTableSection({
                                 className="
                                     text-[12px]
                                     font-bold
-                                    text-[#222222]
+                                    text-[var(--color-text-primary)]
                                     sm:text-[12px]
                                   "
                               >
@@ -1420,7 +1420,7 @@ function BloodBankTableSection({
                                     transition-all
                                     duration-200
                                     hover:-translate-y-[1px]
-                                    hover:border-[#c9e8d1]
+                                    hover:border-[var(--color-success-bg)]
                                     hover:bg-[var(--color-success-bg)]
                                     hover:text-[var(--color-success)]
                                     active:translate-y-0
@@ -1454,7 +1454,7 @@ function BloodBankTableSection({
                                     transition-all
                                     duration-200
                                     hover:-translate-y-[1px]
-                                    hover:border-[#ffcccc]
+                                    hover:border-[var(--primary-200)]
                                     hover:bg-[var(--color-icon-bg-soft)]
                                     hover:text-[var(--color-primary)]
                                     active:translate-y-0
@@ -1650,13 +1650,13 @@ function BloodBankCard({
       </div>
 
       {expanded && (
-        <div className="border-t border-[#e7e7e9] bg-[#f7f7f8] px-4 py-4 shadow-[inset_0_1px_0_rgba(0,0,0,0.02)]">
+        <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-4 py-4 shadow-[inset_0_1px_0_rgba(0,0,0,0.02)]">
           <div className="mb-3 flex items-center gap-2">
             <Droplets size={15} className="text-[var(--color-primary)]" />
             <Bilingual
               tKey="bloodCentre.bloodAvailabilityTitle"
               as="span"
-              className="text-[12px] font-bold text-[#222222]"
+              className="text-[12px] font-bold text-[var(--color-text-primary)]"
             />
           </div>
 
@@ -1671,7 +1671,7 @@ function BloodBankCard({
                   gap-3
                   rounded-lg
                   border
-                  border-[#e7e7e9]
+                  border-[var(--color-border-light)]
                   bg-white
                   px-3.5
                   py-3
@@ -1726,7 +1726,7 @@ function BloodBankCard({
                       shadow-sm
                       transition-all
                       duration-200
-                      hover:border-[#c9e8d1]
+                      hover:border-[var(--color-success-bg)]
                       hover:bg-[var(--color-success-bg)]
                       hover:text-[var(--color-success)]
                       focus-visible:outline-none
@@ -1756,7 +1756,7 @@ function BloodBankCard({
                       shadow-sm
                       transition-all
                       duration-200
-                      hover:border-[#ffcccc]
+                      hover:border-[var(--primary-200)]
                       hover:bg-[var(--color-icon-bg-soft)]
                       hover:text-[var(--color-primary)]
                       focus-visible:outline-none
@@ -1799,19 +1799,19 @@ function StatCard({
 }) {
   const colorStyles = {
     warning: {
-      background: "#FF3B3B",
-      iconBackground: "#FF3B3B",
-      text: "#FFFFFF",
+      background: "var(--color-stat-red)",
+      iconBackground: "var(--color-stat-red)",
+      text: "var(--color-white)",
     },
     success: {
-      background: "#378200",
-      iconBackground: "#378200",
-      text: "#FFFFFF",
+      background: "var(--color-stat-green)",
+      iconBackground: "var(--color-stat-green)",
+      text: "var(--color-white)",
     },
     danger: {
-      background: "#FDC000",
-      iconBackground: "#FDC000",
-      text: "#FFFFFF",
+      background: "var(--color-stat-yellow)",
+      iconBackground: "var(--color-stat-yellow)",
+      text: "var(--color-white)",
     },
   };
 

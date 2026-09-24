@@ -152,7 +152,7 @@ export function RegistrationTypeModal({
               text-left
               transition-all
               duration-200
-              hover:border-[#FF3B3B]
+              hover:border-[var(--color-stat-red)]
               hover:bg-red-50
               active:scale-[0.99]
               focus-visible:outline-none
@@ -176,7 +176,7 @@ export function RegistrationTypeModal({
               <ShieldCheck
                 size={22}
                 strokeWidth={1.7}
-                className="text-[#FF3B3B]"
+                className="text-[var(--color-stat-red)]"
               />
             </div>
 
@@ -187,7 +187,7 @@ export function RegistrationTypeModal({
                 className="
                   text-[14px]
                   font-semibold
-                  text-[#222]
+                  text-[var(--color-text-primary)]
                 "
               />
 
@@ -222,7 +222,7 @@ export function RegistrationTypeModal({
               text-left
               transition-all
               duration-200
-              hover:border-[#FF3B3B]
+              hover:border-[var(--color-stat-red)]
               hover:bg-red-50
               active:scale-[0.99]
               focus-visible:outline-none
@@ -246,7 +246,7 @@ export function RegistrationTypeModal({
               <Building2
                 size={22}
                 strokeWidth={1.7}
-                className="text-[#FF3B3B]"
+                className="text-[var(--color-stat-red)]"
               />
             </div>
 
@@ -257,7 +257,7 @@ export function RegistrationTypeModal({
                 className="
                   text-[14px]
                   font-semibold
-                  text-[#222]
+                  text-[var(--color-text-primary)]
                 "
               />
 
@@ -289,7 +289,7 @@ export function RegistrationTypeModal({
             text-gray-500
             transition
             hover:bg-gray-50
-            hover:text-[#222]
+            hover:text-[var(--color-text-primary)]
             focus-visible:outline-none
             focus-visible:ring-2
             focus-visible:ring-gray-300

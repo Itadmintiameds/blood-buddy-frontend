@@ -200,7 +200,7 @@ export function RecipientManagement() {
               filteredRequests.map((request, index) => (
                 <tr
                   key={request.id}
-                  className="border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[#fff9f9]"
+                  className="border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
                 >
                   <TableCell>{index + 1}</TableCell>
 
@@ -259,7 +259,7 @@ export function RecipientManagement() {
                         transition-all
                         duration-200
                         hover:-translate-y-px
-                        hover:border-[#ffcccc]
+                        hover:border-[var(--primary-200)]
                         hover:bg-[var(--color-icon-bg-soft)]
                       "
                     >
@@ -359,7 +359,7 @@ export function RecipientManagement() {
                     shadow-sm
                     transition-all
                     duration-200
-                    hover:border-[#ffcccc]
+                    hover:border-[var(--primary-200)]
                     hover:bg-[var(--color-icon-bg-soft)]
                   "
                 >
@@ -666,7 +666,7 @@ function BloodRequestDetailModal({
                     {detail.donatedBy.map((donor) => (
                       <div
                         key={donor.id}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-[#c9e8d1] bg-[var(--color-success-bg)] px-3.5 py-2.5"
+                        className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-success-bg)] bg-[var(--color-success-bg)] px-3.5 py-2.5"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
@@ -888,11 +888,11 @@ function InfoTile({ tKey, value }: { tKey: string; value: string }) {
 function StatusBadge({ status }: { status: BloodRequestStatus }) {
   const styles: Record<BloodRequestStatus, string> = {
     CENTRES_FOUND:
-      "border-[#c9e8d1] bg-[var(--color-success-bg)] text-[var(--color-success)]",
-    NO_CENTRES_FOUND: "border-[#f5e2b8] bg-[#fff8e8] text-[#b8860b]",
+      "border-[var(--color-success-bg)] bg-[var(--color-success-bg)] text-[var(--color-success)]",
+    NO_CENTRES_FOUND: "border-[var(--danger-100)] bg-[var(--danger-50)] text-[var(--danger-700)]",
     CLOSED:
       "border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)]",
-    CANCELLED: "border-[#ffd5d5] bg-[#fff5f5] text-[var(--color-primary)]",
+    CANCELLED: "border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]",
   };
 
   const tKeys: Record<BloodRequestStatus, string> = {
@@ -933,7 +933,7 @@ function TableCell({ children }: { children: React.ReactNode }) {
 
 function BloodGroupBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[#ffd5d5] bg-[#fff5f5] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
+    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
       {value}
     </span>
   );
@@ -989,7 +989,7 @@ function EmptyState({ tKey }: { tKey: string }) {
   return (
     <div className="flex min-h-[180px] items-center justify-center px-5 py-10 text-center">
       <div>
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#fff3f3]">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)]">
           <Users size={20} className="text-[var(--color-primary)]" />
         </div>
 

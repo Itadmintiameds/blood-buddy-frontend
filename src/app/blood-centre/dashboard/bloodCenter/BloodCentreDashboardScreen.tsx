@@ -92,7 +92,7 @@ export function BloodCentreDashboardScreen() {
 
   return (
     <ScreenShell>
-      <div className="flex min-h-screen w-full flex-col bg-[#f7f7f8]">
+      <div className="flex min-h-screen w-full flex-col bg-[var(--color-surface-alt)]">
         {/* HEADER */}
         <div className="shrink-0">
           <BrandHeader />
@@ -110,7 +110,7 @@ export function BloodCentreDashboardScreen() {
                   gap-4
                   rounded-2xl
                   border
-                  border-[#e8e8e8]
+                  border-[var(--color-border-light)]
                   bg-white
                   px-5
                   py-5
@@ -134,13 +134,13 @@ export function BloodCentreDashboardScreen() {
                         items-center
                         justify-center
                         rounded-xl
-                        bg-[#fff0f0]
+                        bg-[var(--color-icon-bg-soft)]
                       "
                     >
                       <Droplets
                         size={22}
                         strokeWidth={1.8}
-                        className="text-[#ff3b3f]"
+                        className="text-[var(--color-primary)]"
                       />
                     </div>
 
@@ -153,7 +153,7 @@ export function BloodCentreDashboardScreen() {
                             font-bold
                             leading-6
                             tracking-[-0.2px]
-                            text-[#222]
+                            text-[var(--color-text-primary)]
                             sm:text-[22px]
                             lg:text-[24px]
                           "
@@ -169,7 +169,7 @@ export function BloodCentreDashboardScreen() {
                             font-bold
                             leading-6
                             tracking-[-0.2px]
-                            text-[#222]
+                            text-[var(--color-text-primary)]
                             sm:text-[22px]
                             lg:text-[24px]
                           "
@@ -186,7 +186,7 @@ export function BloodCentreDashboardScreen() {
                           mt-1
                           truncate
                           text-[12px]
-                          text-[#777]
+                          text-[var(--color-text-muted)]
                           sm:text-[13px]
                         "
                       />
@@ -221,7 +221,7 @@ export function BloodCentreDashboardScreen() {
                       enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
                     />
                   }
-                  color="#FF3B3B"
+                  color="var(--color-stat-red)"
                 />
 
                 <Stat
@@ -234,7 +234,7 @@ export function BloodCentreDashboardScreen() {
                       enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
                     />
                   }
-                  color="#378200"
+                  color="var(--color-stat-green)"
                 />
 
                 <Stat
@@ -247,7 +247,7 @@ export function BloodCentreDashboardScreen() {
                       enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
                     />
                   }
-                  color="#FDC000"
+                  color="var(--color-stat-yellow)"
                 />
               </div>
 
@@ -258,7 +258,7 @@ export function BloodCentreDashboardScreen() {
                   overflow-hidden
                   rounded-2xl
                   border
-                  border-[#e5e5e5]
+                  border-[var(--color-border-light)]
                   bg-white
                   shadow-[0_5px_22px_rgba(0,0,0,0.045)]
                   lg:mt-6
@@ -271,7 +271,7 @@ export function BloodCentreDashboardScreen() {
                     flex-col
                     gap-2
                     border-b
-                    border-[#ededed]
+                    border-[var(--color-border-lighter)]
                     px-5
                     py-4
                     sm:flex-row
@@ -288,12 +288,12 @@ export function BloodCentreDashboardScreen() {
                       className="
                         text-[16px]
                         font-bold
-                        text-[#222]
+                        text-[var(--color-text-primary)]
                         sm:text-[17px]
                       "
                     />
 
-                    <p className="mt-1 text-[11px] text-[#888] sm:text-[12px]">
+                    <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)] sm:text-[12px]">
                       Current blood stock available at your centre
                     </p>
                   </div>
@@ -305,15 +305,15 @@ export function BloodCentreDashboardScreen() {
                       items-center
                       gap-1.5
                       rounded-full
-                      bg-[#fff3f3]
+                      bg-[var(--color-icon-bg-soft)]
                       px-3
                       py-1.5
                       text-[10px]
                       font-medium
-                      text-[#ff3b3f]
+                      text-[var(--color-primary)]
                     "
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#ff3b3f]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-primary)]" />
                     Live Availability
                   </div>
                 </div>
@@ -327,15 +327,15 @@ export function BloodCentreDashboardScreen() {
                       grid-cols-[1fr_1.4fr_0.9fr_52px]
                       items-center
                       border-b
-                      border-[#e9e9e9]
-                      bg-[#f8f8f9]
+                      border-[var(--color-border-light)]
+                      bg-[var(--color-surface-alt)]
                       px-4
                       py-3
                       text-[10px]
                       font-bold
                       uppercase
                       tracking-[0.04em]
-                      text-[#666]
+                      text-[var(--color-text-quaternary)]
                       sm:grid-cols-[1fr_1.5fr_1fr_58px]
                       sm:px-6
                       sm:py-3.5
@@ -378,13 +378,13 @@ export function BloodCentreDashboardScreen() {
                     >
                       <Loader2
                         size={22}
-                        className="animate-spin text-[#ff3b3f]"
+                        className="animate-spin text-[var(--color-primary)]"
                       />
 
                       <Bilingual
                         tKey="bloodCentre.loadingAvailability"
                         as="p"
-                        className="text-[12px] text-[#888]"
+                        className="text-[12px] text-[var(--color-text-tertiary)]"
                       />
                     </div>
                   )}
@@ -428,12 +428,12 @@ export function BloodCentreDashboardScreen() {
                           items-center
                           justify-center
                           rounded-full
-                          bg-[#fff2f2]
+                          bg-[var(--color-icon-bg-soft)]
                         "
                       >
                         <Droplets
                           size={20}
-                          className="text-[#ff3b3f]"
+                          className="text-[var(--color-primary)]"
                           strokeWidth={1.7}
                         />
                       </div>
@@ -441,10 +441,10 @@ export function BloodCentreDashboardScreen() {
                       <Bilingual
                         tKey="bloodCentre.noAvailabilityYet"
                         as="p"
-                        className="mt-3 text-[13px] font-medium text-[#555]"
+                        className="mt-3 text-[13px] font-medium text-[var(--color-text-secondary)]"
                       />
 
-                      <p className="mt-1 text-[11px] text-[#999]">
+                      <p className="mt-1 text-[11px] text-[var(--color-text-placeholder-alt)]">
                         Add blood availability to see the current stock here.
                       </p>
                     </div>
@@ -461,14 +461,14 @@ export function BloodCentreDashboardScreen() {
                           grid-cols-[1fr_1.4fr_0.9fr_52px]
                           items-center
                           border-b
-                          border-[#eeeeee]
+                          border-[var(--color-border-lighter)]
                           px-4
                           text-[12px]
-                          text-[#444]
+                          text-[var(--color-text-body)]
                           transition-colors
                           duration-150
                           last:border-b-0
-                          hover:bg-[#fffafa]
+                          hover:bg-[var(--color-icon-bg-soft)]
                           sm:min-h-[62px]
                           sm:grid-cols-[1fr_1.5fr_1fr_58px]
                           sm:px-6
@@ -476,7 +476,7 @@ export function BloodCentreDashboardScreen() {
                         "
                         style={{
                           backgroundColor:
-                            index % 2 === 0 ? "#ffffff" : "#fcfcfc",
+                            index % 2 === 0 ? "var(--color-white)" : "var(--color-surface-hover)",
                         }}
                       >
                         {/* Blood Group */}
@@ -491,18 +491,18 @@ export function BloodCentreDashboardScreen() {
                               items-center
                               justify-center
                               rounded-lg
-                              bg-[#fff1f1]
+                              bg-[var(--color-icon-bg-soft)]
                               sm:mr-3
                             "
                           >
                             <Droplets
                               size={14}
                               strokeWidth={1.8}
-                              className="text-[#ff3b3f]"
+                              className="text-[var(--color-primary)]"
                             />
                           </div>
 
-                          <span className="truncate font-semibold text-[#333]">
+                          <span className="truncate font-semibold text-[var(--color-text-body)]">
                             {row.bloodGroup}
                           </span>
                         </div>
@@ -514,7 +514,7 @@ export function BloodCentreDashboardScreen() {
                             px-2
                             text-center
                             font-medium
-                            text-[#666]
+                            text-[var(--color-text-quaternary)]
                           "
                         >
                           <span className="break-words">{row.bloodType}</span>
@@ -527,12 +527,12 @@ export function BloodCentreDashboardScreen() {
                               inline-flex
                               items-center
                               rounded-full
-                              bg-[#f3faef]
+                              bg-[var(--color-success-bg)]
                               px-2.5
                               py-1
                               text-[11px]
                               font-bold
-                              text-[#378200]
+                              text-[var(--color-stat-green)]
                               sm:px-3
                               sm:text-[12px]
                             "
@@ -558,15 +558,15 @@ export function BloodCentreDashboardScreen() {
                               justify-center
                               rounded-lg
                               border
-                              border-[#e5e5e5]
+                              border-[var(--color-border-light)]
                               bg-white
-                              text-[#777]
+                              text-[var(--color-text-muted)]
                               shadow-[0_1px_4px_rgba(0,0,0,0.03)]
                               transition-all
                               duration-150
-                              hover:border-[#ffcccc]
-                              hover:bg-[#fff4f4]
-                              hover:text-[#ff3b3f]
+                              hover:border-[var(--primary-200)]
+                              hover:bg-[var(--color-icon-bg-soft)]
+                              hover:text-[var(--color-primary)]
                               disabled:cursor-not-allowed
                               disabled:opacity-40
                               sm:h-9
@@ -603,7 +603,7 @@ export function BloodCentreDashboardScreen() {
                     justify-center
                     gap-2
                     rounded-xl
-                    bg-[#ff3b3f]
+                    bg-[var(--color-primary)]
                     px-6
                     text-[13px]
                     font-semibold
@@ -612,12 +612,12 @@ export function BloodCentreDashboardScreen() {
                     transition-all
                     duration-200
                     hover:-translate-y-px
-                    hover:bg-[#e93232]
+                    hover:bg-[var(--color-primary-hover-alt)]
                     hover:shadow-[0_8px_22px_rgba(255,59,63,0.25)]
                     active:translate-y-0
                     focus-visible:outline-none
                     focus-visible:ring-2
-                    focus-visible:ring-[#ff3b3f]
+                    focus-visible:ring-[var(--color-primary)]
                     focus-visible:ring-offset-2
                     sm:w-[300px]
                   "
@@ -771,7 +771,7 @@ function AdjustStockModal({
             items-start
             justify-between
             border-b
-            border-[#eeeeee]
+            border-[var(--color-border-lighter)]
             px-5
             py-5
           "
@@ -781,10 +781,10 @@ function AdjustStockModal({
               tKey="bloodCentre.adjustStock"
               as="h2"
               id="adjust-stock-title"
-              className="text-[14px] font-bold text-[#222]"
+              className="text-[14px] font-bold text-[var(--color-text-primary)]"
             />
 
-            <p className="mt-1 text-[11px] text-[#888]">
+            <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)]">
               {row.bloodGroup} · {row.bloodType} · {row.unitsAvailable}{" "}
               {unitsAvailableSuffix}
             </p>
@@ -802,10 +802,10 @@ function AdjustStockModal({
               items-center
               justify-center
               rounded-lg
-              text-[#999]
+              text-[var(--color-text-placeholder-alt)]
               transition
-              hover:bg-[#f7f7f7]
-              hover:text-[#555]
+              hover:bg-[var(--color-surface-hover)]
+              hover:text-[var(--color-text-secondary)]
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
@@ -820,7 +820,7 @@ function AdjustStockModal({
             tKey="bloodCentre.movement"
             as="label"
             htmlFor="movement"
-            className="block text-[13px] font-medium text-[#444]"
+            className="block text-[13px] font-medium text-[var(--color-text-body)]"
           />
 
           <div className="relative mt-2">
@@ -838,17 +838,17 @@ function AdjustStockModal({
                 appearance-none
                 rounded-lg
                 border
-                border-[#dddddd]
+                border-[var(--color-border)]
                 bg-white
                 px-3
                 pr-10
                 text-[13px]
-                text-[#444]
+                text-[var(--color-text-body)]
                 outline-none
                 transition-all
-                focus:border-[#ff3b3f]
+                focus:border-[var(--color-primary)]
                 focus:ring-2
-                focus:ring-[#ff3b3f]/15
+                focus:ring-[var(--color-primary)]/15
               "
             >
               <option value="ISSUE">{movementIssueText}</option>
@@ -865,7 +865,7 @@ function AdjustStockModal({
                 right-3
                 top-1/2
                 -translate-y-1/2
-                text-[#888]
+                text-[var(--color-text-tertiary)]
               "
             />
           </div>
@@ -876,7 +876,7 @@ function AdjustStockModal({
             }
             as="label"
             htmlFor="adjustUnits"
-            className="mt-4 block text-[13px] font-medium text-[#444]"
+            className="mt-4 block text-[13px] font-medium text-[var(--color-text-body)]"
           />
 
           <input
@@ -901,17 +901,17 @@ function AdjustStockModal({
               w-full
               rounded-lg
               border
-              border-[#dddddd]
+              border-[var(--color-border)]
               bg-white
               px-3
               text-[13px]
-              text-[#444]
+              text-[var(--color-text-body)]
               outline-none
               transition-all
-              placeholder:text-[#aaa]
-              focus:border-[#ff3b3f]
+              placeholder:text-[var(--color-text-placeholder)]
+              focus:border-[var(--color-primary)]
               focus:ring-2
-              focus:ring-[#ff3b3f]/15
+              focus:ring-[var(--color-primary)]/15
             "
           />
 
@@ -919,7 +919,7 @@ function AdjustStockModal({
             tKey="bloodCentre.remarksOptional"
             as="label"
             htmlFor="remarks"
-            className="mt-4 block text-[13px] font-medium text-[#444]"
+            className="mt-4 block text-[13px] font-medium text-[var(--color-text-body)]"
           />
 
           <textarea
@@ -934,18 +934,18 @@ function AdjustStockModal({
               resize-none
               rounded-lg
               border
-              border-[#dddddd]
+              border-[var(--color-border)]
               bg-white
               px-3
               py-2.5
               text-[13px]
-              text-[#444]
+              text-[var(--color-text-body)]
               outline-none
               transition-all
-              placeholder:text-[#aaa]
-              focus:border-[#ff3b3f]
+              placeholder:text-[var(--color-text-placeholder)]
+              focus:border-[var(--color-primary)]
               focus:ring-2
-              focus:ring-[#ff3b3f]/15
+              focus:ring-[var(--color-primary)]/15
             "
           />
 
@@ -961,8 +961,8 @@ function AdjustStockModal({
             flex
             gap-2
             border-t
-            border-[#eeeeee]
-            bg-[#fafafa]
+            border-[var(--color-border-lighter)]
+            bg-[var(--color-surface-hover)]
             px-5
             py-4
           "
@@ -976,15 +976,15 @@ function AdjustStockModal({
               flex-1
               rounded-lg
               border
-              border-[#dddddd]
+              border-[var(--color-border)]
               bg-white
               px-3
               py-1.5
               text-[13px]
               font-semibold
-              text-[#666]
+              text-[var(--color-text-quaternary)]
               transition
-              hover:bg-[#f5f5f5]
+              hover:bg-[var(--color-surface-hover)]
               disabled:cursor-not-allowed
               disabled:opacity-50
             "
@@ -1004,7 +1004,7 @@ function AdjustStockModal({
               justify-center
               gap-2
               rounded-lg
-              bg-[#ff3b3f]
+              bg-[var(--color-primary)]
               px-3
               py-1.5
               text-[13px]
@@ -1012,7 +1012,7 @@ function AdjustStockModal({
               text-white
               shadow-[0_5px_15px_rgba(255,59,63,0.18)]
               transition-all
-              hover:bg-[#e93232]
+              hover:bg-[var(--color-primary-hover-alt)]
               disabled:cursor-not-allowed
               disabled:opacity-60
             "

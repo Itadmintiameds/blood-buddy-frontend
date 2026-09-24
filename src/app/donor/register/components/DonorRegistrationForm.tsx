@@ -246,7 +246,7 @@ export function DonorRegistrationForm() {
                   ${
                     errors.bloodGroupId
                       ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-500/10"
-                      : "border-[var(--color-border)] hover:border-[#c7c7c7] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15"
+                      : "border-[var(--color-border)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15"
                   }
                   ${selectedBloodGroupId ? "text-[var(--color-text-body)]" : "text-[var(--color-input-placeholder)]"}
                 `}

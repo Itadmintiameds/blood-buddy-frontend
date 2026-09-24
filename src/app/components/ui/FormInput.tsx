@@ -91,7 +91,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
                 `
                 : `
                   border-[var(--color-border)]
-                  hover:border-[#c7c7c7]
+                  hover:border-[var(--color-border)]
                   focus-within:border-[var(--color-primary)]
                   focus-within:ring-2
                   focus-within:ring-[var(--color-primary)]/15

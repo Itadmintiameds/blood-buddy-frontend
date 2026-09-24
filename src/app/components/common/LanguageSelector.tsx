@@ -60,7 +60,7 @@ export default function LanguageSelector() {
           text-[var(--color-text-body)]
           transition-all
           duration-200
-          hover:border-[#c7c7c7]
+          hover:border-[var(--color-border)]
           hover:bg-[var(--color-surface-hover)]
           focus-visible:outline-none
           focus-visible:ring-2

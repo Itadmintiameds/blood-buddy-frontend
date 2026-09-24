@@ -80,16 +80,19 @@
      PRIMARY
   ========================= */
 
-  --primary-100: #f8edff;
-  --primary-200: #ebceff;
-  --primary-300: #deafff;
-  --primary-400: #d290ff;
-  --primary-500: #c571ff;
-  --primary-600: #b550fa;
-  --primary-700: #8f2dd2;
-  --primary-800: #6c12a9;
-  --primary-900: #4c0080;
-  --primary-1000: #340057;
+  /* Red primary scale — brand red (#ff3b3f) sits at 600 and matches
+     --color-primary. Replaces the earlier purple scale so the numbered
+     --primary-* steps agree with the semantic --color-primary tokens. */
+  --primary-100: #fff0f0;
+  --primary-200: #ffd6d7;
+  --primary-300: #ffb0b2;
+  --primary-400: #ff8589;
+  --primary-500: #ff5a5f;
+  --primary-600: #ff3b3f;
+  --primary-700: #e62f33;
+  --primary-800: #bf2529;
+  --primary-900: #8f1b1e;
+  --primary-1000: #5c1113;
 
   /* =========================
      SECONDARY
@@ -577,7 +580,7 @@ a {
     background-color: var(--base-white);
     color: var(--color-text-body);
     font-family: var(--font-noto), var(--font-work-sans), var(--font-kannada), Arial, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

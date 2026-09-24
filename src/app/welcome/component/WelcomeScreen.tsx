@@ -31,7 +31,7 @@ export function WelcomeScreen() {
                 flex-1
                 items-center
                 justify-center
-                bg-[#fffafa]
+                bg-[var(--color-icon-bg-soft)]
                 px-5
                 py-6
                 shadow-[4px_0_18px_rgba(0,0,0,0.08)]
@@ -73,27 +73,27 @@ export function WelcomeScreen() {
 
                 {/* Small icons */}
                 <div className="mt-2.5 flex items-center gap-3 sm:mt-3 sm:gap-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF0F0] sm:h-9 sm:w-9">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:h-9 sm:w-9">
                     <Droplets
                       size={18}
                       strokeWidth={1.8}
-                      className="text-[#FF3B3B]"
+                      className="text-[var(--color-stat-red)]"
                     />
                   </div>
 
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF0F0] sm:h-9 sm:w-9">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:h-9 sm:w-9">
                     <HeartPulse
                       size={18}
                       strokeWidth={1.8}
-                      className="text-[#FF3B3B]"
+                      className="text-[var(--color-stat-red)]"
                     />
                   </div>
 
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FFF0F0] sm:h-9 sm:w-9">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:h-9 sm:w-9">
                     <ShieldCheck
                       size={18}
                       strokeWidth={1.8}
-                      className="text-[#FF3B3B]"
+                      className="text-[var(--color-stat-red)]"
                     />
                   </div>
                 </div>
@@ -109,7 +109,7 @@ export function WelcomeScreen() {
                     font-semibold
                     leading-[1.15]
                     tracking-[-0.2px]
-                    text-[#222222]
+                    text-[var(--color-text-primary)]
                     sm:mt-4
                     sm:text-[24px]
                     md:text-[27px]
@@ -128,7 +128,7 @@ export function WelcomeScreen() {
                     text-center
                     text-[13px]
                     leading-5
-                    text-[#777777]
+                    text-[var(--color-text-muted)]
                     sm:mt-2.5
                     sm:text-[14px]
                     sm:leading-relaxed
@@ -144,16 +144,16 @@ export function WelcomeScreen() {
                     items-center
                     gap-2
                     text-[12px]
-                    text-[#888888]
+                    text-[var(--color-text-tertiary)]
                     sm:mt-3
                     sm:text-[12px]
                   "
                 >
-                  <span className="h-px w-5 shrink-0 bg-[#dddddd]" />
+                  <span className="h-px w-5 shrink-0 bg-[var(--color-border)]" />
 
                   <BilingualInline tKey="welcome.tagline" />
 
-                  <span className="h-px w-5 shrink-0 bg-[#dddddd]" />
+                  <span className="h-px w-5 shrink-0 bg-[var(--color-border)]" />
                 </div>
               </div>
             </div>
@@ -197,7 +197,7 @@ export function WelcomeScreen() {
                     items-center
                     justify-center
                     rounded-full
-                    bg-[#FFF0F0]
+                    bg-[var(--color-icon-bg-soft)]
                     shadow-[0_4px_14px_rgba(255,59,59,0.10)]
                     sm:h-14
                     sm:w-14
@@ -206,7 +206,7 @@ export function WelcomeScreen() {
                   <Droplets
                     size={25}
                     strokeWidth={1.7}
-                    className="text-[#FF3B3B]"
+                    className="text-[var(--color-stat-red)]"
                   />
                 </div>
 
@@ -220,7 +220,7 @@ export function WelcomeScreen() {
                     text-[20px]
                     font-semibold
                     tracking-[-0.2px]
-                    text-[#222222]
+                    text-[var(--color-text-primary)]
                     sm:text-[23px]
                   "
                 />
@@ -235,7 +235,7 @@ export function WelcomeScreen() {
                     text-center
                     text-[13px]
                     leading-5
-                    text-[#888888]
+                    text-[var(--color-text-tertiary)]
                     sm:text-[14px]
                   "
                 />
@@ -253,7 +253,7 @@ export function WelcomeScreen() {
                       justify-center
                       gap-2.5
                       rounded-[8px]
-                      bg-[#FF3B3B]
+                      bg-[var(--color-stat-red)]
                       px-5
                       py-2.5
                       text-[14px]
@@ -263,11 +263,11 @@ export function WelcomeScreen() {
                       shadow-[0_5px_15px_rgba(255,59,59,0.18)]
                       transition-all
                       duration-200
-                      hover:bg-[#e93232]
+                      hover:bg-[var(--color-primary-hover-alt)]
                       hover:shadow-[0_7px_20px_rgba(255,59,59,0.25)]
                       focus:outline-none
                       focus:ring-2
-                      focus:ring-[#FF3B3B]
+                      focus:ring-[var(--color-stat-red)]
                       focus:ring-offset-2
                     "
                 >
@@ -293,29 +293,29 @@ export function WelcomeScreen() {
                     href="/super-admin/login"
                     className="
                       !inline-block
-                      !text-[#FF3B3B]
+                      !text-[var(--color-stat-red)]
                       px-2
                       py-2
                       text-[13px]
                       font-semibold
                       !underline
-                      !decoration-[#FF3B3B]
+                      !decoration-[var(--color-stat-red)]
                       decoration-2
                       underline-offset-4
                       transition-colors
                       duration-200
-                      hover:!text-[#FF3B3B]
-                      hover:!decoration-[#FF3B3B]
+                      hover:!text-[var(--color-stat-red)]
+                      hover:!decoration-[var(--color-stat-red)]
                       sm:text-[14px]
                     "
                     style={{
-                      color: "#FF3B3B",
-                      textDecorationColor: "#FF3B3B",
+                      color: "var(--color-stat-red)",
+                      textDecorationColor: "var(--color-stat-red)",
                     }}
                   >
                     <BilingualInline
                       tKey="welcome.superAdminLogin"
-                      enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-[#FF3B3B]/70 no-underline"
+                      enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-[var(--color-stat-red)]/70 no-underline"
                     />
                   </Link>
                 </div>
@@ -323,28 +323,28 @@ export function WelcomeScreen() {
                 {/* Secure access */}
                 <div className="mt-5 w-full sm:mt-6">
                   <div className="flex items-center gap-2.5">
-                    <div className="h-px flex-1 bg-[#eeeeee]" />
+                    <div className="h-px flex-1 bg-[var(--color-border-lighter)]" />
 
                     <Bilingual
                       tKey="welcome.secureAccess"
                       as="span"
-                      className="text-[11px] uppercase tracking-wider text-[#999999]"
+                      className="text-[11px] uppercase tracking-wider text-[var(--color-text-placeholder-alt)]"
                     />
 
-                    <div className="h-px flex-1 bg-[#eeeeee]" />
+                    <div className="h-px flex-1 bg-[var(--color-border-lighter)]" />
                   </div>
 
                   <div className="mt-2 flex items-center justify-center gap-1.5">
                     <ShieldCheck
                       size={14}
                       strokeWidth={1.7}
-                      className="shrink-0 text-[#FF3B3B]"
+                      className="shrink-0 text-[var(--color-stat-red)]"
                     />
 
                     <Bilingual
                       tKey="welcome.secureAccessDescription"
                       as="span"
-                      className="text-[12px] text-[#888888]"
+                      className="text-[12px] text-[var(--color-text-tertiary)]"
                     />
                   </div>
                 </div>

@@ -65,7 +65,7 @@ export function AvailabilityListScreen() {
                   transition-all
                   duration-200
                   hover:-translate-y-px
-                  hover:border-[#d9d9d9]
+                  hover:border-[var(--color-border)]
                   hover:shadow-[0_8px_20px_rgba(0,0,0,0.06)]
                 "
               >

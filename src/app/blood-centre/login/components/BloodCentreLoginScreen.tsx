@@ -317,13 +317,13 @@ export function BloodCentreLoginScreen() {
                 hover:underline
               "
               style={{
-                color: "#FF3B3B",
-                textDecorationColor: "#FF3B3B",
+                color: "var(--color-stat-red)",
+                textDecorationColor: "var(--color-stat-red)",
               }}
             >
               <BilingualInline
                 tKey="common.returnToWelcome"
-                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-[#FF3B3B]/70"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-[var(--color-stat-red)]/70"
               />
             </Link>
           </div>

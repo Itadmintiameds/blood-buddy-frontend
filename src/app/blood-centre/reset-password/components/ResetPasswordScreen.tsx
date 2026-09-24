@@ -305,7 +305,7 @@ export function ResetPasswordScreen() {
                     outline-none
                     transition-all
                     duration-200
-                    hover:border-[#c7c7c7]
+                    hover:border-[var(--color-border)]
                     focus:border-[var(--color-primary)]
                     focus:ring-2
                     focus:ring-[var(--color-primary)]/20

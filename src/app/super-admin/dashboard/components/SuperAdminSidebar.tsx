@@ -82,7 +82,7 @@ export function SuperAdminSidebar({
           w-[250px]
           flex-col
           border-r
-          border-[#ececec]
+          border-[var(--color-border-lighter)]
           bg-white
           shadow-[4px_0_25px_rgba(0,0,0,0.04)]
           transition-transform
@@ -99,7 +99,7 @@ export function SuperAdminSidebar({
             items-center
             justify-between
             border-b
-            border-[#eeeeee]
+            border-[var(--color-border-lighter)]
             px-6
           "
         >
@@ -134,9 +134,9 @@ export function SuperAdminSidebar({
               items-center
               justify-center
               rounded-lg
-              text-[#777]
+              text-[var(--color-text-muted)]
               transition
-              hover:bg-[#f7f7f7]
+              hover:bg-[var(--color-surface-hover)]
               lg:hidden
             "
             aria-label="Close menu"
@@ -154,15 +154,15 @@ export function SuperAdminSidebar({
               gap-2
               rounded-lg
               border
-              border-[#f1dddd]
-              bg-[#fff8f8]
+              border-[var(--primary-200)]
+              bg-[var(--color-icon-bg-soft)]
               px-3
               py-2.5
             "
           >
-            <div className="h-2 w-2 rounded-full bg-[#ff3b3f]" />
+            <div className="h-2 w-2 rounded-full bg-[var(--color-primary)]" />
 
-            <span className="text-[11px] font-semibold text-[#555]">
+            <span className="text-[11px] font-semibold text-[var(--color-text-secondary)]">
               Super Admin
             </span>
           </div>
@@ -178,7 +178,7 @@ export function SuperAdminSidebar({
               font-semibold
               uppercase
               tracking-[0.12em]
-              text-[#aaa]
+              text-[var(--color-text-placeholder)]
             "
           >
             Management
@@ -208,8 +208,8 @@ export function SuperAdminSidebar({
 
                     ${
                       active
-                        ? "bg-[#fff1f1] text-[#ff3b3f] shadow-[0_3px_12px_rgba(255,59,63,0.08)]"
-                        : "text-[#666] hover:bg-[#f8f8f8] hover:text-[#333]"
+                        ? "bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)] shadow-[0_3px_12px_rgba(255,59,63,0.08)]"
+                        : "text-[var(--color-text-quaternary)] hover:bg-[var(--color-surface-alt)] hover:text-[var(--color-text-body)]"
                     }
                   `}
                 >
@@ -223,7 +223,7 @@ export function SuperAdminSidebar({
                       duration-200
                       group-hover:scale-105
 
-                      ${active ? "text-[#ff3b3f]" : "text-[#888]"}
+                      ${active ? "text-[var(--color-primary)]" : "text-[var(--color-text-tertiary)]"}
                     `}
                   />
 
@@ -241,7 +241,7 @@ export function SuperAdminSidebar({
                     <ChevronRight
                       size={15}
                       strokeWidth={2}
-                      className="text-[#ff3b3f]"
+                      className="text-[var(--color-primary)]"
                     />
                   )}
                 </button>
@@ -251,8 +251,8 @@ export function SuperAdminSidebar({
         </nav>
 
         {/* FOOTER */}
-        <div className="border-t border-[#eeeeee] p-5">
-          <div className="text-[10px] leading-4 text-[#999]">
+        <div className="border-t border-[var(--color-border-lighter)] p-5">
+          <div className="text-[10px] leading-4 text-[var(--color-text-placeholder-alt)]">
             Blood Buddy
             <br />
             Super Admin Portal
@@ -278,12 +278,12 @@ export function SuperAdminMenuButton({ onClick }: { onClick: () => void }) {
         justify-center
         rounded-xl
         border
-        border-[#e7e7e7]
+        border-[var(--color-border-light)]
         bg-white
-        text-[#444]
+        text-[var(--color-text-body)]
         shadow-sm
         transition
-        hover:bg-[#fafafa]
+        hover:bg-[var(--color-surface-hover)]
         lg:hidden
       "
     >

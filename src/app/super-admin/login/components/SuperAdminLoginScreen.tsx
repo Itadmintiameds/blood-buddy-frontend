@@ -102,14 +102,14 @@ export function SuperAdminLoginScreen() {
       <BrandHeader />
 
       <section className="flex min-h-[620px] flex-col items-center bg-white px-5 pt-10">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF0F0] shadow-sm">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)] shadow-sm">
           <ShieldIcon />
         </div>
 
         <Bilingual
           tKey="superAdmin.loginTitle"
           as="h2"
-          className="mt-3 text-[17px] font-medium text-[#222]"
+          className="mt-3 text-[17px] font-medium text-[var(--color-text-primary)]"
         />
 
         <div className="mt-8 w-full max-w-[360px]">
@@ -163,7 +163,7 @@ export function SuperAdminLoginScreen() {
             <button
               type="button"
               onClick={() => router.push("/welcome")}
-              className="px-2 py-2 text-[#555] underline underline-offset-2 hover:text-[#FF3B3B]"
+              className="px-2 py-2 text-[var(--color-text-secondary)] underline underline-offset-2 hover:text-[var(--color-stat-red)]"
             >
               <BilingualInline tKey="superAdmin.backToWelcome" />
             </button>
@@ -198,7 +198,7 @@ function ShieldCheckIcon() {
       strokeWidth="1.7"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-[#FF3B3B]"
+      className="text-[var(--color-stat-red)]"
       aria-hidden="true"
     >
       <path d="M12 3 5 6v5c0 4.5 2.8 8.2 7 10 4.2-1.8 7-5.5 7-10V6l-7-3Z" />

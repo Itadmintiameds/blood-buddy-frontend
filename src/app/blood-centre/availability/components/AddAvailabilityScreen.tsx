@@ -326,7 +326,7 @@ export function AddAvailabilityScreen() {
                         ${
                           error && !bloodComponentId
                             ? "border-red-400"
-                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
+                            : "border-[var(--color-border)] hover:border-[var(--color-border)]"
                         }
 
                         focus:border-[var(--color-primary)]
@@ -421,7 +421,7 @@ export function AddAvailabilityScreen() {
                         ${
                           error && !bloodGroupId
                             ? "border-red-400"
-                            : "border-[var(--color-border)] hover:border-[#c7c7c7]"
+                            : "border-[var(--color-border)] hover:border-[var(--color-border)]"
                         }
 
                         focus:border-[var(--color-primary)]
@@ -521,7 +521,7 @@ export function AddAvailabilityScreen() {
                         transition-all
                         duration-200
                         placeholder:text-[var(--color-text-placeholder)]
-                        hover:border-[#c7c7c7]
+                        hover:border-[var(--color-border)]
                         focus:border-[var(--color-primary)]
                         focus:ring-2
                         focus:ring-[var(--color-primary)]/20

@@ -374,7 +374,7 @@ export function BloodCentreRegistrationForm() {
                       `
                       : `
                         border-[var(--color-border)]
-                        hover:border-[#c7c7c7]
+                        hover:border-[var(--color-border)]
                         focus:border-[var(--color-primary)]
                         focus:ring-2
                         focus:ring-[var(--color-primary)]/15
@@ -560,7 +560,7 @@ export function BloodCentreRegistrationForm() {
                     transition-all
                     duration-200
                     placeholder:text-[var(--color-input-placeholder)]
-                    hover:border-[#c7c7c7]
+                    hover:border-[var(--color-border)]
                     focus:border-[var(--color-primary)]
                     focus:ring-2
                     focus:ring-[var(--color-primary)]/15

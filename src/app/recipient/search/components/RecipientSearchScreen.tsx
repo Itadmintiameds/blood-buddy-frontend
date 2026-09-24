@@ -99,7 +99,7 @@ export function RecipientSearchScreen() {
                   setPincode(event.target.value.replace(/\D/g, "").slice(0, 6))
                 }
                 placeholder={searchPlaceholder}
-                className="h-11 w-full rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-3 text-[14px] text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[#c7c7c7] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                className="h-11 w-full rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-3 text-[14px] text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
               />
             </div>
 
@@ -138,7 +138,7 @@ export function RecipientSearchScreen() {
               className={`flex min-h-9 items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all duration-200 ${
                 tab === "bloodBanks"
                   ? "bg-[var(--color-primary)] text-white shadow-[0_4px_14px_rgba(255,59,63,0.22)]"
-                  : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[#c7c7c7]"
+                  : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-border)]"
               }`}
             >
               <BilingualInline
@@ -153,7 +153,7 @@ export function RecipientSearchScreen() {
               className={`flex min-h-9 items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all duration-200 ${
                 tab === "donors"
                   ? "bg-[var(--color-primary)] text-white shadow-[0_4px_14px_rgba(255,59,63,0.22)]"
-                  : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[#c7c7c7]"
+                  : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-border)]"
               }`}
             >
               <BilingualInline
@@ -275,7 +275,7 @@ export function RecipientSearchScreen() {
 
 function BloodGroupBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex min-w-[42px] shrink-0 items-center justify-center rounded-full border border-[#ffd5d5] bg-[#fff5f5] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
+    <span className="inline-flex min-w-[42px] shrink-0 items-center justify-center rounded-full border border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
       {value}
     </span>
   );
