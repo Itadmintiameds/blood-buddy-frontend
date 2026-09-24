@@ -55,8 +55,6 @@ export interface SuperAdminRegistrationResponse {
   message: string;
 }
 
-// export type UserRole = "SUPERADMIN" | "BLOOD_CENTRE";
-
 export type AuthUserType = "SUPER_ADMIN" | "BLOOD_CENTRE";
 
 export interface SuperAdminSession {
@@ -73,41 +71,9 @@ export interface SuperAdminSession {
 export interface BloodCentreSession {
   userType: "BLOOD_CENTRE";
   isLoggedIn: true;
-  email: string;
-  loggedInAt: string;
-}
-
-// export type AuthSession = SuperAdminSession | BloodCentreSession;
-
-export interface SuperAdminSession {
-  userType: "SUPER_ADMIN";
-
-  isLoggedIn: true;
-
   id: number;
-
-  name: string;
-
   email: string;
-
-  role: "SUPERADMIN";
-
   accessToken: string;
-
-  loggedInAt: string;
-}
-
-export interface BloodCentreSession {
-  userType: "BLOOD_CENTRE";
-
-  isLoggedIn: true;
-
-  id: number;
-
-  email: string;
-
-  accessToken: string;
-
   loggedInAt: string;
 }
 

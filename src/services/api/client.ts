@@ -183,7 +183,7 @@ export function getApiErrorMessage(
   }
 
   if (error.code === "ERR_NETWORK") {
-    return "Unable to connect to the server. Please make sure the Spring Boot backend is running on http://localhost:8080 and try again.";
+    return "Unable to connect to the server. Please make sure the backend is running and try again.";
   }
 
   if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
