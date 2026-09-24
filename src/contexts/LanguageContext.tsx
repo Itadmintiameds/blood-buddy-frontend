@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import type { Language } from "@/translations/translations";
+import { DEFAULT_LANGUAGE, isLanguage } from "@/config/languages";
 import { interpolate, resolveTranslation } from "@/utils/i18n";
 
 type LanguageContextType = {
@@ -24,14 +25,14 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 const STORAGE_KEY = "bloodBuddyLanguage";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("en");
+  const [language, setLanguageState] = useState<Language>(DEFAULT_LANGUAGE);
 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const savedLanguage = window.localStorage.getItem(STORAGE_KEY);
 
-    if (savedLanguage === "en" || savedLanguage === "kn") {
+    if (isLanguage(savedLanguage)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time restore of saved language from localStorage on mount
       setLanguageState(savedLanguage);
     }
@@ -50,7 +51,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    document.documentElement.lang = language === "kn" ? "kn" : "en";
+    document.documentElement.lang = language;
   }, [language]);
 
   if (!mounted) {

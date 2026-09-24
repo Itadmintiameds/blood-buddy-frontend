@@ -23,23 +23,23 @@ export function BrandHeader({
 
   return (
     <header className="w-full bg-white">
-      <div className="bg-[var(--color-primary)] px-3 py-2 sm:px-5 sm:py-2.5">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
+      <div className="bg-[var(--color-primary)] px-3 py-2.5 sm:px-5 sm:py-3">
+        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div
               className="
                 flex
-                h-[32px]
-                min-w-[74px]
+                h-11
+                min-w-[92px]
                 items-center
                 justify-center
                 rounded-full
                 bg-[var(--color-icon-bg-soft-2)]
-                px-3
-                sm:h-9
-                sm:min-w-[92px]
-                sm:px-4
-                gap-1
+                px-3.5
+                sm:h-13
+                sm:min-w-[116px]
+                sm:px-5
+                gap-1.5
               "
             >
               <Image
@@ -49,10 +49,10 @@ export function BrandHeader({
                 height={25}
                 priority
                 className="
-                  h-[23px]
+                  h-[32px]
                   w-auto
                   object-contain
-                  sm:h-[25px]
+                  sm:h-[38px]
                   mt-1
                 "
               />
@@ -60,10 +60,10 @@ export function BrandHeader({
               <span
                 className="
                   ml-0.5
-                  text-[13px]
+                  text-[16px]
                   font-normal
                   text-[#1769aa]
-                  sm:text-[14px]
+                  sm:text-[18px]
                 "
                 style={{
                   fontFamily: '"Times New Roman", Times, serif',
@@ -73,14 +73,14 @@ export function BrandHeader({
               </span>
             </div>
 
-            <div className="flex h-8 items-center rounded-full bg-[var(--color-icon-bg-soft-2)] px-2.5 sm:h-9 sm:px-3">
+            <div className="flex h-11 items-center rounded-full bg-[var(--color-icon-bg-soft-2)] px-3 sm:h-13 sm:px-4">
               <Image
                 src="/images/rotary-logo.png"
                 alt="Rotary"
                 width={90}
                 height={30}
                 priority
-                className="h-auto w-[60px] object-contain sm:w-[70px]"
+                className="h-auto w-[82px] object-contain sm:w-[98px]"
               />
             </div>
           </div>
@@ -91,7 +91,7 @@ export function BrandHeader({
 
       {title && (
         <div className="border-b border-[var(--color-border-lighter)] bg-white">
-          <div className="mx-auto flex max-w-7xl items-center gap-2.5 px-4 py-3.5 sm:px-6 sm:py-4">
+          <div className="mx-auto flex max-w-[1600px] items-center gap-2.5 px-4 py-3.5 sm:px-6 sm:py-4">
             {showBackButton && (
               <Link
                 href={backHref}

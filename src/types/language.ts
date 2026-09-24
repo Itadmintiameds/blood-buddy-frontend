@@ -1,1 +1,1 @@
-export type Language = "en" | "kn";
+export type { Language } from "@/config/languages";
