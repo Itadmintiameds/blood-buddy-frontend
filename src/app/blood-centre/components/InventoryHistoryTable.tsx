@@ -16,7 +16,7 @@ export function InventoryHistoryTable({
   entries: InventoryAuditResponse[];
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-[var(--color-border-light)]">
+    <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--color-border-light)]">
       <div className="min-w-[700px]">
         {/* Header */}
         <div

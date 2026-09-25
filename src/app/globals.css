@@ -613,6 +613,19 @@ textarea {
 }
 
 /* =========================
+   SCROLLBAR
+   Thin brand-red scrollbar via the standard properties. This uses the browser's
+   native scrollbar (which on Windows keeps its up/down arrow buttons — kept on
+   purpose here) and just recolours the thumb red. scrollbar-color inherits, so
+   setting it on the root applies to every scroll container.
+========================= */
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
+
+/* =========================
    SEMANTIC TYPE SCALE
    Shared vocabulary so screens stop
    inventing one-off text-[Npx] sizes.

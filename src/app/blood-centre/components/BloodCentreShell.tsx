@@ -32,9 +32,12 @@ export function BloodCentreShell({
 
   return (
     <BloodCentreAuthGuard>
-      <div className="min-h-screen bg-[var(--color-surface-alt)]">
-        {/* Full-width brand header — pinned to the top while the page scrolls */}
-        <div className="sticky top-0 z-40 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
+      {/* Fixed-height frame: the header stays put and only the region *below* it
+          scrolls, so the page scrollbar never runs alongside the header. Uses
+          100dvh so mobile browser chrome doesn't clip it. */}
+      <div className="flex h-[100dvh] flex-col overflow-hidden bg-[var(--color-surface-alt)]">
+        {/* Full-width brand header — fixed at the top, outside the scroll area */}
+        <div className="z-40 shrink-0 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
           <BrandHeader welcomeName={centreName} />
         </div>
 
@@ -43,50 +46,54 @@ export function BloodCentreShell({
           onClose={() => setMobileOpen(false)}
         />
 
-        <main className="lg:ml-[260px]">
-          {/* Page toolbar */}
-          <div
-            className={`border-b border-[var(--color-border-lighter)] bg-white ${
-              hasToolbarContent ? "" : "lg:hidden"
-            }`}
-          >
-            <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6 lg:px-8">
-              <button
-                type="button"
-                onClick={() => setMobileOpen(true)}
-                aria-label="Open menu"
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] shadow-sm transition hover:bg-[var(--color-surface-hover)] lg:hidden"
-              >
-                <Menu size={19} />
-              </button>
+        {/* Scroll region — everything below the header scrolls here, so the
+            scrollbar starts under the header rather than beside it. */}
+        <div className="flex-1 overflow-y-auto">
+          <main className="lg:ml-[260px]">
+            {/* Page toolbar */}
+            <div
+              className={`border-b border-[var(--color-border-lighter)] bg-white ${
+                hasToolbarContent ? "" : "lg:hidden"
+              }`}
+            >
+              <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6 lg:px-8">
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(true)}
+                  aria-label="Open menu"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] shadow-sm transition hover:bg-[var(--color-surface-hover)] lg:hidden"
+                >
+                  <Menu size={19} />
+                </button>
 
-              {title && (
-                <div className="min-w-0">
-                  <h1 className="truncate text-[16px] font-bold tracking-[-0.2px] text-[var(--color-text-primary)] sm:text-[18px]">
-                    {title}
-                  </h1>
+                {title && (
+                  <div className="min-w-0">
+                    <h1 className="truncate text-[16px] font-bold tracking-[-0.2px] text-[var(--color-text-primary)] sm:text-[18px]">
+                      {title}
+                    </h1>
 
-                  {subtitle && (
-                    <p className="mt-0.5 truncate text-[12px] text-[var(--color-text-muted)]">
-                      {subtitle}
-                    </p>
-                  )}
-                </div>
-              )}
+                    {subtitle && (
+                      <p className="mt-0.5 truncate text-[12px] text-[var(--color-text-muted)]">
+                        {subtitle}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-              {actions && (
-                <div className="ml-auto flex shrink-0 items-center gap-2">
-                  {actions}
-                </div>
-              )}
+                {actions && (
+                  <div className="ml-auto flex shrink-0 items-center gap-2">
+                    {actions}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Content */}
-          <section className="px-4 py-5 sm:px-6 sm:py-7 lg:px-8 2xl:px-12">
-            <div className="mx-auto w-full max-w-[1600px]">{children}</div>
-          </section>
-        </main>
+            {/* Content */}
+            <section className="px-4 py-5 sm:px-6 sm:py-7 lg:px-8 2xl:px-12">
+              <div className="mx-auto w-full max-w-[1600px]">{children}</div>
+            </section>
+          </main>
+        </div>
       </div>
     </BloodCentreAuthGuard>
   );
