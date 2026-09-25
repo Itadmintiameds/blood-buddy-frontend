@@ -50,6 +50,7 @@ export function formatTimestamp(iso: string): string {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true, // always show 12-hour time with AM/PM, regardless of locale
   });
 }
 
