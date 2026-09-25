@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, History, Loader2 } from "lucide-react";
 
 import { getApiErrorMessage } from "@/services/api/client";
@@ -120,22 +120,46 @@ export function BloodGroupHistoryScreen() {
     };
   }, []);
 
-  const groups =
-    masterGroups.length > 0
-      ? masterGroups
-      : Array.from(new Set(options.map((option) => option.group))).sort((a, b) =>
-          a.localeCompare(b),
-        );
+  // Only offer groups this centre actually holds inventory for — picking a
+  // group/component pair with no inventory item can't load any history. Master
+  // list order is used purely to sort; groups absent from inventory are dropped.
+  const groups = useMemo(() => {
+    const present = new Set(options.map((option) => option.group));
 
-  const components =
-    masterComponents.length > 0
-      ? masterComponents
-      : Array.from(new Set(options.map((option) => option.component))).sort(
-          (a, b) => a.localeCompare(b),
-        );
+    if (masterGroups.length > 0) {
+      return masterGroups.filter((group) => present.has(group));
+    }
+
+    return Array.from(present).sort((a, b) => a.localeCompare(b));
+  }, [options, masterGroups]);
+
+  // Components depend on the selected group: only show components that exist in
+  // inventory for that group, so every (group, component) pair is always valid.
+  const components = useMemo(() => {
+    const present = new Set(
+      options
+        .filter((option) => option.group === selectedGroup)
+        .map((option) => option.component),
+    );
+
+    if (masterComponents.length > 0) {
+      return masterComponents.filter((component) => present.has(component));
+    }
+
+    return Array.from(present).sort((a, b) => a.localeCompare(b));
+  }, [options, masterComponents, selectedGroup]);
+
+  // When the group changes, the previously-selected component may not exist for
+  // the new group — snap it back to the first available so the pair stays valid.
+  useEffect(() => {
+    if (components.length > 0 && !components.includes(selectedComponent)) {
+      setSelectedComponent(components[0]);
+    }
+  }, [components, selectedComponent]);
 
   // The (group, component) pair maps to an inventory item — that item's id
-  // drives the history lookup. Null when the pair has no inventory yet.
+  // drives the history lookup. Null only transiently while the component snaps
+  // to a valid value after a group change.
   const selectedId =
     options.find(
       (option) =>
