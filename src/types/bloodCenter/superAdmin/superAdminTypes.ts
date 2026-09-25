@@ -15,7 +15,16 @@ export interface SuperAdminBloodBank {
   category: string;
   address: string;
   city: string;
+  district: string;
+  pincode: string;
   phoneNumber: string;
+  email: string;
+  isActive: boolean;
+  licenceNumber?: string;
+  licenceExpiryDate?: string;
+  latitude?: number;
+  longitude?: number;
+  locationUrl?: string;
   availability: BloodAvailability[];
 }
 

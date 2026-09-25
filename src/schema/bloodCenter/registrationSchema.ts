@@ -119,6 +119,27 @@ export const bloodCentreRegistrationSchema = z
       .trim()
       .regex(/^\d{6}$/, "Pin Code must be exactly 6 digits")
       .refine((value) => !/^0+$/.test(value), "Enter a valid Pin Code"),
+    latitude: z
+      .string()
+      .trim()
+      .min(1, "Latitude is required")
+      .refine((value) => {
+        const parsed = Number(value);
+        return !Number.isNaN(parsed) && parsed >= -90 && parsed <= 90;
+      }, "Enter a valid latitude (-90 to 90)"),
+    longitude: z
+      .string()
+      .trim()
+      .min(1, "Longitude is required")
+      .refine((value) => {
+        const parsed = Number(value);
+        return !Number.isNaN(parsed) && parsed >= -180 && parsed <= 180;
+      }, "Enter a valid longitude (-180 to 180)"),
+    locationUrl: z
+      .string()
+      .trim()
+      .min(1, "Location URL is required")
+      .url("Enter a valid URL"),
   })
   .superRefine((data, ctx) => {
     if (data.password !== data.confirmPassword) {
@@ -146,5 +167,8 @@ export function normalizeBloodCentreForm(
     district: data.district.trim().replace(/\s+/g, " "),
     city: data.city.trim().replace(/\s+/g, " "),
     pinCode: data.pinCode.replace(/\D/g, "").slice(0, 6),
+    latitude: data.latitude.trim(),
+    longitude: data.longitude.trim(),
+    locationUrl: data.locationUrl.trim(),
   };
 }

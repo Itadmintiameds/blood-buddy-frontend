@@ -188,6 +188,17 @@ export const translations = {
       enterBloodCentreName: "Enter blood centre name",
       enterLicenseNumber: "Enter license number",
 
+      latitude: "Latitude",
+      longitude: "Longitude",
+      locationUrl: "Location URL",
+      enterLatitude: "e.g. 12.9716",
+      enterLongitude: "e.g. 77.5946",
+      enterLocationUrl: "Paste your Google Maps link",
+      useCurrentLocation: "Use my current location",
+      locatingYou: "Locating...",
+      unableToDetectLocation:
+        "Unable to detect your location. Enter it manually.",
+
       forgotPasswordTitle: "Forgot Password",
       forgotPasswordDescription:
         "Enter your registered email and we'll send you an OTP to reset your password",
@@ -269,10 +280,15 @@ export const translations = {
       bloodBankManagement: "Blood Bank Management",
       bloodBankManagementDescription:
         "Manage registered blood banks and blood availability.",
+      bloodBankNavSub: "Centres & availability",
+      donorNavSub: "Registered donors",
+      recipientNavSub: "Blood requests",
+
       bloodBanksStat: "Blood Banks",
       bloodTypesStat: "Blood Types",
       availableUnitsStat: "Available Units",
-      searchBloodCentre: "Search blood centre...",
+      lowStockCentresStat: "Low Stock Centres",
+      searchBloodCentre: "Search by name, city, pincode, email...",
       clearSearch: "Clear search",
       addBloodCentre: "Add Blood Centre",
       loadingBloodBanks: "Loading blood banks...",
@@ -281,6 +297,8 @@ export const translations = {
       sNo: "S.No",
       sNoValue: "S.No {index}",
       bloodBankColumn: "Blood Bank",
+      location: "Location",
+      bloodStockColumn: "Blood Stock",
       phone: "Phone",
       bloodTypesCount: "{count} blood types",
       actions: "Actions",
@@ -300,6 +318,9 @@ export const translations = {
       donorDetails: "Donor Details",
       donorDetailsDescription:
         "Manage registered blood donors and their donation information.",
+      totalDonorsStat: "Total Donors",
+      bloodGroupsStat: "Blood Groups",
+      recentDonationsStat: "Recent Donations (30d)",
       searchDonor: "Search donor...",
       donorName: "Donor Name",
       alternateMobileNo: "Alternate Mobile No",
@@ -311,6 +332,7 @@ export const translations = {
       loadingDonors: "Loading donors...",
       noDonorDataFound: "No donor data found",
       donorRecordsWillAppear: "Donor records will appear here.",
+      registeredOn: "Registered On",
 
       searchRecipient: "Search recipient...",
       hospital: "Hospital",
@@ -318,6 +340,9 @@ export const translations = {
       bloodRequests: "Blood Requests",
       bloodRequestsDescription:
         "Review recipient blood requests, matched centres, and record donations.",
+      totalRequestsStat: "Total Requests",
+      openRequestsStat: "Open Requests",
+      closedRequestsStat: "Closed Requests",
       phoneNumber: "Phone Number",
       requestedOn: "Requested On",
       status: "Status",
@@ -569,6 +594,17 @@ export const translations = {
       enterBloodCentreName: "ರಕ್ತ ಕೇಂದ್ರದ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
       enterLicenseNumber: "ಪರವಾನಗಿ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ",
 
+      latitude: "ಅಕ್ಷಾಂಶ",
+      longitude: "ರೇಖಾಂಶ",
+      locationUrl: "ಸ್ಥಳದ URL",
+      enterLatitude: "ಉದಾ. 12.9716",
+      enterLongitude: "ಉದಾ. 77.5946",
+      enterLocationUrl: "ನಿಮ್ಮ Google Maps ಲಿಂಕ್ ಅಂಟಿಸಿ",
+      useCurrentLocation: "ನನ್ನ ಪ್ರಸ್ತುತ ಸ್ಥಳವನ್ನು ಬಳಸಿ",
+      locatingYou: "ಪತ್ತೆ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+      unableToDetectLocation:
+        "ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪತ್ತೆಹಚ್ಚಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಹಸ್ತಚಾಲಿತವಾಗಿ ನಮೂದಿಸಿ.",
+
       forgotPasswordTitle: "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ",
       forgotPasswordDescription:
         "ನಿಮ್ಮ ನೋಂದಾಯಿತ ಇಮೇಲ್ ನಮೂದಿಸಿ, ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಲು ನಾವು OTP ಕಳುಹಿಸುತ್ತೇವೆ",
@@ -653,7 +689,12 @@ export const translations = {
       bloodBanksStat: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು",
       bloodTypesStat: "ರಕ್ತದ ಪ್ರಕಾರಗಳು",
       availableUnitsStat: "ಲಭ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
-      searchBloodCentre: "ರಕ್ತ ಕೇಂದ್ರವನ್ನು ಹುಡುಕಿ...",
+      bloodBankNavSub: "ಕೇಂದ್ರಗಳು ಮತ್ತು ಲಭ್ಯತೆ",
+      donorNavSub: "ನೋಂದಾಯಿತ ರಕ್ತದಾನಿಗಳು",
+      recipientNavSub: "ರಕ್ತದ ಮನವಿಗಳು",
+
+      lowStockCentresStat: "ಕಡಿಮೆ ಸ್ಟಾಕ್ ಕೇಂದ್ರಗಳು",
+      searchBloodCentre: "ಹೆಸರು, ನಗರ, ಪಿನ್‌ಕೋಡ್, ಇಮೇಲ್ ಮೂಲಕ ಹುಡುಕಿ...",
       clearSearch: "ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ",
       addBloodCentre: "ರಕ್ತ ಕೇಂದ್ರವನ್ನು ಸೇರಿಸಿ",
       loadingBloodBanks: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
@@ -662,6 +703,8 @@ export const translations = {
       sNo: "ಕ್ರ.ಸಂ",
       sNoValue: "ಕ್ರ.ಸಂ {index}",
       bloodBankColumn: "ರಕ್ತ ಬ್ಯಾಂಕ್",
+      location: "ಸ್ಥಳ",
+      bloodStockColumn: "ರಕ್ತ ಸ್ಟಾಕ್",
       phone: "ಫೋನ್",
       bloodTypesCount: "{count} ರಕ್ತದ ಪ್ರಕಾರಗಳು",
       actions: "ಕ್ರಮಗಳು",
@@ -681,6 +724,9 @@ export const translations = {
       donorDetails: "ರಕ್ತದಾನಿ ವಿವರಗಳು",
       donorDetailsDescription:
         "ನೋಂದಾಯಿತ ರಕ್ತದಾನಿಗಳು ಮತ್ತು ಅವರ ದಾನದ ಮಾಹಿತಿಯನ್ನು ನಿರ್ವಹಿಸಿ.",
+      totalDonorsStat: "ಒಟ್ಟು ರಕ್ತದಾನಿಗಳು",
+      bloodGroupsStat: "ರಕ್ತದ ಗುಂಪುಗಳು",
+      recentDonationsStat: "ಇತ್ತೀಚಿನ ದಾನಗಳು (30 ದಿನ)",
       searchDonor: "ರಕ್ತದಾನಿಯನ್ನು ಹುಡುಕಿ...",
       donorName: "ರಕ್ತದಾನಿಯ ಹೆಸರು",
       alternateMobileNo: "ಪರ್ಯಾಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
@@ -692,6 +738,7 @@ export const translations = {
       loadingDonors: "ರಕ್ತದಾನಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
       noDonorDataFound: "ಯಾವುದೇ ರಕ್ತದಾನಿ ಮಾಹಿತಿ ಕಂಡುಬಂದಿಲ್ಲ",
       donorRecordsWillAppear: "ರಕ್ತದಾನಿ ದಾಖಲೆಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.",
+      registeredOn: "ನೋಂದಣಿ ದಿನಾಂಕ",
 
       searchRecipient: "ಸ್ವೀಕರಿಸುವವರನ್ನು ಹುಡುಕಿ...",
       hospital: "ಆಸ್ಪತ್ರೆ",
@@ -699,6 +746,9 @@ export const translations = {
       bloodRequests: "ರಕ್ತದ ಮನವಿಗಳು",
       bloodRequestsDescription:
         "ಸ್ವೀಕರಿಸುವವರ ರಕ್ತದ ಮನವಿಗಳು, ಹೊಂದಾಣಿಕೆಯಾದ ಕೇಂದ್ರಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ದಾನಗಳನ್ನು ದಾಖಲಿಸಿ.",
+      totalRequestsStat: "ಒಟ್ಟು ಮನವಿಗಳು",
+      openRequestsStat: "ಬಾಕಿ ಇರುವ ಮನವಿಗಳು",
+      closedRequestsStat: "ಮುಚ್ಚಲಾದ ಮನವಿಗಳು",
       phoneNumber: "ಫೋನ್ ಸಂಖ್ಯೆ",
       requestedOn: "ಮನವಿ ಸಲ್ಲಿಸಿದ ದಿನಾಂಕ",
       status: "ಸ್ಥಿತಿ",

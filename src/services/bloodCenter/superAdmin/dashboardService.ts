@@ -19,6 +19,11 @@ interface BloodCentreResponse {
   city: string;
   pincode: string;
   isActive: boolean;
+  bloodCentreLicenceNumber?: string | null;
+  licenceExpiryDate?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  locationUrl?: string | null;
 }
 
 interface InventoryResponse {
@@ -59,7 +64,16 @@ export async function getSuperAdminBloodBanks(): Promise<
         category: centre.bloodBankCategory ?? "—",
         address: centre.address ?? "—",
         city: centre.city,
+        district: centre.district,
+        pincode: centre.pincode,
         phoneNumber: centre.mobileNumber,
+        email: centre.email,
+        isActive: centre.isActive,
+        licenceNumber: centre.bloodCentreLicenceNumber ?? undefined,
+        licenceExpiryDate: centre.licenceExpiryDate ?? undefined,
+        latitude: centre.latitude ?? undefined,
+        longitude: centre.longitude ?? undefined,
+        locationUrl: centre.locationUrl ?? undefined,
         availability: inventory.map((item) => ({
           id: item.inventoryId,
           bloodGroupId: item.bloodGroupId,

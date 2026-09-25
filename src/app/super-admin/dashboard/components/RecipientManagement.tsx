@@ -4,10 +4,13 @@ import {
   AlertCircle,
   CalendarDays,
   CheckCircle2,
+  ChevronDown,
   Droplets,
   Loader2,
   MapPin,
   Phone,
+  Plus,
+  RefreshCw,
   Search,
   UserRound,
   Users,
@@ -15,6 +18,8 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { useForm, type Resolver } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   BloodRequestStatus,
   SuperAdminBloodRequestDetail,
@@ -26,12 +31,45 @@ import {
   getSuperAdminBloodRequests,
   recordBloodRequestDonation,
 } from "@/services/bloodCenter/superAdmin/bloodRequestService";
+import { submitBloodRequest } from "@/services/recipient/recipientRequestService";
+import {
+  getBloodComponents,
+  getBloodGroups,
+} from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
+import { useExitTransition } from "@/app/hooks/useExitTransition";
+import {
+  recipientRequestSchema,
+  normalizeRecipientForm,
+} from "@/schema/recipient/recipientRequestSchema";
+import type { RecipientRequestInput } from "@/types/recipient/receipientTypes";
+import type {
+  MasterBloodComponent,
+  MasterBloodGroup,
+} from "@/types/master.types";
+import { StatTile } from "@/app/components/ui/StatTile";
+import { FormInput } from "@/app/components/ui/FormInput";
 import {
   Bilingual,
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+
+const ALL = "all";
+
+const emptyRecipientForm: RecipientRequestInput = {
+  patientName: "",
+  mobileNumber: "",
+  bloodGroupId: "",
+  bloodComponentId: "",
+  requiredUnits: "",
+  dob: "",
+  hospitalName: "",
+  address: "",
+  district: "",
+  city: "",
+  pincode: "",
+};
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -52,9 +90,17 @@ export function RecipientManagement() {
 
   const [requests, setRequests] = useState<SuperAdminBloodRequestSummary[]>([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>(ALL);
+  const [reloadToken, setReloadToken] = useState(0);
+  const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [openRequestId, setOpenRequestId] = useState<number | null>(null);
+  const [logRequestOpen, setLogRequestOpen] = useState(false);
+  const [masterGroups, setMasterGroups] = useState<MasterBloodGroup[]>([]);
+  const [masterComponents, setMasterComponents] = useState<
+    MasterBloodComponent[]
+  >([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,65 +134,196 @@ export function RecipientManagement() {
     return () => {
       cancelled = true;
     };
+  }, [reloadToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([getBloodGroups(), getBloodComponents()])
+      .then(([groups, components]) => {
+        if (!cancelled) {
+          setMasterGroups(groups);
+          setMasterComponents(components);
+        }
+      })
+      .catch(() => {
+        // Non-critical: the Log Request form still works without prefilled
+        // master lists (its own inputs would just have no options yet).
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+  const totalRequests = requests.length;
+
+  const openRequestCount = requests.filter(
+    (request) =>
+      request.status === "CENTRES_FOUND" || request.status === "NO_CENTRES_FOUND",
+  ).length;
+
+  const closedRequestCount = requests.filter(
+    (request) => request.status === "CLOSED" || request.status === "CANCELLED",
+  ).length;
+
+  const isFiltering = search.trim().length > 0 || statusFilter !== ALL;
+
+  const clearFilters = () => {
+    setSearch("");
+    setStatusFilter(ALL);
+  };
+
+  const handleRefresh = () => {
+    setSpinning(true);
+    clearFilters();
+    setReloadToken((token) => token + 1);
+    window.setTimeout(() => setSpinning(false), 500);
+  };
 
   const filteredRequests = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    if (!query) {
-      return requests;
-    }
-
     return requests.filter((request) => {
-      return (
+      const matchesQuery =
+        !query ||
         request?.recipientName.toLowerCase().includes(query) ||
         request?.mobileNumber.includes(query) ||
         request?.bloodGroup.toLowerCase().includes(query) ||
         request?.bloodType.toLowerCase().includes(query) ||
-        request?.city.toLowerCase().includes(query)
-      );
+        request?.city.toLowerCase().includes(query);
+
+      const matchesStatus =
+        statusFilter === ALL || request.status === statusFilter;
+
+      return matchesQuery && matchesStatus;
     });
-  }, [requests, search]);
+  }, [requests, search, statusFilter]);
 
   return (
     <div className="space-y-6">
-      {/* Page Title */}
-      <div>
-        <Bilingual
-          tKey="superAdmin.management"
-          as="p"
-          className="text-[12px] font-medium text-[var(--color-text-placeholder-alt)]"
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatTile
+          icon={Users}
+          value={String(totalRequests)}
+          label={
+            <Bilingual
+              tKey="superAdmin.totalRequestsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-red)"
+          index={0}
         />
 
-        <Bilingual
-          tKey="superAdmin.bloodRequests"
-          as="h2"
-          className="mt-1 text-[22px] font-bold tracking-[-0.01em] text-[var(--color-text-primary)]"
+        <StatTile
+          icon={AlertCircle}
+          value={String(openRequestCount)}
+          label={
+            <Bilingual
+              tKey="superAdmin.openRequestsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-yellow)"
+          index={1}
         />
 
-        <Bilingual
-          tKey="superAdmin.bloodRequestsDescription"
-          as="p"
-          className="mt-1 text-[13px] text-[var(--color-text-placeholder-alt)]"
+        <StatTile
+          icon={CheckCircle2}
+          value={String(closedRequestCount)}
+          label={
+            <Bilingual
+              tKey="superAdmin.closedRequestsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-green)"
+          index={2}
         />
       </div>
 
-      {/* Search */}
+      {/* Search + filters */}
       <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
-        <div className="relative w-full max-w-[480px]">
-          <Search
-            size={18}
-            strokeWidth={1.7}
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder-alt)]"
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          <div className="relative w-full sm:max-w-[360px]">
+            <Search
+              size={18}
+              strokeWidth={1.7}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder-alt)]"
+            />
 
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={searchPlaceholder}
-            className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
-          />
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={searchPlaceholder}
+              className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+            />
+          </div>
+
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              aria-label="Filter by status"
+              className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                statusFilter !== ALL
+                  ? "border-[var(--primary-200)] font-medium"
+                  : "border-[var(--color-border-light)]"
+              }`}
+            >
+              <option value={ALL}>All statuses</option>
+              <option value="CENTRES_FOUND">Matched</option>
+              <option value="NO_CENTRES_FOUND">No Centres</option>
+              <option value="CLOSED">Closed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+
+            <ChevronDown
+              size={15}
+              strokeWidth={1.8}
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Refresh and clear filters"
+            title="Refresh &amp; clear filters"
+          >
+            <RefreshCw
+              size={15}
+              className={
+                spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
+              }
+            />
+          </button>
+
+          {isFiltering && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+            >
+              Clear
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setLogRequestOpen(true)}
+            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
+          >
+            <Plus size={16} className="shrink-0" />
+            Log Request
+          </button>
         </div>
       </div>
 
@@ -200,7 +377,8 @@ export function RecipientManagement() {
               filteredRequests.map((request, index) => (
                 <tr
                   key={request.id}
-                  className="border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
+                  onClick={() => setOpenRequestId(request.id)}
+                  className="cursor-pointer border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
                 >
                   <TableCell>{index + 1}</TableCell>
 
@@ -244,7 +422,10 @@ export function RecipientManagement() {
                   <TableCell>
                     <button
                       type="button"
-                      onClick={() => setOpenRequestId(request.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setOpenRequestId(request.id);
+                      }}
                       className="
                         rounded-lg
                         border
@@ -289,7 +470,8 @@ export function RecipientManagement() {
           filteredRequests.map((request, index) => (
             <div
               key={request.id}
-              className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
+              onClick={() => setOpenRequestId(request.id)}
+              className="cursor-pointer rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)] transition-colors duration-150 active:bg-[var(--color-icon-bg-soft)]"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -345,7 +527,10 @@ export function RecipientManagement() {
 
                 <button
                   type="button"
-                  onClick={() => setOpenRequestId(request.id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setOpenRequestId(request.id);
+                  }}
                   className="
                     rounded-lg
                     border
@@ -390,6 +575,344 @@ export function RecipientManagement() {
           }}
         />
       )}
+
+      {logRequestOpen && (
+        <LogRequestModal
+          bloodGroups={masterGroups}
+          bloodComponents={masterComponents}
+          onClose={() => setLogRequestOpen(false)}
+          onSaved={() => {
+            setLogRequestOpen(false);
+            setReloadToken((token) => token + 1);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ============================================================
+   LOG REQUEST MODAL — logs a request on behalf of a caller via the same
+   public endpoint the recipient self-service form uses
+   (POST /public/blood-requests).
+============================================================ */
+
+function LogRequestModal({
+  bloodGroups,
+  bloodComponents,
+  onClose,
+  onSaved,
+}: {
+  bloodGroups: MasterBloodGroup[];
+  bloodComponents: MasterBloodComponent[];
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { rendered, visible } = useExitTransition(true, 200);
+  const closeLabel = useBilingualText("common.close");
+  const enterFullName = useBilingualText("recipient.enterPatientName");
+  const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
+  const enterAddress = useBilingualText("common.enterAddress");
+  const enterDistrict = useBilingualText("common.enterDistrict");
+  const enterCity = useBilingualText("common.enterCity");
+  const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
+
+  const [submitError, setSubmitError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RecipientRequestInput>({
+    resolver: zodResolver(
+      recipientRequestSchema,
+    ) as Resolver<RecipientRequestInput>,
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    defaultValues: emptyRecipientForm,
+  });
+
+  const onSubmit = handleSubmit(async (values) => {
+    setSubmitError("");
+
+    const normalized = normalizeRecipientForm(values);
+
+    try {
+      await submitBloodRequest({
+        recipientName: normalized.patientName,
+        mobileNumber: normalized.mobileNumber,
+        bloodGroupId: Number(normalized.bloodGroupId),
+        bloodComponentId: Number(normalized.bloodComponentId),
+        requiredUnits: Number(normalized.requiredUnits),
+        dob: normalized.dob,
+        hospitalName: normalized.hospitalName || undefined,
+        address: normalized.address || undefined,
+        city: normalized.city,
+        district: normalized.district,
+        pincode: normalized.pincode,
+      });
+
+      onSaved();
+    } catch (err) {
+      setSubmitError(getApiErrorMessage(err, "Unable to log this request."));
+    }
+  });
+
+  if (!rendered) {
+    return null;
+  }
+
+  return (
+    <div
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !isSubmitting) {
+          onClose();
+        }
+      }}
+      className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md transition-opacity duration-200 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="log-request-title"
+    >
+      <div
+        className={`motion-surface flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 ${
+          visible
+            ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+            : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+        }`}
+      >
+        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
+                <Droplets size={17} className="text-[var(--color-primary)]" />
+              </div>
+
+              <div className="min-w-0">
+                <h2
+                  id="log-request-title"
+                  className="text-[14px] font-bold text-[var(--color-text-primary)]"
+                >
+                  Log Request
+                </h2>
+                <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
+                  Submit a blood request on a caller&apos;s behalf
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label={closeLabel}
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <FormInput
+                icon={UserRound}
+                label="Patient Name"
+                required
+                placeholder={enterFullName}
+                error={errors.patientName?.message}
+                {...register("patientName")}
+              />
+            </div>
+
+            <FormInput
+              icon={Phone}
+              label="Mobile Number"
+              required
+              inputMode="numeric"
+              maxLength={10}
+              placeholder={enter10DigitMobile}
+              error={errors.mobileNumber?.message}
+              {...register("mobileNumber")}
+            />
+
+            <FormInput
+              icon={CalendarDays}
+              label="Date of Birth"
+              required
+              type="date"
+              error={errors.dob?.message}
+              {...register("dob")}
+            />
+
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]">
+                Blood Group<span className="text-red-500"> *</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  {...register("bloodGroupId", { valueAsNumber: true })}
+                  className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
+                    errors.bloodGroupId
+                      ? "border-red-400"
+                      : "border-[var(--color-border)]"
+                  } focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20`}
+                >
+                  <option value="">Select blood group</option>
+                  {bloodGroups.map((group) => (
+                    <option key={group.bloodGroupId} value={group.bloodGroupId}>
+                      {group.bloodGroupName}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)]"
+                />
+              </div>
+
+              {errors.bloodGroupId && (
+                <p className="mt-1 text-[12px] text-red-500">
+                  {errors.bloodGroupId.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]">
+                Blood Type<span className="text-red-500"> *</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  {...register("bloodComponentId", { valueAsNumber: true })}
+                  className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
+                    errors.bloodComponentId
+                      ? "border-red-400"
+                      : "border-[var(--color-border)]"
+                  } focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20`}
+                >
+                  <option value="">Select blood type</option>
+                  {bloodComponents.map((component) => (
+                    <option
+                      key={component.bloodComponentId}
+                      value={component.bloodComponentId}
+                    >
+                      {component.bloodComponentName}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)]"
+                />
+              </div>
+
+              {errors.bloodComponentId && (
+                <p className="mt-1 text-[12px] text-red-500">
+                  {errors.bloodComponentId.message}
+                </p>
+              )}
+            </div>
+
+            <FormInput
+              icon={Droplets}
+              label="Units Required"
+              required
+              inputMode="numeric"
+              placeholder="e.g. 2"
+              error={errors.requiredUnits?.message}
+              {...register("requiredUnits")}
+            />
+
+            <FormInput
+              icon={MapPin}
+              label="Hospital Name (optional)"
+              error={errors.hospitalName?.message}
+              {...register("hospitalName")}
+            />
+
+            <div className="sm:col-span-2">
+              <FormInput
+                icon={MapPin}
+                label="Address (optional)"
+                placeholder={enterAddress}
+                error={errors.address?.message}
+                {...register("address")}
+              />
+            </div>
+
+            <FormInput
+              icon={MapPin}
+              label="District"
+              required
+              placeholder={enterDistrict}
+              error={errors.district?.message}
+              {...register("district")}
+            />
+
+            <FormInput
+              icon={MapPin}
+              label="City"
+              required
+              placeholder={enterCity}
+              error={errors.city?.message}
+              {...register("city")}
+            />
+
+            <FormInput
+              icon={MapPin}
+              label="Pincode"
+              required
+              inputMode="numeric"
+              maxLength={6}
+              placeholder={enter6DigitPinCode}
+              error={errors.pincode?.message}
+              {...register("pincode")}
+            />
+
+            {submitError && (
+              <p role="alert" className="sm:col-span-2 text-[12px] text-red-500">
+                {submitError}
+              </p>
+            )}
+          </div>
+
+          <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-5 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="min-h-[40px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <BilingualInline tKey="common.cancel" />
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all hover:bg-[var(--color-dashboard-cta-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSubmitting && (
+                <Loader2 size={14} className="animate-spin shrink-0" />
+              )}
+              {isSubmitting ? (
+                <BilingualInline tKey="common.saving" />
+              ) : (
+                "Log Request"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -498,6 +1021,11 @@ function BloodRequestDetailModal({
 
   return (
     <div
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !closing) {
+          onClose();
+        }
+      }}
       className="
         motion-scrim
         fixed
@@ -599,13 +1127,11 @@ function BloodRequestDetailModal({
                 <InfoTile
                   tKey="common.address"
                   value={
-                    [
-                      detail.address,
-                      detail.city,
-                      detail.district,
-                      detail.pincode,
-                    ]
-                      .filter(Boolean)
+                    [detail.address, detail.city, detail.district, detail.pincode]
+                      .filter(
+                        (part, index, all) =>
+                          Boolean(part) && all.indexOf(part) === index,
+                      )
                       .join(", ") || "—"
                   }
                 />

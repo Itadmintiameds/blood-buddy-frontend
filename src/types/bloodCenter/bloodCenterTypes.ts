@@ -17,6 +17,9 @@ export interface BloodCentreRegistrationInput {
   district: string;
   city: string;
   pinCode: string;
+  latitude: string;
+  longitude: string;
+  locationUrl: string;
 }
 
 // Sent to POST /public/blood-centres/register (bloodbuddy.backend.dto.centre.BloodCentreRegistrationRequest).
@@ -32,6 +35,9 @@ export interface BloodCentreRegistrationPayload {
   district: string;
   city: string;
   pincode: string;
+  latitude: number;
+  longitude: number;
+  locationUrl: string;
 }
 
 export interface BloodCentreRegistrationResponse {

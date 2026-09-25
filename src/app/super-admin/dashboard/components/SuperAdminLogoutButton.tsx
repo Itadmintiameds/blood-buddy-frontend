@@ -36,27 +36,34 @@ export function SuperAdminLogoutButton() {
       disabled={loading}
       className="
         flex
+        min-h-9
         w-full
         items-center
-        gap-3
+        justify-center
+        gap-1.5
         rounded-lg
-        px-4
-        py-3
-        text-[13px]
+        border
+        border-[var(--color-border)]
+        bg-white
+        px-3.5
+        py-1.5
+        text-[12px]
         font-medium
-        text-[var(--color-text-quaternary)]
-        transition-colors
+        text-[var(--color-text-secondary)]
+        transition-all
         duration-200
-        hover:bg-[var(--color-icon-bg-soft)]
+        hover:border-[var(--color-primary)]
         hover:text-[var(--color-primary)]
         focus-visible:outline-none
         focus-visible:ring-2
         focus-visible:ring-[var(--color-primary)]
+        focus-visible:ring-offset-2
         disabled:cursor-not-allowed
         disabled:opacity-60
+        sm:text-[13px]
       "
     >
-      <LogOut size={18} strokeWidth={1.8} className="shrink-0" />
+      <LogOut size={13} strokeWidth={1.8} className="shrink-0" />
 
       <BilingualInline tKey={loading ? "common.loggingOut" : "common.logout"} />
     </button>

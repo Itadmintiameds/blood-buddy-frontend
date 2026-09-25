@@ -7,6 +7,8 @@ import {
   CheckCircle2,
   ChevronDown,
   FileCheck2,
+  Link2,
+  LocateFixed,
   LockKeyhole,
   Mail,
   MapPin,
@@ -56,6 +58,9 @@ const defaultValues: BloodCentreRegistrationInput = {
   district: "",
   city: "",
   pinCode: "",
+  latitude: "",
+  longitude: "",
+  locationUrl: "",
 };
 
 type OtpStatus = "idle" | "sending" | "sent" | "verifying" | "verified";
@@ -76,6 +81,16 @@ export function BloodCentreRegistrationForm() {
   const enterDistrict = useBilingualText("common.enterDistrict");
   const enterCity = useBilingualText("common.enterCity");
   const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
+  const enterLatitude = useBilingualText("bloodCentre.enterLatitude");
+  const enterLongitude = useBilingualText("bloodCentre.enterLongitude");
+  const enterLocationUrl = useBilingualText("bloodCentre.enterLocationUrl");
+  const useCurrentLocationText = useBilingualText(
+    "bloodCentre.useCurrentLocation",
+  );
+  const locatingYouText = useBilingualText("bloodCentre.locatingYou");
+  const unableToDetectLocationText = useBilingualText(
+    "bloodCentre.unableToDetectLocation",
+  );
   const selectCategoryText = useBilingualText("bloodCentre.selectCategory");
   const categoryGovernmentText = useBilingualText(
     "bloodCentre.categoryGovernment",
@@ -106,11 +121,15 @@ export function BloodCentreRegistrationForm() {
     { count: resendSeconds },
   );
 
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState("");
+
   const {
     register,
     handleSubmit,
     trigger,
     getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<BloodCentreRegistrationInput>({
     resolver: zodResolver(
@@ -211,6 +230,37 @@ export function BloodCentreRegistrationForm() {
     }
   };
 
+  const handleUseCurrentLocation = () => {
+    if (!("geolocation" in navigator)) {
+      setLocationError(unableToDetectLocationText);
+      return;
+    }
+
+    setLocationError("");
+    setLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        setValue("latitude", latitude.toFixed(6), { shouldValidate: true });
+        setValue("longitude", longitude.toFixed(6), { shouldValidate: true });
+        setValue(
+          "locationUrl",
+          `https://www.google.com/maps?q=${latitude},${longitude}`,
+          { shouldValidate: true },
+        );
+
+        setLocating(false);
+      },
+      () => {
+        setLocationError(unableToDetectLocationText);
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
   const onSubmit = async (rawData: BloodCentreRegistrationInput) => {
     setSubmitError(null);
 
@@ -235,6 +285,9 @@ export function BloodCentreRegistrationForm() {
       district: data.district,
       city: data.city,
       pincode: data.pinCode,
+      latitude: Number(data.latitude),
+      longitude: Number(data.longitude),
+      locationUrl: data.locationUrl,
     };
 
     try {
@@ -709,6 +762,82 @@ export function BloodCentreRegistrationForm() {
             })}
             error={errors.pinCode?.message}
           />
+
+          <div className="md:col-span-2">
+            <button
+              type="button"
+              onClick={handleUseCurrentLocation}
+              disabled={locating}
+              className="
+                flex
+                items-center
+                gap-2
+                rounded-lg
+                border
+                border-[var(--color-border)]
+                bg-white
+                px-3.5
+                py-2
+                text-[13px]
+                font-semibold
+                text-[var(--color-primary)]
+                transition-colors
+                duration-200
+                hover:bg-[var(--color-icon-bg-soft)]
+                disabled:cursor-not-allowed
+                disabled:opacity-60
+              "
+            >
+              <LocateFixed size={16} strokeWidth={1.8} className="shrink-0" />
+              {locating ? locatingYouText : useCurrentLocationText}
+            </button>
+
+            {locationError && (
+              <p
+                role="alert"
+                className="mt-1.5 px-1 text-[12px] leading-4 text-red-500"
+              >
+                {locationError}
+              </p>
+            )}
+          </div>
+
+          <FormInput
+            id="latitude"
+            icon={MapPin}
+            label={<Bilingual tKey="bloodCentre.latitude" as="span" />}
+            required
+            placeholder={enterLatitude}
+            inputMode="decimal"
+            autoComplete="off"
+            {...register("latitude")}
+            error={errors.latitude?.message}
+          />
+
+          <FormInput
+            id="longitude"
+            icon={MapPin}
+            label={<Bilingual tKey="bloodCentre.longitude" as="span" />}
+            required
+            placeholder={enterLongitude}
+            inputMode="decimal"
+            autoComplete="off"
+            {...register("longitude")}
+            error={errors.longitude?.message}
+          />
+
+          <div className="md:col-span-2">
+            <FormInput
+              id="locationUrl"
+              icon={Link2}
+              label={<Bilingual tKey="bloodCentre.locationUrl" as="span" />}
+              required
+              placeholder={enterLocationUrl}
+              autoComplete="off"
+              {...register("locationUrl")}
+              error={errors.locationUrl?.message}
+            />
+          </div>
         </div>
 
         {submitError && (

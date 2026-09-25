@@ -67,6 +67,11 @@ export function InventoryHistoryModal({
 
   return (
     <div
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"

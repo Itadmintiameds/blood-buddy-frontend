@@ -3,9 +3,10 @@
 import type { ReactNode } from "react";
 import type { Droplets } from "lucide-react";
 
-// Solid-colour KPI card used across the Blood Centre screens. Optionally
-// interactive (renders as a button) so a card can double as a filter toggle.
-export function BloodCentreStat({
+// Solid-colour KPI card shared by the Blood Centre and Super Admin
+// dashboards. Optionally interactive (renders as a button) so a card can
+// double as a filter toggle.
+export function StatTile({
   icon: Icon,
   value,
   label,

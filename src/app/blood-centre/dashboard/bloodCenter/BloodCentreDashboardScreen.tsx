@@ -36,7 +36,7 @@ import {
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
-import { BloodCentreStat } from "@/app/blood-centre/components/BloodCentreStat";
+import { StatTile } from "@/app/components/ui/StatTile";
 import { AdjustStockModal } from "@/app/blood-centre/components/AdjustStockModal";
 import { AddStockModal } from "@/app/blood-centre/components/AddStockModal";
 import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
@@ -205,7 +205,7 @@ export function BloodCentreDashboardScreen() {
     <>
       {/* STAT CARDS */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <BloodCentreStat
+        <StatTile
           icon={Droplets}
           value={String(totalGroupsListed)}
           label={
@@ -219,7 +219,7 @@ export function BloodCentreDashboardScreen() {
           index={0}
         />
 
-        <BloodCentreStat
+        <StatTile
           icon={Package}
           value={String(totalUnits)}
           label={
@@ -233,7 +233,7 @@ export function BloodCentreDashboardScreen() {
           index={1}
         />
 
-        <BloodCentreStat
+        <StatTile
           icon={AlertTriangle}
           value={String(lowStockCount)}
           label={

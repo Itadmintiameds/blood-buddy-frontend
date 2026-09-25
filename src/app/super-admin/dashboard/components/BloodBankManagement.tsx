@@ -3,30 +3,64 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
+  AlertTriangle,
   Building2,
+  CalendarDays,
   ChevronDown,
-  ChevronRight,
+  ChevronLeft,
   Droplets,
+  FileCheck2,
+  Hash,
+  History,
+  Link2,
+  LocateFixed,
   Loader2,
+  Mail,
+  MapPin,
   Pencil,
+  Phone,
   Plus,
   PlusCircle,
+  RefreshCw,
   Search,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { SuperAdminBloodBank } from "@/types/bloodCenter/superAdmin/superAdminTypes";
+import type {
+  BloodAvailability,
+  SuperAdminBloodBank,
+} from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
   addStockToCentre,
   getSuperAdminBloodBanks,
   updateSuperAdminBloodUnits,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
+import { StatTile } from "@/app/components/ui/StatTile";
+import type { StockLevel } from "@/utils/bloodStock";
+import { getStockLevel, rowAccent, unitBadgeClass } from "@/utils/bloodStock";
 import {
   Bilingual,
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+
+const ALL = "all";
+
+function formatDate(value: string | null | undefined): string {
+  if (!value) {
+    return "—";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("en-GB");
+}
 
 export default function BloodBankManagement() {
   const router = useRouter();
@@ -34,8 +68,13 @@ export default function BloodBankManagement() {
   const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
 
   const [bloodBanks, setBloodBanks] = useState<SuperAdminBloodBank[]>([]);
-  const [expandedBankId, setExpandedBankId] = useState<number | null>(null);
+  const [activeBankId, setActiveBankId] = useState<number | null>(null);
+  const [priorFilteredBankIdsKey, setPriorFilteredBankIdsKey] = useState("");
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>(ALL);
+  const [lowStockOnly, setLowStockOnly] = useState(false);
+  const [reloadToken, setReloadToken] = useState(0);
+  const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
@@ -76,8 +115,6 @@ export default function BloodBankManagement() {
         }
 
         setBloodBanks(Array.isArray(data) ? data : []);
-
-        setExpandedBankId(null);
       } catch (err) {
         console.error("Failed to load blood banks:", err);
 
@@ -97,25 +134,93 @@ export default function BloodBankManagement() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [reloadToken]);
+
+  const lowStockBankIds = useMemo(() => {
+    const ids = new Set<number>();
+
+    for (const bank of bloodBanks) {
+      const hasLowStock = bank.availability.some(
+        (item) => getStockLevel(item.units) !== "healthy",
+      );
+
+      if (hasLowStock) {
+        ids.add(bank.id);
+      }
+    }
+
+    return ids;
+  }, [bloodBanks]);
+
+  const categoryOptions = useMemo(() => {
+    const fromData = Array.from(
+      new Set(bloodBanks.map((bank) => bank.category).filter(Boolean)),
+    );
+
+    return fromData.length > 0
+      ? fromData.sort((a, b) => a.localeCompare(b))
+      : ["Government", "Private", "Charitable", "Redcross"];
+  }, [bloodBanks]);
+
+  const isFiltering =
+    search.trim().length > 0 || categoryFilter !== ALL || lowStockOnly;
+
+  const clearFilters = () => {
+    setSearch("");
+    setCategoryFilter(ALL);
+    setLowStockOnly(false);
+  };
+
+  // Refresh: reset any active filters, reload the data, and give the icon a
+  // one-shot spin so the click feels responsive even when the fetch is instant.
+  const handleRefresh = () => {
+    setSpinning(true);
+    clearFilters();
+    setReloadToken((token) => token + 1);
+    window.setTimeout(() => setSpinning(false), 500);
+  };
 
   const filteredBloodBanks = useMemo(() => {
     const searchValue = search.trim().toLowerCase();
 
-    if (!searchValue) {
-      return bloodBanks;
-    }
-
     return bloodBanks.filter((bank) => {
-      return (
+      const matchesSearch =
+        !searchValue ||
         bank.bloodBankName.toLowerCase().includes(searchValue) ||
         bank.category.toLowerCase().includes(searchValue) ||
         bank.address.toLowerCase().includes(searchValue) ||
         bank.city.toLowerCase().includes(searchValue) ||
-        bank.phoneNumber.includes(searchValue)
-      );
+        bank.district.toLowerCase().includes(searchValue) ||
+        bank.pincode.includes(searchValue) ||
+        bank.email.toLowerCase().includes(searchValue) ||
+        bank.phoneNumber.includes(searchValue);
+
+      const matchesCategory =
+        categoryFilter === ALL || bank.category === categoryFilter;
+
+      const matchesLowStock = !lowStockOnly || lowStockBankIds.has(bank.id);
+
+      return matchesSearch && matchesCategory && matchesLowStock;
     });
-  }, [bloodBanks, search]);
+  }, [bloodBanks, search, categoryFilter, lowStockOnly, lowStockBankIds]);
+
+  // Keep the detail panel pointed at a bank that's actually in view: fall
+  // back to the first result whenever the visible set changes and the
+  // active one is no longer in it. Adjusted during render (not an effect)
+  // so a deliberate "back to list" (activeBankId set to null) isn't
+  // immediately overridden on the next render.
+  const filteredBankIdsKey = filteredBloodBanks.map((bank) => bank.id).join(",");
+
+  if (filteredBankIdsKey !== priorFilteredBankIdsKey) {
+    setPriorFilteredBankIdsKey(filteredBankIdsKey);
+
+    if (!filteredBloodBanks.some((bank) => bank.id === activeBankId)) {
+      setActiveBankId(filteredBloodBanks[0]?.id ?? null);
+    }
+  }
+
+  const activeBank =
+    bloodBanks.find((bank) => bank.id === activeBankId) ?? null;
 
   const totalBloodBanks = bloodBanks.length;
 
@@ -130,10 +235,6 @@ export default function BloodBankManagement() {
       bank.availability.reduce((bankTotal, item) => bankTotal + item.units, 0),
     0,
   );
-
-  const toggleBank = (bankId: number) => {
-    setExpandedBankId((current) => (current === bankId ? null : bankId));
-  };
 
   const openUpdateModal = (
     bank: SuperAdminBloodBank,
@@ -343,220 +444,172 @@ export default function BloodBankManagement() {
 
   return (
     <section className="w-full min-w-0">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <div
-              className="
-                flex
-                h-10
-                w-10
-                shrink-0
-                items-center
-                justify-center
-                rounded-xl
-                bg-[var(--color-icon-bg-soft)]
-              "
-            >
-              <Building2 size={19} className="text-[var(--color-primary)]" />
-            </div>
-
-            <div className="min-w-0">
-              <Bilingual
-                tKey="superAdmin.bloodBankManagement"
-                as="h2"
-                className="
-                  text-[19px]
-                  font-bold
-                  tracking-[-0.01em]
-                  text-[var(--color-text-primary)]
-                  sm:text-[22px]
-                "
-              />
-
-              <Bilingual
-                tKey="superAdmin.bloodBankManagementDescription"
-                as="p"
-                className="
-                  mt-0.5
-                  text-[12px]
-                  text-[var(--color-text-placeholder-alt)]
-                  sm:text-[13px]
-                "
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div
-        className="
-          mt-6
-          grid
-          grid-cols-1
-          gap-3
-          sm:grid-cols-3
-        "
-      >
-        <StatCard
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatTile
           icon={Building2}
-          tKey="superAdmin.bloodBanksStat"
           value={String(totalBloodBanks)}
-          color="warning"
+          label={
+            <Bilingual
+              tKey="superAdmin.bloodBanksStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-red)"
+          index={0}
         />
 
-        <StatCard
+        <StatTile
           icon={Droplets}
-          tKey="superAdmin.bloodTypesStat"
           value={String(totalBloodTypes)}
-          color="success"
+          label={
+            <Bilingual
+              tKey="superAdmin.bloodTypesStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-yellow)"
+          index={1}
         />
 
-        <StatCard
+        <StatTile
           icon={Droplets}
-          tKey="superAdmin.availableUnitsStat"
           value={String(totalBloodUnits)}
-          color="danger"
+          label={
+            <Bilingual
+              tKey="superAdmin.availableUnitsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-green)"
+          index={2}
         />
       </div>
 
-      <div
-        className="
-          mt-6
-          flex
-          w-full
-          min-w-0
-          flex-col
-          gap-3
-          rounded-xl
-          border
-          border-[var(--color-border-lighter)]
-          bg-white
-          p-3
-          shadow-[0_2px_12px_rgba(0,0,0,0.025)]
-          sm:p-4
-          md:flex-row
-          md:items-center
-          md:justify-between
-        "
-      >
-        {/* SEARCH */}
+      {/* TOOLBAR: search + category filter + low-stock + refresh + add */}
+      <div className="animate-rise mt-5 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.025)] sm:p-4">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+          {/* SEARCH */}
+          <div className="relative w-full min-w-0 sm:w-auto sm:min-w-[240px] sm:flex-1 lg:max-w-[360px]">
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder-alt)]"
+            />
 
-        <div
-          className="
-            relative
-            w-full
-            min-w-0
-            md:max-w-[400px]
-          "
-        >
-          <Search
-            size={17}
-            className="
-              pointer-events-none
-              absolute
-              left-3.5
-              top-1/2
-              -translate-y-1/2
-              text-[var(--color-text-placeholder-alt)]
-            "
-          />
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={searchPlaceholder}
+              className="h-10 w-full min-w-0 rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-9 text-[13px] text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+            />
 
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={searchPlaceholder}
-            className="
-              h-11
-              w-full
-              min-w-0
-              rounded-lg
-              border
-              border-[var(--color-border)]
-              bg-white
-              pl-10
-              pr-9
-              text-[14px]
-              text-[var(--color-text-body)]
-              outline-none
-              transition-all
-              duration-200
-              placeholder:text-[var(--color-text-placeholder)]
-              hover:border-[var(--color-border)]
-              focus:border-[var(--color-primary)]
-              focus:ring-2
-              focus:ring-[var(--color-primary)]/10
-            "
-          />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                aria-label={clearSearchLabel}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
 
-          {search && (
+          {/* CATEGORY */}
+          <div className="relative shrink-0">
+            <select
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+              aria-label="Filter by category"
+              className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                categoryFilter !== ALL
+                  ? "border-[var(--primary-200)] font-medium"
+                  : "border-[var(--color-border-light)]"
+              }`}
+            >
+              <option value={ALL}>All categories</option>
+              {categoryOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+
+            <ChevronDown
+              size={15}
+              strokeWidth={1.8}
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            />
+          </div>
+
+          {/* LOW STOCK */}
+          <button
+            type="button"
+            onClick={() => setLowStockOnly((value) => !value)}
+            disabled={lowStockBankIds.size === 0 && !lowStockOnly}
+            aria-pressed={lowStockOnly}
+            className={`flex h-10 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
+              lowStockOnly
+                ? "border-transparent bg-[var(--danger-50)] text-[var(--danger-700)]"
+                : "border-[var(--color-border-light)] bg-white text-[var(--color-text-quaternary)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
+            }`}
+          >
+            <AlertTriangle size={14} strokeWidth={2} />
+            Low stock
+            <span
+              className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                lowStockOnly
+                  ? "bg-[var(--danger-700)] text-white"
+                  : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
+              }`}
+            >
+              {lowStockBankIds.size}
+            </span>
+          </button>
+
+          {/* REFRESH */}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Refresh and clear filters"
+            title="Refresh &amp; clear filters"
+          >
+            <RefreshCw
+              size={15}
+              className={
+                spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
+              }
+            />
+          </button>
+
+          {isFiltering && (
             <button
               type="button"
-              onClick={() => setSearch("")}
-              className="
-                absolute
-                right-2
-                top-1/2
-                flex
-                h-7
-                w-7
-                -translate-y-1/2
-                items-center
-                justify-center
-                rounded-md
-                text-[var(--color-text-placeholder-alt)]
-                transition
-                hover:bg-[var(--color-surface-hover)]
-                hover:text-[var(--color-text-secondary)]
-              "
-              aria-label={clearSearchLabel}
+              onClick={clearFilters}
+              className="shrink-0 text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
             >
-              <X size={14} />
+              Clear
             </button>
           )}
+
+          {/* ADD — pushes to the far right of the row when there's room */}
+          <button
+            type="button"
+            onClick={() => router.push("/blood-centre/register")}
+            className="flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto"
+          >
+            <Plus size={16} className="shrink-0" />
+            <BilingualInline
+              tKey="superAdmin.addBloodCentre"
+              enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+            />
+          </button>
         </div>
-
-        {/* ADD BLOOD CENTRE */}
-
-        <button
-          type="button"
-          onClick={() => router.push("/blood-centre/register")}
-          className="
-            flex
-            min-h-11
-            w-full
-            shrink-0
-            items-center
-            justify-center
-            gap-2
-            rounded-lg
-            bg-[var(--color-primary)]
-            px-4
-            py-2
-            text-[13px]
-            font-semibold
-            text-white
-            shadow-[0_5px_15px_rgba(255,59,63,0.18)]
-            transition-all
-            duration-200
-            hover:-translate-y-px
-            hover:bg-[var(--color-dashboard-cta-hover)]
-            active:translate-y-0
-            focus-visible:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-[var(--color-primary)]
-            focus-visible:ring-offset-2
-            sm:w-auto
-            sm:text-[14px]
-          "
-        >
-          <Plus size={16} className="shrink-0" />
-          <BilingualInline
-            tKey="superAdmin.addBloodCentre"
-            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-          />
-        </button>
       </div>
 
       {error && (
@@ -584,326 +637,120 @@ export default function BloodBankManagement() {
         </div>
       )}
 
-      {/* DESKTOP TABLE */}
-      <div
-        className="
-          mt-5
-          hidden
-          w-full
-          min-w-0
-          overflow-hidden
-          rounded-xl
-          border
-          border-[var(--color-border-light)]
-          bg-white
-          shadow-[0_4px_20px_rgba(0,0,0,0.035)]
-          lg:block
-        "
-      >
+      {/* BLOOD BANK LIST + DETAIL (master-detail) */}
+      <div className="mt-5 flex flex-col gap-4 lg:h-[640px] lg:flex-row lg:gap-5">
+        {/* LIST PANEL */}
         <div
-          className="
+          className={`
+            min-h-0
             w-full
-            min-w-0
-            overflow-x-hidden
-            overflow-y-auto
-          "
+            flex-col
+            overflow-hidden
+            rounded-2xl
+            border
+            border-[var(--color-border-light)]
+            bg-white
+            shadow-[0_4px_20px_rgba(0,0,0,0.035)]
+            lg:flex
+            lg:w-[320px]
+            lg:shrink-0
+            ${activeBankId !== null ? "hidden lg:flex" : "flex"}
+          `}
         >
-          <table
-            className="
-              w-full
-              table-fixed
-              border-collapse
-            "
-          >
-            <thead className="sticky top-0 z-20">
-              <tr
-                className="
-                  border-b
-                  border-[var(--color-border-table)]
-                  bg-[var(--warning-500)]
-                "
-              >
-                <th
-                  style={{ width: "7%" }}
-                  className="
-                    px-1
-                    py-3
-                    text-center
-                    text-[12px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-[var(--base-white)]
-                    sm:px-2
-                    sm:py-4
-                    sm:text-[13px]
-                  "
-                >
-                  <Bilingual tKey="superAdmin.sNo" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
-                </th>
+          <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-lighter)] px-4 py-3">
+            <span className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-quaternary)]">
+              {filteredBloodBanks.length}{" "}
+              {filteredBloodBanks.length === 1 ? "Centre" : "Centres"}
+            </span>
+          </div>
 
-                <th
-                  style={{ width: "25%" }}
-                  className="
-                    px-1
-                    py-3
-                    text-left
-                    text-[12px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-[var(--base-white)]
-                    sm:px-3
-                    sm:py-4
-                    sm:text-[13px]
-                  "
-                >
-                  <Bilingual tKey="superAdmin.bloodBankColumn" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
-                </th>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {loading && (
+              <div className="flex h-full flex-col items-center justify-center gap-3 px-4 py-14">
+                <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
+                <Bilingual
+                  tKey="superAdmin.loadingBloodBanks"
+                  as="p"
+                  className="text-[12px] text-[var(--color-text-tertiary)]"
+                />
+              </div>
+            )}
 
-                <th
-                  style={{ width: "14%" }}
-                  className="
-                    px-1
-                    py-3
-                    text-left
-                    text-[12px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-[var(--base-white)]
-                    sm:px-2
-                    sm:py-4
-                    sm:text-[13px]
-                  "
-                >
-                  <Bilingual tKey="bloodCentre.category" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
-                </th>
+            {!loading && filteredBloodBanks.length === 0 && (
+              <div className="flex h-full flex-col items-center justify-center px-5 py-14 text-center">
+                <Building2 size={26} className="text-[var(--color-border)]" />
 
-                <th
-                  style={{ width: "24%" }}
-                  className="
-                    px-1
-                    py-3
-                    text-left
-                    text-[12px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-[var(--base-white)]
-                    sm:px-2
-                    sm:py-4
-                    sm:text-[13px]
-                  "
-                >
-                  <Bilingual tKey="common.address" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
-                </th>
+                <Bilingual
+                  tKey="superAdmin.noBloodBanksFound"
+                  as="p"
+                  className="mt-3 text-[13px] font-semibold text-[var(--color-text-quaternary)]"
+                />
 
-                <th
-                  style={{ width: "12%" }}
-                  className="
-                    px-1
-                    py-3
-                    text-left
-                    text-[12px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-[var(--base-white)]
-                    sm:px-2
-                    sm:py-4
-                    sm:text-[13px]
-                  "
-                >
-                  <Bilingual tKey="common.city" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
-                </th>
+                <Bilingual
+                  tKey="superAdmin.tryChangingSearch"
+                  as="p"
+                  className="mt-1 text-[11px] text-[var(--color-text-placeholder)]"
+                />
+              </div>
+            )}
 
-                <th
-                  style={{ width: "18%" }}
-                  className="
-                    px-1
-                    py-3
-                    text-left
-                    text-[12px]
-                    font-bold
-                    uppercase
-                    tracking-wide
-                    text-[var(--base-white)]
-                    sm:px-2
-                    sm:py-4
-                    sm:text-[13px]
-                  "
-                >
-                  <Bilingual tKey="superAdmin.phone" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80" />
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {loading && (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center">
-                    <div className="flex flex-col items-center justify-center">
-                      <Loader2
-                        size={24}
-                        className="
-                          animate-spin
-                          text-[var(--color-primary)]
-                        "
-                      />
-
-                      <Bilingual
-                        tKey="superAdmin.loadingBloodBanks"
-                        as="p"
-                        className="
-                          mt-3
-                          text-[11px]
-                          text-[var(--color-text-tertiary)]
-                        "
-                      />
-                    </div>
-                  </td>
-                </tr>
-              )}
-
-              {/* EMPTY */}
-              {!loading && filteredBloodBanks.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="py-16 text-center">
-                    <div className="flex flex-col items-center">
-                      <Building2
-                        size={28}
-                        className="text-[var(--color-border)]"
-                      />
-
-                      <Bilingual
-                        tKey="superAdmin.noBloodBanksFound"
-                        as="p"
-                        className="
-                            mt-3
-                            text-[12px]
-                            font-semibold
-                            text-[var(--color-text-quaternary)]
-                          "
-                      />
-
-                      <Bilingual
-                        tKey="superAdmin.tryChangingSearch"
-                        as="p"
-                        className="
-                            mt-1
-                            text-[10px]
-                            text-[var(--color-text-placeholder)]
-                          "
-                      />
-                    </div>
-                  </td>
-                </tr>
-              )}
-
-              {/* BLOOD BANK ROWS */}
-              {!loading &&
-                filteredBloodBanks.map((bank, index) => {
-                  const expanded = expandedBankId === bank.id;
-
-                  return (
-                    <BloodBankTableSection
-                      key={bank.id}
-                      bank={bank}
-                      index={index}
-                      expanded={expanded}
-                      onToggle={() => toggleBank(bank.id)}
-                      onUpdate={(availabilityId) =>
-                        openUpdateModal(bank, availabilityId)
-                      }
-                      onAddStock={(availabilityId) =>
-                        openAddStockModal(bank, availabilityId)
-                      }
-                    />
-                  );
-                })}
-            </tbody>
-          </table>
+            {!loading &&
+              filteredBloodBanks.map((bank, index) => (
+                <BankListRow
+                  key={bank.id}
+                  bank={bank}
+                  index={index}
+                  active={bank.id === activeBankId}
+                  onSelect={() => setActiveBankId(bank.id)}
+                />
+              ))}
+          </div>
         </div>
-      </div>
 
-      {/* MOBILE / TABLET CARDS */}
-      <div className="mt-5 space-y-3 lg:hidden">
-        {loading && (
-          <div
-            className="
-              flex
-              flex-col
-              items-center
-              justify-center
-              rounded-xl
-              border
-              border-[var(--color-border-lighter)]
-              bg-white
-              py-14
-            "
-          >
-            <Loader2
-              size={24}
-              className="animate-spin text-[var(--color-primary)]"
-            />
-
-            <Bilingual
-              tKey="superAdmin.loadingBloodBanks"
-              as="p"
-              className="mt-3 text-[13px] text-[var(--color-text-placeholder-alt)]"
-            />
-          </div>
-        )}
-
-        {!loading && filteredBloodBanks.length === 0 && (
-          <div
-            className="
-              flex
-              flex-col
-              items-center
-              justify-center
-              rounded-xl
-              border
-              border-[var(--color-border-lighter)]
-              bg-white
-              px-5
-              py-14
-              text-center
-            "
-          >
-            <Building2 size={28} className="text-[var(--color-border)]" />
-
-            <Bilingual
-              tKey="superAdmin.noBloodBanksFound"
-              as="p"
-              className="mt-3 text-[14px] font-semibold text-[var(--color-text-quaternary)]"
-            />
-
-            <Bilingual
-              tKey="superAdmin.tryChangingSearch"
-              as="p"
-              className="mt-1 text-[12px] text-[var(--color-text-placeholder)]"
-            />
-          </div>
-        )}
-
-        {!loading &&
-          filteredBloodBanks.map((bank, index) => (
-            <BloodBankCard
-              key={bank.id}
-              bank={bank}
-              index={index}
-              expanded={expandedBankId === bank.id}
-              onToggle={() => toggleBank(bank.id)}
+        {/* DETAIL PANEL */}
+        <div
+          className={`
+            min-h-0
+            w-full
+            flex-col
+            overflow-hidden
+            rounded-2xl
+            border
+            border-[var(--color-border-light)]
+            bg-white
+            shadow-[0_4px_20px_rgba(0,0,0,0.035)]
+            lg:flex
+            lg:flex-1
+            ${activeBankId !== null ? "flex" : "hidden lg:flex"}
+          `}
+        >
+          {activeBank ? (
+            <BankDetailPanel
+              bank={activeBank}
+              onBack={() => setActiveBankId(null)}
               onUpdate={(availabilityId) =>
-                openUpdateModal(bank, availabilityId)
+                openUpdateModal(activeBank, availabilityId)
               }
               onAddStock={(availabilityId) =>
-                openAddStockModal(bank, availabilityId)
+                openAddStockModal(activeBank, availabilityId)
               }
             />
-          ))}
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center px-6 py-14 text-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)]">
+                <Building2 size={22} className="text-[var(--color-primary)]" />
+              </div>
+
+              <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-quaternary)]">
+                Select a blood bank
+              </p>
+
+              <p className="mt-1 text-[12px] text-[var(--color-text-placeholder)]">
+                Choose a centre from the list to see its details and stock.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* UPDATE MODAL */}
@@ -941,951 +788,390 @@ export default function BloodBankManagement() {
   );
 }
 
-// BLOOD BANK TABLE SECTION
-function BloodBankTableSection({
+// BLOOD BANK LIST ROW
+function BankListRow({
   bank,
   index,
-  expanded,
-  onToggle,
-  onUpdate,
-  onAddStock,
+  active,
+  onSelect,
 }: {
   bank: SuperAdminBloodBank;
   index: number;
-  expanded: boolean;
-  onToggle: () => void;
-  onUpdate: (availabilityId: number) => void;
-  onAddStock: (availabilityId: number) => void;
+  active: boolean;
+  onSelect: () => void;
 }) {
+  const bankTotalUnits = bank.availability.reduce(
+    (sum, item) => sum + item.units,
+    0,
+  );
+
+  const bankStockLevel: StockLevel = bank.availability.some(
+    (item) => getStockLevel(item.units) === "critical",
+  )
+    ? "critical"
+    : bank.availability.some((item) => getStockLevel(item.units) === "low")
+      ? "low"
+      : "healthy";
+
   return (
-    <>
-      {/* MAIN BLOOD BANK ROW */}
-      <tr
-        onClick={onToggle}
-        className="
-          group
-          cursor-pointer
-          border-b
-          border-[var(--color-border-lighter)]
-          bg-white
-          transition-all
-          duration-200
-          hover:bg-[var(--color-icon-bg-soft)]
-          hover:shadow-[inset_4px_0_0_var(--color-primary)]
-        "
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-current={active ? "true" : undefined}
+      className={`animate-rise flex w-full items-center gap-3 border-b border-[var(--color-border-lighter)] px-4 py-3 text-left transition-colors duration-150 last:border-b-0 ${
+        active
+          ? "bg-[var(--color-icon-bg-soft)] shadow-[inset_3px_0_0_0_var(--color-primary)]"
+          : "hover:bg-[var(--color-surface-hover)]"
+      }`}
+      style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
+    >
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+          active ? "bg-white" : "bg-[var(--color-icon-bg-soft)]"
+        }`}
       >
-        {/* S.NO */}
-        <td className="px-1 py-4 text-center sm:px-2 sm:py-5">
-          <div
-            className={`
-              mx-auto
-              flex
-              h-7
-              w-7
-              items-center
-              justify-center
-              rounded-lg
-              transition-all
-              duration-200
+        <Building2 size={15} className="text-[var(--color-primary)]" />
+      </div>
 
-              ${
-                expanded
-                  ? "bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
-                  : "bg-[var(--color-surface-hover)] text-[var(--color-text-muted)]"
-              }
-            `}
-          >
-            {expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          </div>
-        </td>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-bold text-[var(--color-text-body)]">
+          {bank.bloodBankName}
+        </p>
+        <p className="mt-0.5 truncate text-[11px] text-[var(--color-text-placeholder-alt)]">
+          {bank.category} · {bank.city}
+        </p>
+      </div>
 
-        {/* BLOOD BANK */}
-        <td className="px-1 py-4 sm:px-3 sm:py-5">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <div
-              className="
-                flex
-                h-8
-                w-8
-                shrink-0
-                items-center
-                justify-center
-                rounded-lg
-                bg-[var(--color-icon-bg-soft)]
-                sm:h-9
-                sm:w-9
-              "
-            >
-              <Building2 size={15} className="text-[var(--color-primary)]" />
-            </div>
-
-            <div className="min-w-0">
-              <p
-                className="
-                  break-words
-                  text-[10px]
-                  font-bold
-                  leading-4
-                  text-[var(--color-text-body)]
-                  sm:text-[12px]
-                "
-              >
-                {bank?.bloodBankName}
-              </p>
-
-              <Bilingual
-                tKey="superAdmin.bloodTypesCount"
-                params={{ count: bank?.availability?.length ?? 0 }}
-                as="p"
-                className="
-                  mt-0.5
-                  text-[11px]
-                  text-[var(--color-text-placeholder-alt)]
-                  sm:text-[12px]
-                "
-              />
-            </div>
-          </div>
-        </td>
-
-        {/* CATEGORY */}
-
-        <td className="px-1 py-4 sm:px-2 sm:py-5">
-          <span
-            className="
-              inline-flex
-              max-w-full
-              break-words
-              rounded-full
-              border
-              border-[var(--color-border-lighter)]
-              bg-[var(--color-surface-alt)]
-              px-2
-              py-1
-              text-[11px]
-              font-semibold
-              leading-3
-              text-[var(--color-text-secondary)]
-              sm:px-2.5
-              sm:text-[12px]
-            "
-          >
-            {bank?.category}
-          </span>
-        </td>
-
-        {/* ADDRESS */}
-        <td
-          className="
-            break-words
-            px-1
-            py-4
-            text-[11px]
-            leading-4
-            text-[var(--color-text-quaternary)]
-            sm:px-2
-            sm:py-5
-            sm:text-[13px]
-          "
+      {bank.availability.length > 0 && (
+        <span
+          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${unitBadgeClass(bankStockLevel)}`}
         >
-          {bank?.address}
-        </td>
-
-        {/* CITY */}
-        <td
-          className="
-            break-words
-            px-1
-            py-4
-            text-[11px]
-            font-medium
-            leading-4
-            text-[var(--color-text-secondary)]
-            sm:px-2
-            sm:py-5
-            sm:text-[13px]
-          "
-        >
-          {bank?.city}
-        </td>
-
-        {/* PHONE */}
-        <td
-          className="
-            break-words
-            px-1
-            py-4
-            text-[11px]
-            leading-4
-            text-[var(--color-text-quaternary)]
-            sm:px-2
-            sm:py-5
-            sm:text-[13px]
-          "
-        >
-          {bank?.phoneNumber}
-        </td>
-      </tr>
-
-      {/* NESTED BLOOD AVAILABILITY TABLE */}
-      {expanded && (
-        <tr>
-          <td
-            colSpan={6}
-            className="
-              bg-[var(--color-surface-alt)]
-              p-0
-            "
-          >
-            <div
-              className="
-                w-full
-                min-w-0
-                border-b
-                border-[var(--color-border-light)]
-                bg-[var(--color-surface-alt)]
-                px-2
-                py-4
-                sm:px-4
-                sm:py-5
-              "
-            >
-              <div
-                className="
-                  w-full
-                  min-w-0
-                  overflow-hidden
-                  rounded-xl
-                  border
-                  border-[var(--color-border-light)]
-                  bg-white
-                  shadow-[0_5px_18px_rgba(0,0,0,0.07)]
-                "
-              >
-                {/* NESTED TABLE HEADER */}
-                <div
-                  className="
-                    flex
-                    min-w-0
-                    items-center
-                    justify-between
-                    gap-2
-                    border-b
-                    border-[var(--primary-200)]
-                    bg-[var(--color-icon-bg-soft)]
-                    px-3
-                    py-3
-                    sm:px-4
-                  "
-                >
-                  <div className="flex min-w-0 items-center gap-2">
-                    <Droplets
-                      size={15}
-                      className="shrink-0 text-[var(--color-primary)]"
-                    />
-
-                    <Bilingual
-                      tKey="bloodCentre.bloodAvailabilityTitle"
-                      as="span"
-                      className="
-                        truncate
-                        text-[12px]
-                        font-bold
-                        text-[var(--color-text-body)]
-                        sm:text-[13px]
-                      "
-                    />
-                  </div>
-
-                  <span
-                    className="
-                      max-w-[45%]
-                      truncate
-                      text-[11px]
-                      text-[var(--color-text-placeholder-alt)]
-                      sm:text-[12px]
-                    "
-                  >
-                    {bank.bloodBankName}
-                  </span>
-                </div>
-
-                <div
-                  className="
-                    w-full
-                    min-w-0
-                    overflow-x-hidden
-                    overflow-y-auto
-                    bg-white
-                  "
-                >
-                  <table
-                    className="
-                      w-full
-                      table-fixed
-                      border-collapse
-                    "
-                  >
-                    <thead className="sticky top-0 z-10">
-                      <tr
-                        className="
-                          border-b
-                          border-[var(--color-border-light)]
-                          bg-[var(--color-surface-alt)]
-                        "
-                      >
-                        <th
-                          style={{
-                            width: "25%",
-                          }}
-                          className="
-                            px-2
-                            py-3
-                            text-left
-                            text-[12px]
-                            font-bold
-                            uppercase
-                            tracking-wide
-                            text-[var(--color-text-secondary)]
-                            sm:px-4
-                            sm:text-[13px]
-                          "
-                        >
-                          <Bilingual tKey="bloodCentre.bloodGroup" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
-                        </th>
-
-                        <th
-                          style={{
-                            width: "35%",
-                          }}
-                          className="
-                            px-2
-                            py-3
-                            text-left
-                            text-[12px]
-                            font-bold
-                            uppercase
-                            tracking-wide
-                            text-[var(--color-text-secondary)]
-                            sm:px-4
-                            sm:text-[13px]
-                          "
-                        >
-                          <Bilingual tKey="bloodCentre.bloodType" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
-                        </th>
-
-                        <th
-                          style={{
-                            width: "20%",
-                          }}
-                          className="
-                            px-1
-                            py-3
-                            text-center
-                            text-[12px]
-                            font-bold
-                            uppercase
-                            tracking-wide
-                            text-[var(--color-text-secondary)]
-                            sm:px-3
-                            sm:text-[13px]
-                          "
-                        >
-                          <Bilingual tKey="bloodCentre.units" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
-                        </th>
-
-                        <th
-                          style={{
-                            width: "20%",
-                          }}
-                          className="
-                            px-1
-                            py-3
-                            text-center
-                            text-[12px]
-                            font-bold
-                            uppercase
-                            tracking-wide
-                            text-[var(--color-text-secondary)]
-                            sm:px-3
-                            sm:text-[13px]
-                          "
-                        >
-                          <Bilingual tKey="superAdmin.actions" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
-                        </th>
-                      </tr>
-                    </thead>
-
-                    <tbody>
-                      {bank?.availability.map((availability) => (
-                        <tr
-                          key={availability.id}
-                          className="
-                              border-b
-                              border-[var(--color-border-lighter)]
-                              last:border-b-0
-                              transition-all
-                              duration-200
-                              hover:bg-[var(--color-icon-bg-soft)]
-                            "
-                        >
-                          {/* BLOOD GROUP */}
-                          <td className="px-2 py-3 sm:px-4">
-                            <span
-                              className="
-                                  inline-flex
-                                  max-w-full
-                                  items-center
-                                  justify-center
-                                  rounded-md
-                                  bg-[var(--color-icon-bg-soft)]
-                                  px-2
-                                  py-1
-                                  text-[11px]
-                                  font-bold
-                                  text-[var(--color-primary)]
-                                  sm:text-[13px]
-                                "
-                            >
-                              {availability?.bloodGroup}
-                            </span>
-                          </td>
-
-                          {/* BLOOD TYPE */}
-                          <td
-                            className="
-                                break-words
-                                px-2
-                                py-3
-                                text-[12px]
-                                font-medium
-                                uppercase
-                                leading-4
-                                text-[var(--color-text-secondary)]
-                                sm:px-4
-                                sm:text-[13px]
-                              "
-                          >
-                            {availability?.bloodType}
-                          </td>
-
-                          {/* UNITS */}
-                          <td className="px-1 py-3 text-center sm:px-3">
-                            <div className="flex flex-col items-center justify-center">
-                              <span
-                                className="
-                                    text-[12px]
-                                    font-bold
-                                    text-[var(--color-text-primary)]
-                                    sm:text-[12px]
-                                  "
-                              >
-                                {availability?.units}
-                              </span>
-
-                              <Bilingual
-                                tKey="bloodCentre.units"
-                                as="span"
-                                className="
-                                    text-[11px]
-                                    text-[var(--color-text-placeholder-alt)]
-                                    sm:text-[12px]
-                                  "
-                              />
-                            </div>
-                          </td>
-
-                          {/* UPDATE / ADD STOCK */}
-                          <td className="px-1 py-3 text-center sm:px-3">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-
-                                  onAddStock(availability.id);
-                                }}
-                                className="
-                                    inline-flex
-                                    h-7
-                                    w-7
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    border
-                                    border-[var(--color-border-lighter)]
-                                    bg-white
-                                    text-[var(--color-text-muted)]
-                                    shadow-sm
-                                    transition-all
-                                    duration-200
-                                    hover:-translate-y-[1px]
-                                    hover:border-[var(--color-success-bg)]
-                                    hover:bg-[var(--color-success-bg)]
-                                    hover:text-[var(--color-success)]
-                                    active:translate-y-0
-                                    sm:h-8
-                                    sm:w-8
-                                  "
-                                aria-label={`Add stock for ${availability?.bloodGroup} ${availability?.bloodType}`}
-                              >
-                                <PlusCircle size={12} />
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-
-                                  onUpdate(availability.id);
-                                }}
-                                className="
-                                    inline-flex
-                                    h-7
-                                    w-7
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    border
-                                    border-[var(--color-border-lighter)]
-                                    bg-white
-                                    text-[var(--color-text-muted)]
-                                    shadow-sm
-                                    transition-all
-                                    duration-200
-                                    hover:-translate-y-[1px]
-                                    hover:border-[var(--primary-200)]
-                                    hover:bg-[var(--color-icon-bg-soft)]
-                                    hover:text-[var(--color-primary)]
-                                    active:translate-y-0
-                                    sm:h-8
-                                    sm:w-8
-                                  "
-                                aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
-                              >
-                                <Pencil size={12} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-
-                      {bank?.availability?.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={4}
-                            className="
-                              px-4
-                              py-8
-                              text-center
-                              text-[10px]
-                              text-[var(--color-text-placeholder-alt)]
-                            "
-                          >
-                            <Bilingual tKey="superAdmin.noBloodAvailabilityFound" as="span" />
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>
+          {bankStockLevel !== "healthy" && (
+            <AlertTriangle size={9} strokeWidth={2} />
+          )}
+          {bankTotalUnits}
+        </span>
       )}
-    </>
+    </button>
   );
 }
 
-// BLOOD BANK CARD (mobile / tablet)
-function BloodBankCard({
+// BLOOD BANK DETAIL PANEL
+function BankDetailPanel({
   bank,
-  index,
-  expanded,
-  onToggle,
+  onBack,
   onUpdate,
   onAddStock,
 }: {
   bank: SuperAdminBloodBank;
-  index: number;
-  expanded: boolean;
-  onToggle: () => void;
+  onBack: () => void;
   onUpdate: (availabilityId: number) => void;
   onAddStock: (availabilityId: number) => void;
 }) {
+  const unitsWordText = useBilingualText("bloodCentre.units");
+
+  const [historyItem, setHistoryItem] = useState<BloodAvailability | null>(
+    null,
+  );
+
+  const bankTotalUnits = bank.availability.reduce(
+    (sum, item) => sum + item.units,
+    0,
+  );
+
+  const bankStockLevel: StockLevel = bank.availability.some(
+    (item) => getStockLevel(item.units) === "critical",
+  )
+    ? "critical"
+    : bank.availability.some((item) => getStockLevel(item.units) === "low")
+      ? "low"
+      : "healthy";
+
   return (
-    <div
-      className="
-        overflow-hidden
-        rounded-xl
-        border
-        border-[var(--color-border-lighter)]
-        bg-white
-        shadow-[0_2px_12px_rgba(0,0,0,0.025)]
-      "
-    >
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={expanded}
-        className="
-          flex
-          w-full
-          items-start
-          justify-between
-          gap-3
-          p-4
-          text-left
-          transition-colors
-          duration-200
-          hover:bg-[var(--color-surface-hover)]
-        "
-      >
-        <div className="flex min-w-0 items-start gap-3">
-          <div
-            className="
-              flex
-              h-10
-              w-10
-              shrink-0
-              items-center
-              justify-center
-              rounded-lg
-              bg-[var(--color-icon-bg-soft)]
-            "
+    <div className="flex h-full min-h-0 w-full flex-col">
+      {/* HEADER */}
+      <div className="shrink-0 border-b border-[var(--color-border-lighter)] px-5 py-4 sm:px-6">
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Back to list"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-secondary)] transition hover:bg-[var(--color-surface-hover)] lg:hidden"
           >
-            <Building2 size={17} className="text-[var(--color-primary)]" />
+            <ChevronLeft size={18} />
+          </button>
+
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
+            <Building2 size={19} className="text-[var(--color-primary)]" />
           </div>
 
-          <div className="min-w-0">
-            <Bilingual
-              tKey="superAdmin.sNoValue"
-              params={{ index: index + 1 }}
-              as="p"
-              className="text-[11px] text-[var(--color-text-placeholder)]"
-            />
-
-            <p className="mt-0.5 break-words text-[14px] font-bold leading-5 text-[var(--color-text-body)]">
-              {bank?.bloodBankName}
+          <div className="min-w-0 flex-1">
+            <p className="break-words text-[16px] font-bold leading-5 text-[var(--color-text-body)] sm:text-[18px]">
+              {bank.bloodBankName}
             </p>
 
-            <span
-              className="
-                mt-1.5
-                inline-flex
-                rounded-full
-                border
-                border-[var(--color-border-lighter)]
-                bg-[var(--color-surface-alt)]
-                px-2.5
-                py-0.5
-                text-[11px]
-                font-semibold
-                text-[var(--color-text-secondary)]
-              "
-            >
-              {bank?.category}
-            </span>
-          </div>
-        </div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex rounded-full border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">
+                {bank.category}
+              </span>
 
-        <div
-          className={`
-            mt-1
-            flex
-            h-7
-            w-7
-            shrink-0
-            items-center
-            justify-center
-            rounded-lg
-            transition-all
-            duration-200
-
-            ${
-              expanded
-                ? "bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
-                : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
-            }
-          `}
-        >
-          {expanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
-        </div>
-      </button>
-
-      <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border-lighter)] px-4 py-3.5 sm:grid-cols-2">
-        <div className="min-w-0">
-          <Bilingual
-            tKey="common.address"
-            as="p"
-            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
-          />
-          <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
-            {bank?.address}
-          </p>
-        </div>
-
-        <div className="min-w-0">
-          <Bilingual
-            tKey="common.city"
-            as="p"
-            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
-          />
-          <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
-            {bank?.city}
-          </p>
-        </div>
-
-        <div className="min-w-0 sm:col-span-2">
-          <Bilingual
-            tKey="superAdmin.phone"
-            as="p"
-            className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
-          />
-          <p className="mt-1 break-words text-[12px] text-[var(--color-text-secondary)]">
-            {bank?.phoneNumber}
-          </p>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="border-t border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-4 py-4 shadow-[inset_0_1px_0_rgba(0,0,0,0.02)]">
-          <div className="mb-3 flex items-center gap-2">
-            <Droplets size={15} className="text-[var(--color-primary)]" />
-            <Bilingual
-              tKey="bloodCentre.bloodAvailabilityTitle"
-              as="span"
-              className="text-[12px] font-bold text-[var(--color-text-primary)]"
-            />
-          </div>
-
-          <div className="space-y-2.5">
-            {bank?.availability.map((availability) => (
-              <div
-                key={availability?.id}
-                className="
-                  flex
-                  items-center
-                  justify-between
-                  gap-3
-                  rounded-lg
-                  border
-                  border-[var(--color-border-light)]
-                  bg-white
-                  px-3.5
-                  py-3
-                  shadow-[0_2px_10px_rgba(0,0,0,0.04)]
-                "
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                  bank.isActive
+                    ? "bg-[var(--color-success-bg)] text-[var(--color-success)]"
+                    : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
+                }`}
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <span
-                    className="
-                      inline-flex
-                      shrink-0
-                      items-center
-                      justify-center
-                      rounded-md
-                      bg-[var(--color-icon-bg-soft)]
-                      px-2
-                      py-1
-                      text-[11px]
-                      font-bold
-                      text-[var(--color-primary)]
-                    "
-                  >
-                    {availability?.bloodGroup}
-                  </span>
+                {bank.isActive ? "Active" : "Inactive"}
+              </span>
 
-                  <div className="min-w-0">
-                    <p className="truncate text-[11px] font-medium uppercase text-[var(--color-text-secondary)]">
-                      {availability?.bloodType}
-                    </p>
-                    <p className="text-[12px] font-bold text-[var(--color-text-body)]">
-                      {availability?.units} <BilingualInline tKey="bloodCentre.units" />
-                    </p>
-                  </div>
-                </div>
+              {bank.availability.length > 0 && (
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${unitBadgeClass(bankStockLevel)}`}
+                >
+                  {bankStockLevel !== "healthy" && (
+                    <AlertTriangle size={10} strokeWidth={2} />
+                  )}
+                  {bankTotalUnits} {unitsWordText}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
 
-                <div className="flex shrink-0 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => onAddStock(availability.id)}
-                    className="
-                      flex
-                      h-9
-                      w-9
-                      shrink-0
-                      items-center
-                      justify-center
-                      rounded-lg
-                      border
-                      border-[var(--color-border-lighter)]
-                      bg-white
-                      text-[var(--color-text-tertiary)]
-                      shadow-sm
-                      transition-all
-                      duration-200
-                      hover:border-[var(--color-success-bg)]
-                      hover:bg-[var(--color-success-bg)]
-                      hover:text-[var(--color-success)]
-                      focus-visible:outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-[var(--color-primary)]
-                    "
-                    aria-label={`Add stock for ${availability?.bloodGroup} ${availability?.bloodType}`}
-                  >
-                    <PlusCircle size={14} />
-                  </button>
+        {/* DETAILS */}
+        <div className="mt-4 rounded-xl border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] p-3">
+          <DetailField
+            icon={MapPin}
+            label="Address"
+            value={bank.address}
+            className="border-b border-[var(--color-border-lighter)] pb-2.5"
+          />
 
-                  <button
-                    type="button"
-                    onClick={() => onUpdate(availability.id)}
-                    className="
-                      flex
-                      h-9
-                      w-9
-                      shrink-0
-                      items-center
-                      justify-center
-                      rounded-lg
-                      border
-                      border-[var(--color-border-lighter)]
-                      bg-white
-                      text-[var(--color-text-tertiary)]
-                      shadow-sm
-                      transition-all
-                      duration-200
-                      hover:border-[var(--primary-200)]
-                      hover:bg-[var(--color-icon-bg-soft)]
-                      hover:text-[var(--color-primary)]
-                      focus-visible:outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-[var(--color-primary)]
-                    "
-                    aria-label={`Update ${availability?.bloodGroup} ${availability?.bloodType}`}
-                  >
-                    <Pencil size={14} />
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-2.5 sm:grid-cols-3">
+            <DetailField icon={MapPin} label="City" value={bank.city} />
+            <DetailField icon={MapPin} label="District" value={bank.district} />
+            <DetailField icon={Hash} label="Pincode" value={bank.pincode} />
+            <DetailField icon={Phone} label="Phone" value={bank.phoneNumber} />
+            <DetailField
+              icon={Mail}
+              label="Email"
+              value={bank.email}
+              className="col-span-2 sm:col-span-2"
+            />
 
-            {bank?.availability?.length === 0 && (
-              <Bilingual
-                tKey="superAdmin.noBloodAvailabilityFound"
-                as="p"
-                className="px-2 py-4 text-center text-[12px] text-[var(--color-text-placeholder)]"
+            {bank.licenceNumber && (
+              <DetailField
+                icon={FileCheck2}
+                label="Licence No."
+                value={bank.licenceNumber}
+              />
+            )}
+
+            {bank.licenceExpiryDate && (
+              <DetailField
+                icon={CalendarDays}
+                label="Licence Expiry"
+                value={formatDate(bank.licenceExpiryDate)}
+              />
+            )}
+
+            {bank.latitude != null && (
+              <DetailField
+                icon={LocateFixed}
+                label="Latitude"
+                value={String(bank.latitude)}
+              />
+            )}
+
+            {bank.longitude != null && (
+              <DetailField
+                icon={LocateFixed}
+                label="Longitude"
+                value={String(bank.longitude)}
               />
             )}
           </div>
+
+          {bank.locationUrl && (
+            <a
+              href={bank.locationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2.5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-[var(--color-primary)] hover:underline"
+            >
+              <Link2 size={13} strokeWidth={2} />
+              View location on map
+            </a>
+          )}
         </div>
+      </div>
+
+      {/* BLOOD AVAILABILITY */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+        <div className="mb-3 flex items-center gap-2">
+          <Droplets size={15} className="text-[var(--color-primary)]" />
+          <Bilingual
+            tKey="bloodCentre.bloodAvailabilityTitle"
+            as="h3"
+            className="text-[13px] font-bold text-[var(--color-text-body)]"
+          />
+        </div>
+
+        {bank.availability.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-[var(--color-border-light)] px-4 py-10 text-center">
+            <Droplets size={22} className="text-[var(--color-border)]" />
+            <Bilingual
+              tKey="superAdmin.noBloodAvailabilityFound"
+              as="p"
+              className="mt-3 text-[12px] text-[var(--color-text-placeholder)]"
+            />
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-[var(--color-border-light)]">
+            <table className="w-full table-fixed border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)]">
+                  <th
+                    style={{ width: "18%" }}
+                    className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]"
+                  >
+                    <Bilingual tKey="bloodCentre.bloodGroup" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
+                  </th>
+                  <th
+                    style={{ width: "32%" }}
+                    className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]"
+                  >
+                    <Bilingual tKey="bloodCentre.bloodType" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
+                  </th>
+                  <th
+                    style={{ width: "18%" }}
+                    className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]"
+                  >
+                    <Bilingual tKey="bloodCentre.units" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
+                  </th>
+                  <th
+                    style={{ width: "32%" }}
+                    className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]"
+                  >
+                    <Bilingual tKey="superAdmin.actions" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {bank.availability.map((availability) => {
+                  const level = getStockLevel(availability.units);
+
+                  return (
+                    <tr
+                      key={availability.id}
+                      className="border-b border-[var(--color-border-lighter)] transition-colors duration-150 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
+                      style={{
+                        boxShadow:
+                          level === "healthy"
+                            ? undefined
+                            : `inset 3px 0 0 0 ${rowAccent(level)}`,
+                      }}
+                    >
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center justify-center rounded-md bg-[var(--color-icon-bg-soft)] px-2.5 py-1 text-[12px] font-bold text-[var(--color-primary)]">
+                          {availability.bloodGroup}
+                        </span>
+                      </td>
+
+                      <td className="break-words px-4 py-3 text-[13px] font-medium uppercase leading-4 text-[var(--color-text-secondary)]">
+                        {availability.bloodType}
+                      </td>
+
+                      <td className="px-3 py-3 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-bold ${unitBadgeClass(level)}`}
+                        >
+                          {level !== "healthy" && (
+                            <AlertTriangle size={11} strokeWidth={2} />
+                          )}
+                          {availability.units} {unitsWordText}
+                        </span>
+                      </td>
+
+                      <td className="px-3 py-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => onAddStock(availability.id)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--color-success-bg)] hover:bg-[var(--color-success-bg)] hover:text-[var(--color-success)] active:translate-y-0"
+                            aria-label={`Add stock for ${availability.bloodGroup} ${availability.bloodType}`}
+                          >
+                            <PlusCircle size={14} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => onUpdate(availability.id)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:translate-y-0"
+                            aria-label={`Update ${availability.bloodGroup} ${availability.bloodType}`}
+                          >
+                            <Pencil size={14} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setHistoryItem(availability)}
+                            disabled={!Number.isFinite(Number(availability.id))}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40"
+                            aria-label={`${availability.bloodGroup} ${availability.bloodType} history`}
+                          >
+                            <History size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {historyItem && (
+        <InventoryHistoryModal
+          inventoryId={Number(historyItem.id)}
+          title={`${bank.bloodBankName} · ${historyItem.bloodGroup} ${historyItem.bloodType}`}
+          onClose={() => setHistoryItem(null)}
+        />
       )}
     </div>
   );
 }
 
-// STAT CARD
-function StatCard({
+// A single labelled field inside the detail panel's info card.
+function DetailField({
   icon: Icon,
-  tKey,
+  label,
   value,
-  color,
+  className = "",
 }: {
-  icon: typeof Building2;
-  tKey: string;
+  icon: typeof MapPin;
+  label: string;
   value: string;
-  color: "warning" | "success" | "danger";
+  className?: string;
 }) {
-  const colorStyles = {
-    warning: {
-      background: "var(--color-stat-red)",
-      iconBackground: "var(--color-stat-red)",
-      text: "var(--color-white)",
-    },
-    success: {
-      background: "var(--color-stat-green)",
-      iconBackground: "var(--color-stat-green)",
-      text: "var(--color-white)",
-    },
-    danger: {
-      background: "var(--color-stat-yellow)",
-      iconBackground: "var(--color-stat-yellow)",
-      text: "var(--color-white)",
-    },
-  };
-
-  const styles = colorStyles[color];
-
   return (
-    <div
-      className="
-        flex
-        min-w-0
-        items-center
-        gap-3
-        rounded-xl
-        px-4
-        py-4
-        shadow-[0_2px_10px_rgba(0,0,0,0.08)]
-        transition-all
-        duration-200
-        hover:-translate-y-[1px]
-        hover:shadow-[0_7px_20px_rgba(0,0,0,0.12)]
-      "
-      style={{
-        backgroundColor: styles.background,
-      }}
-    >
-      <div
-        className="
-          flex
-          h-10
-          w-10
-          shrink-0
-          items-center
-          justify-center
-          rounded-xl
-        "
-        style={{
-          backgroundColor: styles.iconBackground,
-        }}
-      >
-        <Icon
-          size={18}
-          strokeWidth={2}
-          style={{
-            color: styles.text,
-          }}
-        />
-      </div>
+    <div className={`flex min-w-0 items-start gap-2 ${className}`}>
+      <Icon
+        size={13}
+        strokeWidth={2}
+        className="mt-0.5 shrink-0 text-[var(--color-text-placeholder-alt)]"
+      />
 
       <div className="min-w-0">
-        <Bilingual
-          tKey={tKey}
-          as="p"
-          className="
-            truncate
-            text-[11px]
-            font-medium
-            uppercase
-            tracking-wide
-          "
-          style={{ color: styles.text }}
-          enClassName="mt-0.5 block text-[0.75em] font-normal leading-tight opacity-80"
-        />
-
-        <p
-          className="
-            mt-0.5
-            text-[19px]
-            font-bold
-          "
-          style={{
-            color: styles.text,
-          }}
-        >
-          {value}
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]">
+          {label}
+        </p>
+        <p className="mt-0.5 break-words text-[13px] font-medium leading-4 text-[var(--color-text-secondary)]">
+          {value || "—"}
         </p>
       </div>
     </div>
@@ -1927,6 +1213,11 @@ function UpdateUnitsModal({
 
   return (
     <div
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !saving) {
+          onClose();
+        }
+      }}
       className={`
         motion-scrim
         fixed
@@ -2339,6 +1630,11 @@ function AddStockModal({
 
   return (
     <div
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !saving) {
+          onClose();
+        }
+      }}
       className={`
         motion-scrim
         fixed
