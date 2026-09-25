@@ -285,8 +285,8 @@ export function BloodCentreRegistrationForm() {
       district: data.district,
       city: data.city,
       pincode: data.pinCode,
-      latitude: Number(data.latitude),
-      longitude: Number(data.longitude),
+      latitude: data.latitude ? Number(data.latitude) : undefined,
+      longitude: data.longitude ? Number(data.longitude) : undefined,
       locationUrl: data.locationUrl,
     };
 
@@ -806,7 +806,6 @@ export function BloodCentreRegistrationForm() {
             id="latitude"
             icon={MapPin}
             label={<Bilingual tKey="bloodCentre.latitude" as="span" />}
-            required
             placeholder={enterLatitude}
             inputMode="decimal"
             autoComplete="off"
@@ -818,7 +817,6 @@ export function BloodCentreRegistrationForm() {
             id="longitude"
             icon={MapPin}
             label={<Bilingual tKey="bloodCentre.longitude" as="span" />}
-            required
             placeholder={enterLongitude}
             inputMode="decimal"
             autoComplete="off"

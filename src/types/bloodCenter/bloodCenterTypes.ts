@@ -35,8 +35,8 @@ export interface BloodCentreRegistrationPayload {
   district: string;
   city: string;
   pincode: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   locationUrl: string;
 }
 

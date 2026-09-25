@@ -49,6 +49,7 @@ import type {
 } from "@/types/master.types";
 import { StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
 import {
   Bilingual,
   BilingualInline,
@@ -91,6 +92,8 @@ export function RecipientManagement() {
   const [requests, setRequests] = useState<SuperAdminBloodRequestSummary[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(ALL);
+  const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
+  const [cityFilter, setCityFilter] = useState<string>(ALL);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -167,11 +170,33 @@ export function RecipientManagement() {
     (request) => request.status === "CLOSED" || request.status === "CANCELLED",
   ).length;
 
-  const isFiltering = search.trim().length > 0 || statusFilter !== ALL;
+  const bloodGroupOptions = useMemo(
+    () =>
+      Array.from(new Set(requests.map((request) => request.bloodGroup).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [requests],
+  );
+
+  const cityOptions = useMemo(
+    () =>
+      Array.from(new Set(requests.map((request) => request.city).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [requests],
+  );
+
+  const isFiltering =
+    search.trim().length > 0 ||
+    statusFilter !== ALL ||
+    bloodGroupFilter !== ALL ||
+    cityFilter !== ALL;
 
   const clearFilters = () => {
     setSearch("");
     setStatusFilter(ALL);
+    setBloodGroupFilter(ALL);
+    setCityFilter(ALL);
   };
 
   const handleRefresh = () => {
@@ -196,9 +221,14 @@ export function RecipientManagement() {
       const matchesStatus =
         statusFilter === ALL || request.status === statusFilter;
 
-      return matchesQuery && matchesStatus;
+      const matchesBloodGroup =
+        bloodGroupFilter === ALL || request.bloodGroup === bloodGroupFilter;
+
+      const matchesCity = cityFilter === ALL || request.city === cityFilter;
+
+      return matchesQuery && matchesStatus && matchesBloodGroup && matchesCity;
     });
-  }, [requests, search, statusFilter]);
+  }, [requests, search, statusFilter, bloodGroupFilter, cityFilter]);
 
   return (
     <div className="space-y-6">
@@ -289,6 +319,62 @@ export function RecipientManagement() {
               className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
             />
           </div>
+
+          {bloodGroupOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={bloodGroupFilter}
+                onChange={(event) => setBloodGroupFilter(event.target.value)}
+                aria-label="Filter by blood group"
+                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                  bloodGroupFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All blood groups</option>
+                {bloodGroupOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
+
+          {cityOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={cityFilter}
+                onChange={(event) => setCityFilter(event.target.value)}
+                aria-label="Filter by city"
+                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                  cityFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All cities</option>
+                {cityOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
 
           <button
             type="button"
@@ -937,9 +1023,11 @@ function BloodRequestDetailModal({
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [recordingDonorId, setRecordingDonorId] = useState<number | null>(null);
+  const [confirmDonorId, setConfirmDonorId] = useState<number | null>(null);
   const [closing, setClosing] = useState(false);
   const [closeRemarks, setCloseRemarks] = useState("");
   const [showCloseForm, setShowCloseForm] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const closeLabel = useBilingualText("common.close");
   const remarksPlaceholder = useBilingualText("bloodCentre.remarksOptional");
 
@@ -982,6 +1070,7 @@ function BloodRequestDetailModal({
     detail?.status === "CENTRES_FOUND" || detail?.status === "NO_CENTRES_FOUND";
 
   const handleRecordDonation = async (donorId: number) => {
+    setConfirmDonorId(null);
     setRecordingDonorId(donorId);
     setActionError("");
 
@@ -1012,6 +1101,7 @@ function BloodRequestDetailModal({
       setDetail(updated);
       onChanged(updated);
       setShowCloseForm(false);
+      setConfirmCloseOpen(false);
     } catch (err) {
       setActionError(getApiErrorMessage(err, "Unable to close this request."));
     } finally {
@@ -1019,7 +1109,12 @@ function BloodRequestDetailModal({
     }
   };
 
+  const confirmDonorName = detail?.donorCandidates.find(
+    (donor) => donor.id === confirmDonorId,
+  )?.donorName;
+
   return (
+    <>
     <div
       onClick={(event) => {
         if (event.target === event.currentTarget && !closing) {
@@ -1244,7 +1339,7 @@ function BloodRequestDetailModal({
                         {isOpen && (
                           <button
                             type="button"
-                            onClick={() => handleRecordDonation(donor.id)}
+                            onClick={() => setConfirmDonorId(donor.id)}
                             disabled={recordingDonorId !== null}
                             className="
                               flex
@@ -1348,7 +1443,7 @@ function BloodRequestDetailModal({
 
                         <button
                           type="button"
-                          onClick={handleClose}
+                          onClick={() => setConfirmCloseOpen(true)}
                           disabled={closing}
                           className="flex min-h-[38px] flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(239,68,68,0.22)] transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
@@ -1371,6 +1466,38 @@ function BloodRequestDetailModal({
         </div>
       </div>
     </div>
+
+      <ConfirmDialog
+        open={confirmCloseOpen}
+        title="Close this request?"
+        description="This marks the blood request as closed. This can't be undone from here."
+        confirmLabel={
+          <BilingualInline tKey="superAdmin.confirmClose" />
+        }
+        danger
+        loading={closing}
+        onConfirm={handleClose}
+        onCancel={() => setConfirmCloseOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmDonorId !== null}
+        title="Record this donation?"
+        description={
+          confirmDonorName
+            ? `This marks ${confirmDonorName} as having donated for this request.`
+            : "This marks the selected donor as having donated for this request."
+        }
+        confirmLabel={<BilingualInline tKey="superAdmin.recordDonation" />}
+        loading={recordingDonorId !== null}
+        onConfirm={() => {
+          if (confirmDonorId !== null) {
+            handleRecordDonation(confirmDonorId);
+          }
+        }}
+        onCancel={() => setConfirmDonorId(null)}
+      />
+    </>
   );
 }
 

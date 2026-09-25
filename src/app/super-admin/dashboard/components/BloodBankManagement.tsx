@@ -11,7 +11,6 @@ import {
   Droplets,
   FileCheck2,
   Hash,
-  History,
   Link2,
   LocateFixed,
   Loader2,
@@ -26,8 +25,8 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
 import type {
-  BloodAvailability,
   SuperAdminBloodBank,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
@@ -35,8 +34,15 @@ import {
   getSuperAdminBloodBanks,
   updateSuperAdminBloodUnits,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
+import {
+  getBloodComponents,
+  getBloodGroups,
+} from "@/services/master/masterService";
+import type {
+  MasterBloodComponent,
+  MasterBloodGroup,
+} from "@/types/master.types";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
-import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
 import { StatTile } from "@/app/components/ui/StatTile";
 import type { StockLevel } from "@/utils/bloodStock";
 import { getStockLevel, rowAccent, unitBadgeClass } from "@/utils/bloodStock";
@@ -72,7 +78,8 @@ export default function BloodBankManagement() {
   const [priorFilteredBankIdsKey, setPriorFilteredBankIdsKey] = useState("");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>(ALL);
-  const [lowStockOnly, setLowStockOnly] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>(ALL);
+  const [cityFilter, setCityFilter] = useState<string>(ALL);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -84,6 +91,7 @@ export default function BloodBankManagement() {
   const [selectedAvailabilityId, setSelectedAvailabilityId] = useState<
     number | null
   >(null);
+  const [movement, setMovement] = useState<StockMovement>("CORRECTION");
   const [units, setUnits] = useState("");
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
@@ -99,6 +107,24 @@ export default function BloodBankManagement() {
   const [addStockRemarks, setAddStockRemarks] = useState("");
   const [addStockSaving, setAddStockSaving] = useState(false);
   const [addStockError, setAddStockError] = useState("");
+
+  const [masterGroups, setMasterGroups] = useState<MasterBloodGroup[]>([]);
+  const [masterComponents, setMasterComponents] = useState<
+    MasterBloodComponent[]
+  >([]);
+
+  const [newBloodModalOpen, setNewBloodModalOpen] = useState(false);
+  const [newBloodBank, setNewBloodBank] = useState<SuperAdminBloodBank | null>(
+    null,
+  );
+  const [newBloodGroupId, setNewBloodGroupId] = useState<number | "">("");
+  const [newBloodComponentId, setNewBloodComponentId] = useState<number | "">(
+    "",
+  );
+  const [newBloodUnits, setNewBloodUnits] = useState("");
+  const [newBloodRemarks, setNewBloodRemarks] = useState("");
+  const [newBloodSaving, setNewBloodSaving] = useState(false);
+  const [newBloodError, setNewBloodError] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -136,21 +162,25 @@ export default function BloodBankManagement() {
     };
   }, [reloadToken]);
 
-  const lowStockBankIds = useMemo(() => {
-    const ids = new Set<number>();
+  useEffect(() => {
+    let cancelled = false;
 
-    for (const bank of bloodBanks) {
-      const hasLowStock = bank.availability.some(
-        (item) => getStockLevel(item.units) !== "healthy",
-      );
+    Promise.all([getBloodGroups(), getBloodComponents()])
+      .then(([groups, components]) => {
+        if (!cancelled) {
+          setMasterGroups(groups);
+          setMasterComponents(components);
+        }
+      })
+      .catch(() => {
+        // Non-critical: the Add Blood form falls back to whatever groups /
+        // components already appear across loaded banks.
+      });
 
-      if (hasLowStock) {
-        ids.add(bank.id);
-      }
-    }
-
-    return ids;
-  }, [bloodBanks]);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const categoryOptions = useMemo(() => {
     const fromData = Array.from(
@@ -162,13 +192,25 @@ export default function BloodBankManagement() {
       : ["Government", "Private", "Charitable", "Redcross"];
   }, [bloodBanks]);
 
+  const cityOptions = useMemo(
+    () =>
+      Array.from(new Set(bloodBanks.map((bank) => bank.city).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [bloodBanks],
+  );
+
   const isFiltering =
-    search.trim().length > 0 || categoryFilter !== ALL || lowStockOnly;
+    search.trim().length > 0 ||
+    categoryFilter !== ALL ||
+    statusFilter !== ALL ||
+    cityFilter !== ALL;
 
   const clearFilters = () => {
     setSearch("");
     setCategoryFilter(ALL);
-    setLowStockOnly(false);
+    setStatusFilter(ALL);
+    setCityFilter(ALL);
   };
 
   // Refresh: reset any active filters, reload the data, and give the icon a
@@ -198,11 +240,15 @@ export default function BloodBankManagement() {
       const matchesCategory =
         categoryFilter === ALL || bank.category === categoryFilter;
 
-      const matchesLowStock = !lowStockOnly || lowStockBankIds.has(bank.id);
+      const matchesStatus =
+        statusFilter === ALL ||
+        (statusFilter === "active" ? bank.isActive : !bank.isActive);
 
-      return matchesSearch && matchesCategory && matchesLowStock;
+      const matchesCity = cityFilter === ALL || bank.city === cityFilter;
+
+      return matchesSearch && matchesCategory && matchesStatus && matchesCity;
     });
-  }, [bloodBanks, search, categoryFilter, lowStockOnly, lowStockBankIds]);
+  }, [bloodBanks, search, categoryFilter, statusFilter, cityFilter]);
 
   // Keep the detail panel pointed at a bank that's actually in view: fall
   // back to the first result whenever the visible set changes and the
@@ -250,6 +296,7 @@ export default function BloodBankManagement() {
 
     setSelectedBank(bank);
     setSelectedAvailabilityId(availability?.id);
+    setMovement("CORRECTION");
     setUnits(String(availability?.units));
     setFormError("");
     setUpdateModalOpen(true);
@@ -306,6 +353,24 @@ export default function BloodBankManagement() {
       return;
     }
 
+    const isCorrection = movement === "CORRECTION";
+
+    const changedUnits = isCorrection
+      ? parsedUnits - currentAvailability.units
+      : -Math.abs(parsedUnits);
+
+    if (changedUnits === 0) {
+      setFormError("No change to apply.");
+      return;
+    }
+
+    if (!isCorrection && Math.abs(changedUnits) > currentAvailability.units) {
+      setFormError(
+        `Only ${currentAvailability.units} units are available to ${movement.toLowerCase()}.`,
+      );
+      return;
+    }
+
     try {
       setSaving(true);
       setFormError("");
@@ -315,8 +380,8 @@ export default function BloodBankManagement() {
         availabilityId: selectedAvailabilityId,
         bloodGroupId: currentAvailability.bloodGroupId,
         bloodComponentId: currentAvailability.bloodComponentId,
-        previousUnits: currentAvailability.units,
-        units: parsedUnits,
+        movement,
+        changedUnits,
       });
 
       if (!response.success) {
@@ -340,7 +405,7 @@ export default function BloodBankManagement() {
 
               return {
                 ...item,
-                units: parsedUnits,
+                units: item.units + changedUnits,
               };
             }),
           };
@@ -439,6 +504,76 @@ export default function BloodBankManagement() {
       setAddStockError("Unable to add stock. Please try again.");
     } finally {
       setAddStockSaving(false);
+    }
+  };
+
+  const openNewBloodModal = (bank: SuperAdminBloodBank) => {
+    setNewBloodBank(bank);
+    setNewBloodGroupId("");
+    setNewBloodComponentId("");
+    setNewBloodUnits("");
+    setNewBloodRemarks("");
+    setNewBloodError("");
+    setNewBloodModalOpen(true);
+  };
+
+  const closeNewBloodModal = () => {
+    if (newBloodSaving) {
+      return;
+    }
+
+    setNewBloodModalOpen(false);
+  };
+
+  const submitNewBlood = async () => {
+    if (!newBloodBank) {
+      return;
+    }
+
+    if (!newBloodGroupId) {
+      setNewBloodError("Select a blood group.");
+      return;
+    }
+
+    if (!newBloodComponentId) {
+      setNewBloodError("Select a blood type.");
+      return;
+    }
+
+    if (!newBloodUnits.trim()) {
+      setNewBloodError("Enter units.");
+      return;
+    }
+
+    const parsedUnits = Number(newBloodUnits);
+
+    if (!Number.isInteger(parsedUnits) || parsedUnits < 1) {
+      setNewBloodError("Enter a whole number of at least 1.");
+      return;
+    }
+
+    try {
+      setNewBloodSaving(true);
+      setNewBloodError("");
+
+      await addStockToCentre({
+        bloodCentreId: newBloodBank.id,
+        bloodGroupId: newBloodGroupId,
+        bloodComponentId: newBloodComponentId,
+        units: parsedUnits,
+        remarks: newBloodRemarks.trim() || undefined,
+      });
+
+      // The backend creates the row if it doesn't exist yet (or tops up a
+      // matching one) but doesn't hand back its inventory id, so reload the
+      // banks list to pick up the new/updated row with a real id.
+      setReloadToken((token) => token + 1);
+      setNewBloodModalOpen(false);
+    } catch (err) {
+      console.error("Add blood error:", err);
+      setNewBloodError("Unable to add this blood entry. Please try again.");
+    } finally {
+      setNewBloodSaving(false);
     }
   };
 
@@ -545,30 +680,58 @@ export default function BloodBankManagement() {
             />
           </div>
 
-          {/* LOW STOCK */}
-          <button
-            type="button"
-            onClick={() => setLowStockOnly((value) => !value)}
-            disabled={lowStockBankIds.size === 0 && !lowStockOnly}
-            aria-pressed={lowStockOnly}
-            className={`flex h-10 shrink-0 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
-              lowStockOnly
-                ? "border-transparent bg-[var(--danger-50)] text-[var(--danger-700)]"
-                : "border-[var(--color-border-light)] bg-white text-[var(--color-text-quaternary)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
-            }`}
-          >
-            <AlertTriangle size={14} strokeWidth={2} />
-            Low stock
-            <span
-              className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
-                lowStockOnly
-                  ? "bg-[var(--danger-700)] text-white"
-                  : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
+          {/* STATUS */}
+          <div className="relative shrink-0">
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              aria-label="Filter by status"
+              className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                statusFilter !== ALL
+                  ? "border-[var(--primary-200)] font-medium"
+                  : "border-[var(--color-border-light)]"
               }`}
             >
-              {lowStockBankIds.size}
-            </span>
-          </button>
+              <option value={ALL}>All statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+
+            <ChevronDown
+              size={15}
+              strokeWidth={1.8}
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+            />
+          </div>
+
+          {/* CITY */}
+          {cityOptions.length > 0 && (
+            <div className="relative shrink-0">
+              <select
+                value={cityFilter}
+                onChange={(event) => setCityFilter(event.target.value)}
+                aria-label="Filter by city"
+                className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                  cityFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All cities</option>
+                {cityOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
 
           {/* REFRESH */}
           <button
@@ -734,6 +897,7 @@ export default function BloodBankManagement() {
               onAddStock={(availabilityId) =>
                 openAddStockModal(activeBank, availabilityId)
               }
+              onAddNewBlood={() => openNewBloodModal(activeBank)}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center px-6 py-14 text-center">
@@ -759,6 +923,8 @@ export default function BloodBankManagement() {
           open={updateModalOpen}
           bank={selectedBank}
           availabilityId={selectedAvailabilityId}
+          movement={movement}
+          setMovement={setMovement}
           units={units}
           setUnits={setUnits}
           error={formError}
@@ -784,6 +950,28 @@ export default function BloodBankManagement() {
           onSave={submitAddStock}
         />
       )}
+
+      {/* ADD BLOOD (NEW ENTRY) MODAL */}
+      {newBloodBank && (
+        <AddBloodModal
+          open={newBloodModalOpen}
+          bank={newBloodBank}
+          bloodGroups={masterGroups}
+          bloodComponents={masterComponents}
+          bloodGroupId={newBloodGroupId}
+          setBloodGroupId={setNewBloodGroupId}
+          bloodComponentId={newBloodComponentId}
+          setBloodComponentId={setNewBloodComponentId}
+          units={newBloodUnits}
+          setUnits={setNewBloodUnits}
+          remarks={newBloodRemarks}
+          setRemarks={setNewBloodRemarks}
+          error={newBloodError}
+          saving={newBloodSaving}
+          onClose={closeNewBloodModal}
+          onSave={submitNewBlood}
+        />
+      )}
     </section>
   );
 }
@@ -800,19 +988,6 @@ function BankListRow({
   active: boolean;
   onSelect: () => void;
 }) {
-  const bankTotalUnits = bank.availability.reduce(
-    (sum, item) => sum + item.units,
-    0,
-  );
-
-  const bankStockLevel: StockLevel = bank.availability.some(
-    (item) => getStockLevel(item.units) === "critical",
-  )
-    ? "critical"
-    : bank.availability.some((item) => getStockLevel(item.units) === "low")
-      ? "low"
-      : "healthy";
-
   return (
     <button
       type="button"
@@ -838,20 +1013,9 @@ function BankListRow({
           {bank.bloodBankName}
         </p>
         <p className="mt-0.5 truncate text-[11px] text-[var(--color-text-placeholder-alt)]">
-          {bank.category} · {bank.city}
+          {bank.category} · {bank.city} · {bank.pincode}
         </p>
       </div>
-
-      {bank.availability.length > 0 && (
-        <span
-          className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${unitBadgeClass(bankStockLevel)}`}
-        >
-          {bankStockLevel !== "healthy" && (
-            <AlertTriangle size={9} strokeWidth={2} />
-          )}
-          {bankTotalUnits}
-        </span>
-      )}
     </button>
   );
 }
@@ -862,17 +1026,15 @@ function BankDetailPanel({
   onBack,
   onUpdate,
   onAddStock,
+  onAddNewBlood,
 }: {
   bank: SuperAdminBloodBank;
   onBack: () => void;
   onUpdate: (availabilityId: number) => void;
   onAddStock: (availabilityId: number) => void;
+  onAddNewBlood: () => void;
 }) {
   const unitsWordText = useBilingualText("bloodCentre.units");
-
-  const [historyItem, setHistoryItem] = useState<BloodAvailability | null>(
-    null,
-  );
 
   const bankTotalUnits = bank.availability.reduce(
     (sum, item) => sum + item.units,
@@ -1009,13 +1171,24 @@ function BankDetailPanel({
 
       {/* BLOOD AVAILABILITY */}
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
-        <div className="mb-3 flex items-center gap-2">
-          <Droplets size={15} className="text-[var(--color-primary)]" />
-          <Bilingual
-            tKey="bloodCentre.bloodAvailabilityTitle"
-            as="h3"
-            className="text-[13px] font-bold text-[var(--color-text-body)]"
-          />
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Droplets size={15} className="text-[var(--color-primary)]" />
+            <Bilingual
+              tKey="bloodCentre.bloodAvailabilityTitle"
+              as="h3"
+              className="text-[13px] font-bold text-[var(--color-text-body)]"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={onAddNewBlood}
+            className="flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3 text-[11px] font-semibold text-white shadow-[0_4px_12px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0"
+          >
+            <Plus size={13} strokeWidth={2.4} className="shrink-0" />
+            Add Blood
+          </button>
         </div>
 
         {bank.availability.length === 0 ? (
@@ -1114,16 +1287,6 @@ function BankDetailPanel({
                           >
                             <Pencil size={14} />
                           </button>
-
-                          <button
-                            type="button"
-                            onClick={() => setHistoryItem(availability)}
-                            disabled={!Number.isFinite(Number(availability.id))}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40"
-                            aria-label={`${availability.bloodGroup} ${availability.bloodType} history`}
-                          >
-                            <History size={14} />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1134,14 +1297,6 @@ function BankDetailPanel({
           </div>
         )}
       </div>
-
-      {historyItem && (
-        <InventoryHistoryModal
-          inventoryId={Number(historyItem.id)}
-          title={`${bank.bloodBankName} · ${historyItem.bloodGroup} ${historyItem.bloodType}`}
-          onClose={() => setHistoryItem(null)}
-        />
-      )}
     </div>
   );
 }
@@ -1183,6 +1338,8 @@ function UpdateUnitsModal({
   open,
   bank,
   availabilityId,
+  movement,
+  setMovement,
   units,
   setUnits,
   error,
@@ -1193,6 +1350,8 @@ function UpdateUnitsModal({
   open: boolean;
   bank: SuperAdminBloodBank;
   availabilityId: number | null;
+  movement: StockMovement;
+  setMovement: (value: StockMovement) => void;
   units: string;
   setUnits: (value: string) => void;
   error: string;
@@ -1202,6 +1361,13 @@ function UpdateUnitsModal({
 }) {
   const { rendered, visible } = useExitTransition(open, 200);
   const closeLabel = useBilingualText("common.close");
+  const movementIssueText = useBilingualText("bloodCentre.movementIssue");
+  const movementDiscardText = useBilingualText("bloodCentre.movementDiscard");
+  const movementCorrectionText = useBilingualText(
+    "bloodCentre.movementCorrection",
+  );
+
+  const isCorrection = movement === "CORRECTION";
 
   const availability = bank?.availability.find(
     (item) => item?.id === availabilityId,
@@ -1433,6 +1599,55 @@ function UpdateUnitsModal({
             </div>
           </div>
 
+          {/* MOVEMENT / REASON */}
+          <div className="mt-4">
+            <Bilingual
+              tKey="bloodCentre.movement"
+              as="label"
+              htmlFor="updateMovement"
+              className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
+            />
+
+            <div className="relative mt-2">
+              <select
+                id="updateMovement"
+                value={movement}
+                disabled={saving}
+                onChange={(event) =>
+                  setMovement(event.target.value as StockMovement)
+                }
+                className="
+                  h-[44px]
+                  w-full
+                  appearance-none
+                  rounded-lg
+                  border
+                  border-[var(--color-border)]
+                  bg-white
+                  px-3
+                  pr-10
+                  text-[13px]
+                  text-[var(--color-text-body)]
+                  outline-none
+                  transition-all
+                  focus:border-[var(--color-primary)]
+                  focus:ring-2
+                  focus:ring-[var(--color-primary)]/15
+                "
+              >
+                <option value="ISSUE">{movementIssueText}</option>
+                <option value="DISCARD">{movementDiscardText}</option>
+                <option value="CORRECTION">{movementCorrectionText}</option>
+              </select>
+
+              <ChevronDown
+                size={17}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          </div>
+
           {/* UNITS */}
 
           <div className="mt-5">
@@ -1445,7 +1660,12 @@ function UpdateUnitsModal({
                 text-[var(--color-text-secondary)]
               "
             >
-              <Bilingual tKey="superAdmin.availableUnitsField" as="span" />
+              <Bilingual
+                tKey={
+                  isCorrection ? "bloodCentre.newTotalUnits" : "bloodCentre.units"
+                }
+                as="span"
+              />
               <span className="text-red-500"> *</span>
             </label>
 
@@ -1920,6 +2140,290 @@ function AddStockModal({
               <BilingualInline tKey="superAdmin.adding" />
             ) : (
               <BilingualInline tKey="superAdmin.addStock" />
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ADD BLOOD MODAL — unlike AddStockModal (tops up an existing row), this
+// creates a brand new blood group / type entry for the centre from scratch.
+function AddBloodModal({
+  open,
+  bank,
+  bloodGroups,
+  bloodComponents,
+  bloodGroupId,
+  setBloodGroupId,
+  bloodComponentId,
+  setBloodComponentId,
+  units,
+  setUnits,
+  remarks,
+  setRemarks,
+  error,
+  saving,
+  onClose,
+  onSave,
+}: {
+  open: boolean;
+  bank: SuperAdminBloodBank;
+  bloodGroups: MasterBloodGroup[];
+  bloodComponents: MasterBloodComponent[];
+  bloodGroupId: number | "";
+  setBloodGroupId: (value: number | "") => void;
+  bloodComponentId: number | "";
+  setBloodComponentId: (value: number | "") => void;
+  units: string;
+  setUnits: (value: string) => void;
+  remarks: string;
+  setRemarks: (value: string) => void;
+  error: string;
+  saving: boolean;
+  onClose: () => void;
+  onSave: () => void;
+}) {
+  const { rendered, visible } = useExitTransition(open, 200);
+  const closeLabel = useBilingualText("common.close");
+  const selectBloodGroupText = useBilingualText("bloodCentre.selectBloodGroup");
+  const selectBloodTypeText = useBilingualText("bloodCentre.selectBloodType");
+  const enterUnitsPlaceholder = useBilingualText("bloodCentre.enterUnits");
+
+  if (!rendered) {
+    return null;
+  }
+
+  return (
+    <div
+      onClick={(event) => {
+        if (event.target === event.currentTarget && !saving) {
+          onClose();
+        }
+      }}
+      className={`
+        motion-scrim
+        fixed
+        inset-0
+        z-[100]
+        flex
+        items-center
+        justify-center
+        bg-black/45
+        px-4
+        backdrop-blur-md
+        transition-opacity
+        duration-200
+        ${visible ? "opacity-100" : "opacity-0"}
+      `}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="add-blood-title"
+    >
+      <div
+        className={`
+          motion-surface
+          flex
+          max-h-[90vh]
+          w-full
+          max-w-[430px]
+          flex-col
+          overflow-hidden
+          rounded-2xl
+          bg-white
+          shadow-[0_25px_70px_rgba(0,0,0,0.18)]
+          transition-[transform,opacity]
+          duration-200
+          ${
+            visible
+              ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+              : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+          }
+        `}
+      >
+        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
+                <Plus size={17} className="text-[var(--color-primary)]" />
+              </div>
+
+              <div className="min-w-0">
+                <Bilingual
+                  tKey="bloodCentre.addBloodAvailability"
+                  as="h2"
+                  id="add-blood-title"
+                  className="text-[14px] font-bold text-[var(--color-text-primary)]"
+                />
+
+                <p className="mt-0.5 break-words text-[12px] text-[var(--color-text-placeholder-alt)]">
+                  {bank.bloodBankName}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label={closeLabel}
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto px-5 py-5">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Bilingual
+                tKey="bloodCentre.bloodGroup"
+                as="label"
+                htmlFor="newBloodGroup"
+                className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
+              />
+
+              <div className="relative mt-2">
+                <select
+                  id="newBloodGroup"
+                  value={bloodGroupId}
+                  disabled={saving}
+                  onChange={(event) =>
+                    setBloodGroupId(
+                      event.target.value ? Number(event.target.value) : "",
+                    )
+                  }
+                  className="h-[44px] w-full appearance-none rounded-lg border border-[var(--color-border)] bg-white px-3 pr-9 text-[13px] text-[var(--color-text-body)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+                >
+                  <option value="">{selectBloodGroupText}</option>
+                  {bloodGroups.map((group) => (
+                    <option key={group.bloodGroupId} value={group.bloodGroupId}>
+                      {group.bloodGroupName}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Bilingual
+                tKey="bloodCentre.bloodType"
+                as="label"
+                htmlFor="newBloodComponent"
+                className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
+              />
+
+              <div className="relative mt-2">
+                <select
+                  id="newBloodComponent"
+                  value={bloodComponentId}
+                  disabled={saving}
+                  onChange={(event) =>
+                    setBloodComponentId(
+                      event.target.value ? Number(event.target.value) : "",
+                    )
+                  }
+                  className="h-[44px] w-full appearance-none rounded-lg border border-[var(--color-border)] bg-white px-3 pr-9 text-[13px] text-[var(--color-text-body)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+                >
+                  <option value="">{selectBloodTypeText}</option>
+                  {bloodComponents.map((component) => (
+                    <option
+                      key={component.bloodComponentId}
+                      value={component.bloodComponentId}
+                    >
+                      {component.bloodComponentName}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Bilingual
+              tKey="bloodCentre.unitsAvailableLabel"
+              as="label"
+              htmlFor="newBloodUnits"
+              className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
+            />
+
+            <input
+              id="newBloodUnits"
+              type="text"
+              inputMode="numeric"
+              value={units}
+              maxLength={4}
+              disabled={saving}
+              onChange={(event) => {
+                const value = event.target.value.replace(/\D/g, "").slice(0, 4);
+                setUnits(value);
+              }}
+              placeholder={enterUnitsPlaceholder}
+              className="mt-2 h-[44px] w-full rounded-lg border border-[var(--color-border)] bg-white px-3 text-[13px] font-semibold text-[var(--color-text-body)] outline-none transition placeholder:font-normal focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+            />
+          </div>
+
+          <div className="mt-4">
+            <Bilingual
+              tKey="bloodCentre.remarksOptional"
+              as="label"
+              htmlFor="newBloodRemarks"
+              className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
+            />
+
+            <textarea
+              id="newBloodRemarks"
+              value={remarks}
+              disabled={saving}
+              onChange={(event) => setRemarks(event.target.value)}
+              rows={2}
+              className="mt-2 w-full resize-none rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-[13px] text-[var(--color-text-body)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+            />
+          </div>
+
+          {error && (
+            <p role="alert" className="mt-3 text-[12px] text-red-500">
+              {error}
+            </p>
+          )}
+        </div>
+
+        <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-5 py-4">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="min-h-[40px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <BilingualInline tKey="common.cancel" />
+          </button>
+
+          <button
+            type="button"
+            onClick={onSave}
+            disabled={saving}
+            className="flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all hover:bg-[var(--color-dashboard-cta-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {saving && <Loader2 size={14} className="animate-spin shrink-0" />}
+
+            {saving ? (
+              <BilingualInline tKey="superAdmin.adding" />
+            ) : (
+              <BilingualInline tKey="bloodCentre.saveAvailability" />
             )}
           </button>
         </div>

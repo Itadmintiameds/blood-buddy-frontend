@@ -119,22 +119,16 @@ export const bloodCentreRegistrationSchema = z
       .trim()
       .regex(/^\d{6}$/, "Pin Code must be exactly 6 digits")
       .refine((value) => !/^0+$/.test(value), "Enter a valid Pin Code"),
-    latitude: z
-      .string()
-      .trim()
-      .min(1, "Latitude is required")
-      .refine((value) => {
-        const parsed = Number(value);
-        return !Number.isNaN(parsed) && parsed >= -90 && parsed <= 90;
-      }, "Enter a valid latitude (-90 to 90)"),
-    longitude: z
-      .string()
-      .trim()
-      .min(1, "Longitude is required")
-      .refine((value) => {
-        const parsed = Number(value);
-        return !Number.isNaN(parsed) && parsed >= -180 && parsed <= 180;
-      }, "Enter a valid longitude (-180 to 180)"),
+    latitude: z.string().trim().refine((value) => {
+      if (!value) return true;
+      const parsed = Number(value);
+      return !Number.isNaN(parsed) && parsed >= -90 && parsed <= 90;
+    }, "Enter a valid latitude (-90 to 90)"),
+    longitude: z.string().trim().refine((value) => {
+      if (!value) return true;
+      const parsed = Number(value);
+      return !Number.isNaN(parsed) && parsed >= -180 && parsed <= 180;
+    }, "Enter a valid longitude (-180 to 180)"),
     locationUrl: z
       .string()
       .trim()

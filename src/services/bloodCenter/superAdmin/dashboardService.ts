@@ -88,17 +88,15 @@ export async function getSuperAdminBloodBanks(): Promise<
 }
 
 // UPDATE BLOOD UNITS
-// The UI collects a new absolute unit count; the backend's stock-adjustment
-// endpoint only accepts a signed delta, so it's applied here as a CORRECTION.
+// The caller picks the movement reason (Issue / Discard / Correction) and
+// supplies the already-signed delta to apply via the stock-adjustment endpoint.
 export async function updateSuperAdminBloodUnits(
   payload: UpdateBloodUnitsInput,
 ): Promise<{
   success: boolean;
   message: string;
 }> {
-  const changedUnits = payload.units - payload.previousUnits;
-
-  if (changedUnits === 0) {
+  if (payload.changedUnits === 0) {
     return { success: true, message: "No change." };
   }
 
@@ -107,8 +105,8 @@ export async function updateSuperAdminBloodUnits(
     {
       bloodGroupId: payload.bloodGroupId,
       bloodComponentId: payload.bloodComponentId,
-      movement: "CORRECTION",
-      changedUnits,
+      movement: payload.movement,
+      changedUnits: payload.changedUnits,
     },
   );
 

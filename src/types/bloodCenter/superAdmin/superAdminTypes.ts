@@ -1,3 +1,5 @@
+import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
+
 export type SuperAdminSection = "blood-bank" | "donor" | "recipient";
 
 export interface BloodAvailability {
@@ -33,8 +35,8 @@ export interface UpdateBloodUnitsInput {
   availabilityId: number;
   bloodGroupId: number;
   bloodComponentId: number;
-  previousUnits: number;
-  units: number;
+  movement: StockMovement;
+  changedUnits: number;
 }
 
 export interface SuperAdminDonor {

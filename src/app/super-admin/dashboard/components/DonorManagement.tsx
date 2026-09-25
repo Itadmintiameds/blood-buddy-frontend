@@ -75,6 +75,8 @@ export function DonorManagement() {
   const [donors, setDonors] = useState<SuperAdminDonor[]>([]);
   const [search, setSearch] = useState("");
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
+  const [cityFilter, setCityFilter] = useState<string>(ALL);
+  const [districtFilter, setDistrictFilter] = useState<string>(ALL);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -148,6 +150,22 @@ export function DonorManagement() {
     );
   }, [masterGroups, donors]);
 
+  const cityOptions = useMemo(
+    () =>
+      Array.from(new Set(donors.map((donor) => donor.city).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [donors],
+  );
+
+  const districtOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(donors.map((donor) => donor.district).filter(Boolean)),
+      ).sort((a, b) => a.localeCompare(b)),
+    [donors],
+  );
+
   const totalDonors = donors.length;
 
   const distinctBloodGroupCount = useMemo(
@@ -164,11 +182,17 @@ export function DonorManagement() {
     return !Number.isNaN(date) && date >= recentDonationCutoff;
   }).length;
 
-  const isFiltering = search.trim().length > 0 || bloodGroupFilter !== ALL;
+  const isFiltering =
+    search.trim().length > 0 ||
+    bloodGroupFilter !== ALL ||
+    cityFilter !== ALL ||
+    districtFilter !== ALL;
 
   const clearFilters = () => {
     setSearch("");
     setBloodGroupFilter(ALL);
+    setCityFilter(ALL);
+    setDistrictFilter(ALL);
   };
 
   const handleRefresh = () => {
@@ -193,9 +217,14 @@ export function DonorManagement() {
       const matchesGroup =
         bloodGroupFilter === ALL || donor.bloodGroup === bloodGroupFilter;
 
-      return matchesQuery && matchesGroup;
+      const matchesCity = cityFilter === ALL || donor.city === cityFilter;
+
+      const matchesDistrict =
+        districtFilter === ALL || donor.district === districtFilter;
+
+      return matchesQuery && matchesGroup && matchesCity && matchesDistrict;
     });
-  }, [donors, search, bloodGroupFilter]);
+  }, [donors, search, bloodGroupFilter, cityFilter, districtFilter]);
 
   return (
     <div className="space-y-6">
@@ -287,6 +316,62 @@ export function DonorManagement() {
               className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
             />
           </div>
+
+          {cityOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={cityFilter}
+                onChange={(event) => setCityFilter(event.target.value)}
+                aria-label="Filter by city"
+                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                  cityFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All cities</option>
+                {cityOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
+
+          {districtOptions.length > 0 && (
+            <div className="relative">
+              <select
+                value={districtFilter}
+                onChange={(event) => setDistrictFilter(event.target.value)}
+                aria-label="Filter by district"
+                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                  districtFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All districts</option>
+                {districtOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
 
           <button
             type="button"
