@@ -140,7 +140,7 @@ export const translations = {
       noAvailabilityYet: "No availability added yet.",
       unitsAvailableSuffix: "units available",
 
-      adjustStock: "Adjust Stock",
+      adjustStock: "Adjust Blood Units",
       movement: "Movement",
       movementIssue: "Issue (dispatch units)",
       movementDiscard: "Discard (expired / unusable)",

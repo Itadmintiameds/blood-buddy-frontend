@@ -83,7 +83,7 @@ export function AddStockModal({
               id="add-stock-title"
               className="text-[14px] font-bold text-[var(--color-text-primary)]"
             >
-              Add stock
+              Add Blood Units
             </h2>
 
             <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)]">
