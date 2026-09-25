@@ -6,7 +6,7 @@ import type { InventoryAuditResponse } from "@/services/bloodCenter/historyServi
 import { formatTimestamp, movementMeta } from "./InventoryHistoryTimeline";
 
 const COLS =
-  "grid-cols-[1.6fr_1.1fr_0.7fr_0.8fr_1.1fr_1.5fr]";
+  "grid-cols-[1.3fr_1fr_0.55fr_0.55fr_1.3fr_1.9fr]";
 
 // Dense, scrollable table view of an inventory item's audit trail. Used on the
 // full History page (the modal keeps the compact timeline).
@@ -15,87 +15,104 @@ export function InventoryHistoryTable({
 }: {
   entries: InventoryAuditResponse[];
 }) {
+  // Every row shares the same inventory item, so show the group + component once
+  // as a heading rather than repeating them in each row.
+  const heading = entries[0];
+
   return (
-    <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--color-border-light)]">
-      <div className="min-w-[700px]">
-        {/* Header */}
-        <div
-          className={`grid ${COLS} items-center border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[var(--color-text-quaternary)] sm:text-[11px]`}
-        >
-          <div>Date &amp; time</div>
-          <div>Movement</div>
-          <div className="text-center">Change</div>
-          <div className="text-center">Balance</div>
-          <div>Recorded by</div>
-          <div>Remarks</div>
+    <div>
+      {heading && (
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-[var(--color-icon-bg-soft)] px-3 py-1 text-[13px] font-bold text-[var(--color-primary)]">
+            {heading.bloodGroupName}
+          </span>
+          <span className="text-[13px] font-medium text-[var(--color-text-secondary)]">
+            {heading.bloodComponentName}
+          </span>
         </div>
+      )}
 
-        {/* Rows */}
-        {entries.map((entry, index) => {
-          const meta = movementMeta[entry.stockMovement];
-          const Icon = meta.icon;
-          const positive = entry.changedUnits > 0;
+      <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--color-border-light)]">
+        <div className="min-w-[760px]">
+          {/* Header */}
+          <div
+            className={`grid ${COLS} items-center border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[var(--color-text-quaternary)] sm:text-[11px]`}
+          >
+            <div>Date &amp; time</div>
+            <div>Movement</div>
+            <div className="text-center">Change</div>
+            <div className="text-center">Balance</div>
+            <div>Recorded by</div>
+            <div>Remarks</div>
+          </div>
 
-          return (
-            <div
-              key={entry.inventoryAuditId}
-              className={`animate-rise grid ${COLS} items-center border-b border-[var(--color-border-lighter)] px-4 py-3 text-[12px] text-[var(--color-text-body)] transition-colors duration-150 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)] sm:text-[13px] ${
-                index % 2 === 0
-                  ? "bg-[var(--color-white)]"
-                  : "bg-[var(--color-surface-hover)]"
-              }`}
-              style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
-            >
-              <div className="pr-2 text-[var(--color-text-secondary)]">
-                {formatTimestamp(entry.createdAt)}
-              </div>
+          {/* Rows */}
+          {entries.map((entry, index) => {
+            const meta = movementMeta[entry.stockMovement];
+            const Icon = meta.icon;
+            const positive = entry.changedUnits > 0;
 
-              <div>
-                <span
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${meta.className}`}
-                >
-                  <Icon size={13} strokeWidth={2} />
-                  {meta.label}
-                </span>
-              </div>
-
+            return (
               <div
-                className={`text-center font-bold ${
-                  positive
-                    ? "text-[var(--color-stat-green)]"
-                    : "text-[var(--color-primary)]"
+                key={entry.inventoryAuditId}
+                className={`animate-rise grid ${COLS} items-center border-b border-[var(--color-border-lighter)] px-4 py-3 text-[12px] text-[var(--color-text-body)] transition-colors duration-150 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)] sm:text-[13px] ${
+                  index % 2 === 0
+                    ? "bg-[var(--color-white)]"
+                    : "bg-[var(--color-surface-hover)]"
                 }`}
+                style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
               >
-                {positive ? "+" : ""}
-                {entry.changedUnits}
-              </div>
+                <div className="pr-2 text-[var(--color-text-secondary)]">
+                  {formatTimestamp(entry.createdAt)}
+                </div>
 
-              <div className="text-center font-semibold text-[var(--color-text-body)]">
-                {entry.remainingUnits}
-              </div>
+                <div>
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${meta.className}`}
+                  >
+                    <Icon size={13} strokeWidth={2} />
+                    {meta.label}
+                  </span>
+                </div>
 
-              <div className="flex min-w-0 items-center gap-1 pr-2 text-[var(--color-text-tertiary)]">
-                {entry.createdBy ? (
-                  <>
-                    <User size={12} strokeWidth={2} className="shrink-0" />
-                    <span className="truncate">{entry.createdBy}</span>
-                  </>
-                ) : (
-                  <span className="text-[var(--color-text-placeholder-alt)]">—</span>
-                )}
-              </div>
+                <div
+                  className={`text-center font-bold ${
+                    positive
+                      ? "text-[var(--color-stat-green)]"
+                      : "text-[var(--color-primary)]"
+                  }`}
+                >
+                  {positive ? "+" : ""}
+                  {entry.changedUnits}
+                </div>
 
-              <div
-                className="truncate pr-1 text-[var(--color-text-secondary)]"
-                title={entry.remarks ?? ""}
-              >
-                {entry.remarks || (
-                  <span className="text-[var(--color-text-placeholder-alt)]">—</span>
-                )}
+                <div className="text-center font-semibold text-[var(--color-text-body)]">
+                  {entry.remainingUnits}
+                </div>
+
+                <div className="flex min-w-0 items-center gap-1 pr-2 text-[var(--color-text-tertiary)]">
+                  {entry.createdBy ? (
+                    <>
+                      <User size={12} strokeWidth={2} className="shrink-0" />
+                      <span className="truncate">{entry.createdBy}</span>
+                    </>
+                  ) : (
+                    <span className="text-[var(--color-text-placeholder-alt)]">—</span>
+                  )}
+                </div>
+
+                <div
+                  className="truncate pr-1 text-[var(--color-text-secondary)]"
+                  title={entry.remarks ?? ""}
+                >
+                  {entry.remarks || (
+                    <span className="text-[var(--color-text-placeholder-alt)]">—</span>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
