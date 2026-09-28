@@ -1,7 +1,66 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Droplets } from "lucide-react";
+
+// Animates a numeric value up from 0 to its target on mount (and whenever the
+// target changes) using an ease-out curve, so the KPI counts visibly tick up.
+// Non-numeric values are returned unchanged, and reduced-motion users get the
+// final value immediately. `delayMs` staggers the start to match the card's
+// entrance animation.
+function useCountUp(value: string, delayMs: number): string {
+  const target = Number(value);
+  const isNumeric = value.trim() !== "" && Number.isFinite(target);
+
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (!isNumeric) {
+      return;
+    }
+
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (prefersReduced || target === 0) {
+      setDisplay(target);
+      return;
+    }
+
+    const duration = 900;
+    let rafId = 0;
+    let startTime = 0;
+
+    const tick = (now: number) => {
+      if (!startTime) {
+        startTime = now;
+      }
+
+      const progress = Math.min((now - startTime) / duration, 1);
+      // easeOutExpo — fast start, gentle settle onto the final number.
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+
+      setDisplay(Math.round(eased * target));
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+
+    setDisplay(0);
+    const timeoutId = window.setTimeout(() => {
+      rafId = requestAnimationFrame(tick);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      cancelAnimationFrame(rafId);
+    };
+  }, [target, isNumeric, delayMs]);
+
+  return isNumeric ? String(display) : value;
+}
 
 // Solid-colour KPI card shared by the Blood Centre and Super Admin
 // dashboards. Optionally interactive (renders as a button) so a card can
@@ -26,6 +85,9 @@ export function StatTile({
   onClick?: () => void;
 }) {
   const interactive = typeof onClick === "function";
+
+  // Count up to the value, staggered in step with the card's rise animation.
+  const displayValue = useCountUp(value, index * 80);
 
   const baseClass =
     "group animate-rise relative flex min-h-[112px] w-full items-center gap-4 overflow-hidden rounded-2xl px-5 py-5 text-left text-white shadow-[0_6px_20px_rgba(0,0,0,0.10)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_9px_25px_rgba(0,0,0,0.13)] sm:min-h-[120px] sm:px-6";
@@ -56,8 +118,8 @@ export function StatTile({
       </div>
 
       <div className="relative min-w-0">
-        <div className="text-[25px] font-bold leading-7 tracking-[-0.3px] sm:text-[28px]">
-          {value}
+        <div className="text-[25px] font-bold leading-7 tracking-[-0.3px] tabular-nums sm:text-[28px]">
+          {displayValue}
         </div>
 
         <div className="mt-1 text-[11px] font-medium leading-4 text-white/90 sm:text-[12px]">

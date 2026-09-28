@@ -69,11 +69,9 @@ export function BloodCentreSidebar({
         </div>
 
         {/* NAVIGATION */}
-        <nav className="flex-1 px-4 lg:mt-5">
-          <p className="px-3 pb-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-placeholder)]">
-            Menu
-          </p>
-
+        {/* mt matches the dashboard content's top padding (py-7) so the first
+            nav item lines up with the top of the KPI cards. */}
+        <nav className="flex-1 px-4 lg:mt-7">
           <div className="space-y-1">
             {navItems.map((item) => {
               const Icon = item.icon;
