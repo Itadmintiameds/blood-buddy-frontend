@@ -23,7 +23,10 @@ import {
   normalizeRecipientForm,
   recipientRequestSchema,
 } from "@/schema/recipient/recipientRequestSchema";
-import type { RecipientRequestInput } from "@/types/recipient/receipientTypes";
+import type {
+  BloodRequestResponse,
+  RecipientRequestInput,
+} from "@/types/recipient/receipientTypes";
 import { submitBloodRequest } from "@/services/recipient/recipientRequestService";
 import { saveLastRecipientPincode } from "@/services/recipient/recipientSessionStorage";
 import {
@@ -61,7 +64,8 @@ export function RecipientRegistrationForm() {
     MasterBloodComponent[]
   >([]);
   const [mastersLoading, setMastersLoading] = useState(true);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successResult, setSuccessResult] =
+    useState<BloodRequestResponse | null>(null);
 
   const defaultValues: RecipientRequestInput = {
     patientName: "",
@@ -147,7 +151,7 @@ export function RecipientRegistrationForm() {
       });
 
       saveLastRecipientPincode(data.pincode);
-      setSuccessMessage(response.message);
+      setSuccessResult(response);
     } catch (error) {
       console.error("Blood request submit error:", error);
 
@@ -161,7 +165,7 @@ export function RecipientRegistrationForm() {
   };
 
   const handleSuccessConfirm = () => {
-    setSuccessMessage(null);
+    setSuccessResult(null);
     router.push("/recipient");
   };
 
@@ -473,9 +477,21 @@ export function RecipientRegistrationForm() {
       </form>
 
       <SuccessModal
-        open={Boolean(successMessage)}
+        open={successResult !== null}
         title={<Bilingual tKey="recipient.requestSubmitted" as="span" />}
-        description={successMessage ?? undefined}
+        description={
+          successResult && (
+            <>
+              <span className="block">{successResult.message}</span>
+              <Bilingual
+                tKey="recipient.requestReferenceId"
+                params={{ id: successResult.bloodRequestId }}
+                as="span"
+                className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
+              />
+            </>
+          )
+        }
         onConfirm={handleSuccessConfirm}
       />
     </>

@@ -33,8 +33,8 @@ export interface DonorRegistrationResponse {
   alternativeMobileNumber: string | null;
   bloodGroupId: number;
   bloodGroupName: string;
-  dob: string;
-  address: string;
+  dob: string | null;
+  address: string | null;
   city: string;
   district: string;
   pincode: string;

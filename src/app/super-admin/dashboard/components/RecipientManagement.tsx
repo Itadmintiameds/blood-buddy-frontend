@@ -88,6 +88,29 @@ function formatDate(value: string | null | undefined): string {
 
 export function RecipientManagement() {
   const searchPlaceholder = useBilingualText("superAdmin.searchRecipient");
+  const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
+
+  // So the free-text search box can also match a request's status label
+  // (e.g. typing "closed"), not just the dropdown filter.
+  const statusMatchedLabel = useBilingualText("superAdmin.statusMatched");
+  const statusNoCentresLabel = useBilingualText("superAdmin.statusNoCentres");
+  const statusClosedLabel = useBilingualText("superAdmin.statusClosed");
+  const statusCancelledLabel = useBilingualText("superAdmin.statusCancelled");
+
+  const statusLabels = useMemo<Record<BloodRequestStatus, string>>(
+    () => ({
+      CENTRES_FOUND: statusMatchedLabel,
+      NO_CENTRES_FOUND: statusNoCentresLabel,
+      CLOSED: statusClosedLabel,
+      CANCELLED: statusCancelledLabel,
+    }),
+    [
+      statusMatchedLabel,
+      statusNoCentresLabel,
+      statusClosedLabel,
+      statusCancelledLabel,
+    ],
+  );
 
   const [requests, setRequests] = useState<SuperAdminBloodRequestSummary[]>([]);
   const [search, setSearch] = useState("");
@@ -212,11 +235,16 @@ export function RecipientManagement() {
     return requests.filter((request) => {
       const matchesQuery =
         !query ||
-        request?.recipientName.toLowerCase().includes(query) ||
-        request?.mobileNumber.includes(query) ||
-        request?.bloodGroup.toLowerCase().includes(query) ||
-        request?.bloodType.toLowerCase().includes(query) ||
-        request?.city.toLowerCase().includes(query);
+        [
+          request.recipientName,
+          request.mobileNumber,
+          request.bloodGroup,
+          request.bloodType,
+          request.city,
+          request.district,
+          request.pincode,
+          statusLabels[request.status],
+        ].some((field) => field?.toLowerCase().includes(query));
 
       const matchesStatus =
         statusFilter === ALL || request.status === statusFilter;
@@ -228,7 +256,14 @@ export function RecipientManagement() {
 
       return matchesQuery && matchesStatus && matchesBloodGroup && matchesCity;
     });
-  }, [requests, search, statusFilter, bloodGroupFilter, cityFilter]);
+  }, [
+    requests,
+    search,
+    statusFilter,
+    bloodGroupFilter,
+    cityFilter,
+    statusLabels,
+  ]);
 
   return (
     <div className="space-y-6">
@@ -277,9 +312,9 @@ export function RecipientManagement() {
       </div>
 
       {/* Search + filters */}
-      <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-          <div className="relative w-full sm:max-w-[360px]">
+      <div className="animate-rise space-y-3 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="relative w-full sm:max-w-[480px] sm:flex-1">
             <Search
               size={18}
               strokeWidth={1.7}
@@ -291,10 +326,32 @@ export function RecipientManagement() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={searchPlaceholder}
-              className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+              className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-10 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
             />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                aria-label={clearSearchLabel}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
+          <button
+            type="button"
+            onClick={() => setLogRequestOpen(true)}
+            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
+          >
+            <Plus size={16} className="shrink-0" />
+            Log Request
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
           <div className="relative">
             <select
               value={statusFilter}
@@ -376,42 +433,44 @@ export function RecipientManagement() {
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Refresh and clear filters"
-            title="Refresh &amp; clear filters"
-          >
-            <RefreshCw
-              size={15}
-              className={
-                spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
-              }
-            />
-          </button>
-
-          {isFiltering && (
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={clearFilters}
-              className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Refresh and clear filters"
+              title="Refresh &amp; clear filters"
             >
-              Clear
+              <RefreshCw
+                size={15}
+                className={
+                  spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
+                }
+              />
             </button>
-          )}
 
-          <button
-            type="button"
-            onClick={() => setLogRequestOpen(true)}
-            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
-          >
-            <Plus size={16} className="shrink-0" />
-            Log Request
-          </button>
+            {isFiltering && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {!loading && isFiltering && (
+        <Bilingual
+          tKey="superAdmin.resultsCount"
+          params={{ shown: filteredRequests.length, total: totalRequests }}
+          as="p"
+          className="px-1 text-[12px] text-[var(--color-text-placeholder-alt)]"
+        />
+      )}
 
       {error && (
         <div
@@ -428,14 +487,14 @@ export function RecipientManagement() {
         <table className="w-full table-fixed border-collapse">
           <colgroup>
             <col className="w-[5%]" />
-            <col className="w-[14%]" />
+            <col className="w-[19%]" />
             <col className="w-[12%]" />
             <col className="w-[9%]" />
             <col className="w-[7%]" />
-            <col className="w-[13%]" />
-            <col className="w-[13%]" />
-            <col className="w-[13%]" />
+            <col className="w-[12%]" />
+            <col className="w-[12%]" />
             <col className="w-[14%]" />
+            <col className="w-[10%]" />
           </colgroup>
 
           <thead>
@@ -477,7 +536,10 @@ export function RecipientManagement() {
                         />
                       </div>
 
-                      <span className="truncate font-semibold text-[var(--color-text-body)]">
+                      <span
+                        className="truncate font-semibold text-[var(--color-text-body)]"
+                        title={request.recipientName}
+                      >
                         {request.recipientName}
                       </span>
                     </div>

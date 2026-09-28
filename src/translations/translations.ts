@@ -226,6 +226,7 @@ export const translations = {
       addressOptional: "Address (Optional)",
       lastBloodDonationDateOptional: "Last Blood Donation Date (Optional)",
       donorRegisteredSuccessfully: "Donor registered successfully.",
+      donorReferenceId: "Your donor reference ID is #{id}.",
     },
 
     recipient: {
@@ -250,6 +251,7 @@ export const translations = {
       hospitalNameOptional: "Hospital Name (Optional)",
       enterHospitalName: "Enter hospital name",
       requestSubmitted: "Request Submitted",
+      requestReferenceId: "Your request reference ID is #{id}.",
 
       searchTitle: "Search Blood Banks & Donors",
       searchByPincode: "Search by pin code or area",
@@ -290,6 +292,7 @@ export const translations = {
       lowStockCentresStat: "Low Stock Centres",
       searchBloodCentre: "Search by name, city, pincode, email...",
       clearSearch: "Clear search",
+      resultsCount: "Showing {shown} of {total}",
       addBloodCentre: "Add Blood Centre",
       loadingBloodBanks: "Loading blood banks...",
       noBloodBanksFound: "No blood banks found",
@@ -321,7 +324,7 @@ export const translations = {
       totalDonorsStat: "Total Donors",
       bloodGroupsStat: "Blood Groups",
       recentDonationsStat: "Recent Donations (30d)",
-      searchDonor: "Search donor...",
+      searchDonor: "Search by name, mobile, city, district, pincode...",
       donorName: "Donor Name",
       alternateMobileNo: "Alternate Mobile No",
       alternateMobile: "Alternate Mobile",
@@ -334,7 +337,7 @@ export const translations = {
       donorRecordsWillAppear: "Donor records will appear here.",
       registeredOn: "Registered On",
 
-      searchRecipient: "Search recipient...",
+      searchRecipient: "Search by name, mobile, blood group, city, district, status...",
       hospital: "Hospital",
 
       bloodRequests: "Blood Requests",
@@ -632,6 +635,7 @@ export const translations = {
       addressOptional: "ವಿಳಾಸ (ಐಚ್ಛಿಕ)",
       lastBloodDonationDateOptional: "ಕೊನೆಯ ರಕ್ತದಾನ ದಿನಾಂಕ (ಐಚ್ಛಿಕ)",
       donorRegisteredSuccessfully: "ರಕ್ತದಾನಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ.",
+      donorReferenceId: "ನಿಮ್ಮ ರಕ್ತದಾನಿ ಉಲ್ಲೇಖ ಐಡಿ #{id}.",
     },
 
     recipient: {
@@ -656,6 +660,7 @@ export const translations = {
       hospitalNameOptional: "ಆಸ್ಪತ್ರೆಯ ಹೆಸರು (ಐಚ್ಛಿಕ)",
       enterHospitalName: "ಆಸ್ಪತ್ರೆಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
       requestSubmitted: "ಮನವಿ ಸಲ್ಲಿಸಲಾಗಿದೆ",
+      requestReferenceId: "ನಿಮ್ಮ ಮನವಿ ಉಲ್ಲೇಖ ಐಡಿ #{id}.",
 
       searchTitle: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳನ್ನು ಹುಡುಕಿ",
       searchByPincode: "ಪಿನ್ ಕೋಡ್ ಅಥವಾ ಪ್ರದೇಶದ ಮೂಲಕ ಹುಡುಕಿ",
@@ -696,6 +701,7 @@ export const translations = {
       lowStockCentresStat: "ಕಡಿಮೆ ಸ್ಟಾಕ್ ಕೇಂದ್ರಗಳು",
       searchBloodCentre: "ಹೆಸರು, ನಗರ, ಪಿನ್‌ಕೋಡ್, ಇಮೇಲ್ ಮೂಲಕ ಹುಡುಕಿ...",
       clearSearch: "ಹುಡುಕಾಟವನ್ನು ತೆರವುಗೊಳಿಸಿ",
+      resultsCount: "{total} ರಲ್ಲಿ {shown} ತೋರಿಸಲಾಗುತ್ತಿದೆ",
       addBloodCentre: "ರಕ್ತ ಕೇಂದ್ರವನ್ನು ಸೇರಿಸಿ",
       loadingBloodBanks: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
       noBloodBanksFound: "ಯಾವುದೇ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
@@ -727,7 +733,7 @@ export const translations = {
       totalDonorsStat: "ಒಟ್ಟು ರಕ್ತದಾನಿಗಳು",
       bloodGroupsStat: "ರಕ್ತದ ಗುಂಪುಗಳು",
       recentDonationsStat: "ಇತ್ತೀಚಿನ ದಾನಗಳು (30 ದಿನ)",
-      searchDonor: "ರಕ್ತದಾನಿಯನ್ನು ಹುಡುಕಿ...",
+      searchDonor: "ಹೆಸರು, ಮೊಬೈಲ್, ನಗರ, ಜಿಲ್ಲೆ, ಪಿನ್‌ಕೋಡ್ ಮೂಲಕ ಹುಡುಕಿ...",
       donorName: "ರಕ್ತದಾನಿಯ ಹೆಸರು",
       alternateMobileNo: "ಪರ್ಯಾಯ ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
       alternateMobile: "ಪರ್ಯಾಯ ಮೊಬೈಲ್",
@@ -740,7 +746,7 @@ export const translations = {
       donorRecordsWillAppear: "ರಕ್ತದಾನಿ ದಾಖಲೆಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ.",
       registeredOn: "ನೋಂದಣಿ ದಿನಾಂಕ",
 
-      searchRecipient: "ಸ್ವೀಕರಿಸುವವರನ್ನು ಹುಡುಕಿ...",
+      searchRecipient: "ಹೆಸರು, ಮೊಬೈಲ್, ರಕ್ತದ ಗುಂಪು, ನಗರ, ಜಿಲ್ಲೆ, ಸ್ಥಿತಿ ಮೂಲಕ ಹುಡುಕಿ...",
       hospital: "ಆಸ್ಪತ್ರೆ",
 
       bloodRequests: "ರಕ್ತದ ಮನವಿಗಳು",

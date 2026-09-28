@@ -1,5 +1,6 @@
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
+import { RoleSwitchLink } from "@/app/components/ui/RoleSwitchLink";
 import { Bilingual } from "@/app/components/common/Bilingual";
 import { RecipientRegistrationForm } from "./RecipientRegistrationForm";
 
@@ -8,6 +9,9 @@ export function RecipientRegistrationScreen() {
     <ScreenShell>
       <BrandHeader
         title={<Bilingual tKey="recipient.recipientProfile" as="span" />}
+        titleAction={
+          <RoleSwitchLink href="/donor/register" tKey="welcome.donor" />
+        }
         showBackButton
         backHref="/recipient"
       />

@@ -21,7 +21,10 @@ import {
   donorRegistrationSchema,
   normalizeDonorForm,
 } from "@/schema/donor/donorRegistrationSchema";
-import type { DonorRegistrationInput } from "@/types/donor/donorTypes";
+import type {
+  DonorRegistrationInput,
+  DonorRegistrationResponse,
+} from "@/types/donor/donorTypes";
 import { registerDonor } from "@/services/donor/donorRegistrationService";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
@@ -58,7 +61,8 @@ export function DonorRegistrationForm() {
   const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
 
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registeredDonor, setRegisteredDonor] =
+    useState<DonorRegistrationResponse | null>(null);
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
   const [mastersLoading, setMastersLoading] = useState(true);
   const [selectedBloodGroupId, setSelectedBloodGroupId] = useState<
@@ -106,7 +110,7 @@ export function DonorRegistrationForm() {
     const data = normalizeDonorForm(rawData);
 
     try {
-      await registerDonor({
+      const response = await registerDonor({
         fullName: data.fullName,
         mobileNumber: data.mobileNumber,
         alternativeMobileNumber: data.alternativeMobileNumber || undefined,
@@ -119,7 +123,7 @@ export function DonorRegistrationForm() {
         lastBloodDonationDate: data.lastBloodDonationDate || undefined,
       });
 
-      setShowSuccessModal(true);
+      setRegisteredDonor(response);
     } catch (error) {
       console.error("Donor registration error:", error);
 
@@ -130,7 +134,7 @@ export function DonorRegistrationForm() {
   };
 
   const handleSuccessConfirm = () => {
-    setShowSuccessModal(false);
+    setRegisteredDonor(null);
     router.push("/donor");
   };
 
@@ -363,10 +367,24 @@ export function DonorRegistrationForm() {
       </form>
 
       <SuccessModal
-        open={showSuccessModal}
+        open={registeredDonor !== null}
         title={<Bilingual tKey="bloodCentre.registrationSuccess" as="span" />}
         description={
-          <Bilingual tKey="donor.donorRegisteredSuccessfully" as="span" />
+          <>
+            <Bilingual
+              tKey="donor.donorRegisteredSuccessfully"
+              as="span"
+              className="block"
+            />
+            {registeredDonor && (
+              <Bilingual
+                tKey="donor.donorReferenceId"
+                params={{ id: registeredDonor.bloodDonorDetailsId }}
+                as="span"
+                className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
+              />
+            )}
+          </>
         }
         onConfirm={handleSuccessConfirm}
       />

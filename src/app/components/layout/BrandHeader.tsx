@@ -10,6 +10,8 @@ import { useBilingualText } from "@/app/components/common/Bilingual";
 
 interface BrandHeaderProps {
   title?: ReactNode;
+  /** Rendered at the right end of the title row. */
+  titleAction?: ReactNode;
   showBackButton?: boolean;
   backHref?: string;
   welcomeName?: string | null;
@@ -17,6 +19,7 @@ interface BrandHeaderProps {
 
 export function BrandHeader({
   title,
+  titleAction,
   showBackButton = false,
   backHref = "/welcome",
   welcomeName,
@@ -115,6 +118,7 @@ export function BrandHeader({
             <h1 className="min-w-0 text-[16px] font-semibold text-[var(--color-text-primary)] sm:text-[18px]">
               {title}
             </h1>
+            {titleAction && <div className="ml-auto shrink-0">{titleAction}</div>}
           </div>
         </div>
       )}

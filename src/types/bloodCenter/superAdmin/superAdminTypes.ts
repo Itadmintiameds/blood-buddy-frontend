@@ -46,8 +46,8 @@ export interface SuperAdminDonor {
   alternateMobileNumber: string;
   bloodGroupId: number;
   bloodGroup: string;
-  dateOfBirth: string;
-  address: string;
+  dateOfBirth: string | null;
+  address: string | null;
   city: string;
   district: string;
   pincode: string;

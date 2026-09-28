@@ -71,6 +71,7 @@ function formatDate(value: string | null): string {
 
 export function DonorManagement() {
   const searchPlaceholder = useBilingualText("superAdmin.searchDonor");
+  const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
 
   const [donors, setDonors] = useState<SuperAdminDonor[]>([]);
   const [search, setSearch] = useState("");
@@ -208,11 +209,16 @@ export function DonorManagement() {
     return donors.filter((donor) => {
       const matchesQuery =
         !query ||
-        donor?.donorName.toLowerCase().includes(query) ||
-        donor?.mobileNumber.includes(query) ||
-        donor?.bloodGroup.toLowerCase().includes(query) ||
-        donor?.address.toLowerCase().includes(query) ||
-        donor?.pincode.includes(query);
+        [
+          donor.donorName,
+          donor.mobileNumber,
+          donor.alternateMobileNumber,
+          donor.bloodGroup,
+          donor.address,
+          donor.city,
+          donor.district,
+          donor.pincode,
+        ].some((field) => field?.toLowerCase().includes(query));
 
       const matchesGroup =
         bloodGroupFilter === ALL || donor.bloodGroup === bloodGroupFilter;
@@ -273,9 +279,9 @@ export function DonorManagement() {
       </div>
 
       {/* Search + filters */}
-      <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-          <div className="relative w-full sm:max-w-[360px]">
+      <div className="animate-rise space-y-3 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="relative w-full sm:max-w-[480px] sm:flex-1">
             <Search
               size={18}
               strokeWidth={1.7}
@@ -287,10 +293,32 @@ export function DonorManagement() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={searchPlaceholder}
-              className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-4 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+              className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-10 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
             />
+
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                aria-label={clearSearchLabel}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
+          <button
+            type="button"
+            onClick={() => setAddDonorOpen(true)}
+            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
+          >
+            <Plus size={16} className="shrink-0" />
+            Add Donor
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
           <div className="relative">
             <select
               value={bloodGroupFilter}
@@ -373,42 +401,44 @@ export function DonorManagement() {
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Refresh and clear filters"
-            title="Refresh &amp; clear filters"
-          >
-            <RefreshCw
-              size={15}
-              className={
-                spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
-              }
-            />
-          </button>
-
-          {isFiltering && (
+          <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={clearFilters}
-              className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label="Refresh and clear filters"
+              title="Refresh &amp; clear filters"
             >
-              Clear
+              <RefreshCw
+                size={15}
+                className={
+                  spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
+                }
+              />
             </button>
-          )}
 
-          <button
-            type="button"
-            onClick={() => setAddDonorOpen(true)}
-            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
-          >
-            <Plus size={16} className="shrink-0" />
-            Add Donor
-          </button>
+            {isFiltering && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {!loading && isFiltering && (
+        <Bilingual
+          tKey="superAdmin.resultsCount"
+          params={{ shown: filteredDonors.length, total: totalDonors }}
+          as="p"
+          className="px-1 text-[12px] text-[var(--color-text-placeholder-alt)]"
+        />
+      )}
 
       {error && (
         <div
@@ -425,15 +455,15 @@ export function DonorManagement() {
         <div className="w-full overflow-hidden">
           <table className="w-full table-fixed border-collapse">
             <colgroup>
-              <col className="w-[5%]" />
-              <col className="w-[11%]" />
+              <col className="w-[4%]" />
+              <col className="w-[17%]" />
               <col className="w-[10%]" />
-              <col className="w-[11%]" />
+              <col className="w-[10%]" />
               <col className="w-[7%]" />
-              <col className="w-[10%]" />
-              <col className="w-[12%]" />
-              <col className="w-[8%]" />
-              <col className="w-[16%]" />
+              <col className="w-[9%]" />
+              <col className="w-[13%]" />
+              <col className="w-[7%]" />
+              <col className="w-[13%]" />
               <col className="w-[10%]" />
             </colgroup>
 
@@ -477,8 +507,11 @@ export function DonorManagement() {
                           />
                         </div>
 
-                        <span className="truncate font-semibold text-[var(--color-text-body)]">
-                          {donor?.donorName}
+                        <span
+                          className="truncate font-semibold text-[var(--color-text-body)]"
+                          title={donor.donorName}
+                        >
+                          {donor.donorName}
                         </span>
                       </div>
                     </TableCell>
@@ -494,7 +527,9 @@ export function DonorManagement() {
                     <TableCell>{formatDate(donor?.dateOfBirth)}</TableCell>
 
                     <TableCell>
-                      <span className="block truncate">{donor?.address}</span>
+                      <span className="block truncate" title={donor.address ?? undefined}>
+                        {donor.address || "—"}
+                      </span>
                     </TableCell>
 
                     <TableCell>{donor?.pincode}</TableCell>
@@ -1164,7 +1199,7 @@ function BloodGroupBadge({ value }: { value: string }) {
   );
 }
 
-function InfoItem({ tKey, value }: { tKey: string; value: string }) {
+function InfoItem({ tKey, value }: { tKey: string; value: string | null }) {
   return (
     <div className="min-w-0">
       <Bilingual
@@ -1174,7 +1209,7 @@ function InfoItem({ tKey, value }: { tKey: string; value: string }) {
       />
 
       <p className="mt-1 truncate text-[12px] font-medium text-[var(--color-text-secondary)]">
-        {value}
+        {value || "—"}
       </p>
     </div>
   );
@@ -1187,7 +1222,7 @@ function MobileInfoRow({
 }: {
   icon: typeof Phone;
   tKey: string;
-  value: string;
+  value: string | null;
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl bg-[var(--color-surface-alt)] px-3 py-2.5">
@@ -1205,7 +1240,7 @@ function MobileInfoRow({
         />
 
         <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
-          {value}
+          {value || "—"}
         </p>
       </div>
     </div>
