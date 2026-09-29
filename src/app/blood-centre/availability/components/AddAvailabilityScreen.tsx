@@ -1,26 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle2, ChevronDown, Droplets, Package } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { BrandHeader } from "@/app/components/layout/BrandHeader";
-import { ScreenShell } from "@/app/components/ui/ScreenShell";
-import { AppButton } from "@/app/components/ui/AppButton";
-import { saveAvailability } from "@/services/bloodCenter/bloodCenter.service";
-import {
-  getBloodComponents,
-  getBloodGroups,
-} from "@/services/master/masterService";
-import { getApiErrorMessage } from "@/services/api/client";
-import type {
-  MasterBloodComponent,
-  MasterBloodGroup,
-} from "@/types/master.types";
 import {
   Bilingual,
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+import { BrandHeader } from "@/app/components/layout/BrandHeader";
+import { AppButton } from "@/app/components/ui/AppButton";
+import { ScreenShell } from "@/app/components/ui/ScreenShell";
+import { getApiErrorMessage } from "@/services/api/client";
+import { saveAvailability } from "@/services/bloodCenter/bloodCenter.service";
+import {
+  getBloodComponents,
+  getBloodGroups,
+} from "@/services/master/masterService";
+import type {
+  MasterBloodComponent,
+  MasterBloodGroup,
+} from "@/types/master.types";
+import { CheckCircle2, ChevronDown, Droplets, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function AddAvailabilityScreen() {
   const router = useRouter();
@@ -323,10 +323,9 @@ export function AddAvailabilityScreen() {
                         transition-all
                         duration-200
 
-                        ${
-                          error && !bloodComponentId
-                            ? "border-red-400"
-                            : "border-[var(--color-border)] hover:border-[var(--color-border)]"
+                        ${error && !bloodComponentId
+                          ? "border-red-400"
+                          : "border-[var(--color-border)] hover:border-[var(--color-border)]"
                         }
 
                         focus:border-[var(--color-primary)]
@@ -418,10 +417,9 @@ export function AddAvailabilityScreen() {
                         transition-all
                         duration-200
 
-                        ${
-                          error && !bloodGroupId
-                            ? "border-red-400"
-                            : "border-[var(--color-border)] hover:border-[var(--color-border)]"
+                        ${error && !bloodGroupId
+                          ? "border-red-400"
+                          : "border-[var(--color-border)] hover:border-[var(--color-border)]"
                         }
 
                         focus:border-[var(--color-primary)]
