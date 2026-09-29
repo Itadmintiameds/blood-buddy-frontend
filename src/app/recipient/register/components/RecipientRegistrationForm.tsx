@@ -208,10 +208,10 @@ export function RecipientRegistrationForm() {
           <div className="w-full">
             <label
               htmlFor="bloodGroupId"
-              className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              className="mb-1.5 flex items-start gap-0.5 text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
             >
               <Bilingual tKey="recipient.bloodGroupRequired" as="span" />
-              <span className="text-red-500"> *</span>
+              <span className="text-red-500">*</span>
             </label>
 
             <div className="relative">
@@ -283,10 +283,10 @@ export function RecipientRegistrationForm() {
           <div className="w-full">
             <label
               htmlFor="bloodComponentId"
-              className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              className="mb-1.5 flex items-start gap-0.5 text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
             >
               <Bilingual tKey="recipient.bloodTypeRequired" as="span" />
-              <span className="text-red-500"> *</span>
+              <span className="text-red-500">*</span>
             </label>
 
             <div className="relative">

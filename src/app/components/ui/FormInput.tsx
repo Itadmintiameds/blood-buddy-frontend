@@ -54,7 +54,9 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             htmlFor={inputId}
             className="
               mb-1.5
-              block
+              flex
+              items-start
+              gap-0.5
               text-[13px]
               font-medium
               leading-4
@@ -62,7 +64,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(
             "
           >
             {label}
-            {required && <span className="text-red-500"> *</span>}
+            {required && <span className="text-red-500">*</span>}
           </label>
         )}
 

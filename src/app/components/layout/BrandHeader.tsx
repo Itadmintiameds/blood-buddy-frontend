@@ -6,7 +6,10 @@ import type { ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
 
 import LanguageSelector from "@/app/components/common/LanguageSelector";
-import { useBilingualText } from "@/app/components/common/Bilingual";
+import {
+  useBilingualText,
+  useDualLanguage,
+} from "@/app/components/common/Bilingual";
 
 interface BrandHeaderProps {
   title?: ReactNode;
@@ -32,6 +35,10 @@ export function BrandHeader({
   alignTitleToContent = false,
 }: BrandHeaderProps) {
   const goBackLabel = useBilingualText("accessibility.goBack");
+
+  // In dual-language mode (donor/recipient) both languages show at once, so the
+  // language toggle is redundant and hidden.
+  const dual = useDualLanguage();
 
   // Padding here is the sum of the content section's padding and the card's
   // inner padding at each breakpoint, so the title edge matches the field edge.
@@ -112,7 +119,7 @@ export function BrandHeader({
             )}
           </div>
 
-          <LanguageSelector />
+          {!dual && <LanguageSelector />}
         </div>
       </div>
 

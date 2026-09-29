@@ -1,9 +1,35 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 import { useLanguage } from "@/contexts/LanguageContext";
 import { interpolate, resolveTranslation } from "@/utils/i18n";
+
+/**
+ * When this context is true, Bilingual components always render BOTH languages
+ * at once (English + Kannada) regardless of the selected language, and the
+ * language toggle only controls which one is shown as the primary line. Off by
+ * default; turned on for a route subtree via <DualLanguageProvider> (see the
+ * donor/recipient layouts).
+ */
+const DualLanguageContext = createContext(false);
+
+export function DualLanguageProvider({ children }: { children: ReactNode }) {
+  return (
+    <DualLanguageContext.Provider value={true}>
+      {children}
+    </DualLanguageContext.Provider>
+  );
+}
+
+export function useDualLanguage() {
+  return useContext(DualLanguageContext);
+}
 
 type BilingualTag =
   | "span"
@@ -60,27 +86,38 @@ export function Bilingual({
   style,
 }: BilingualProps) {
   const { language } = useLanguage();
+  const dual = useDualLanguage();
   const { en, kn } = useBilingualStrings(tKey, params);
   const Tag = as;
 
-  if (language === "en") {
+  // Show both lines when Kannada is the active language, or always in dual mode
+  // (unless there's no distinct Kannada translation for this key).
+  const showBoth = kn !== en && (dual || language === "kn");
+
+  if (!showBoth) {
     return (
       <Tag id={id} htmlFor={htmlFor} className={className} style={style}>
-        {en}
+        {language === "kn" ? kn : en}
       </Tag>
     );
   }
 
+  const knPrimary = language === "kn";
+  const primary = knPrimary ? kn : en;
+  const secondary = knPrimary ? en : kn;
+
   return (
     <Tag id={id} htmlFor={htmlFor} className={className} style={style}>
-      <span className="font-kannada block">{kn}</span>
+      <span className={`block${knPrimary ? " font-kannada" : ""}`}>
+        {primary}
+      </span>
       <span
-        className={
+        className={`${
           enClassName ??
           "mt-0.5 block text-[0.68em] font-normal leading-tight text-[var(--color-text-muted)]"
-        }
+        }${knPrimary ? "" : " font-kannada"}`}
       >
-        {en}
+        {secondary}
       </span>
     </Tag>
   );
@@ -97,22 +134,29 @@ export function BilingualInline({
   enClassName,
 }: Pick<BilingualProps, "tKey" | "params" | "enClassName">): ReactNode {
   const { language } = useLanguage();
+  const dual = useDualLanguage();
   const { en, kn } = useBilingualStrings(tKey, params);
 
-  if (language === "en") {
-    return en;
+  const showBoth = kn !== en && (dual || language === "kn");
+
+  if (!showBoth) {
+    return language === "kn" ? kn : en;
   }
+
+  const knPrimary = language === "kn";
+  const primary = knPrimary ? kn : en;
+  const secondary = knPrimary ? en : kn;
 
   return (
     <span className="inline-flex flex-col">
-      <span className="font-kannada">{kn}</span>
+      <span className={knPrimary ? "font-kannada" : undefined}>{primary}</span>
       <span
-        className={
+        className={`${
           enClassName ??
           "mt-0.5 text-[0.68em] font-normal leading-tight text-[var(--color-text-muted)]"
-        }
+        }${knPrimary ? "" : " font-kannada"}`}
       >
-        {en}
+        {secondary}
       </span>
     </span>
   );
@@ -128,11 +172,17 @@ export function useBilingualText(
   params?: Record<string, string | number>,
 ): string {
   const { language } = useLanguage();
+  const dual = useDualLanguage();
   const { en, kn } = useBilingualStrings(tKey, params);
 
-  if (language === "en" || kn === en) {
+  if (kn === en) {
     return en;
   }
 
-  return `${kn} (${en})`;
+  if (!dual && language === "en") {
+    return en;
+  }
+
+  // Primary language first, other language in parentheses.
+  return language === "kn" ? `${kn} (${en})` : `${en} (${kn})`;
 }
