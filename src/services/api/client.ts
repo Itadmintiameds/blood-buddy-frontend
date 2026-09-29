@@ -8,8 +8,7 @@ import {
 
 // Browser requests go directly to the Spring Boot backend.
 // The backend must allow CORS from the frontend origin.
-const baseURL =
-  process.env.BACKEND_API_URL ?? "http://localhost:8080/api/v1";
+const baseURL = `${process.env.BACKEND_API_URL ?? "http://localhost:8080"}/api/v1`;
 
 export const api = axios.create({
   baseURL,
