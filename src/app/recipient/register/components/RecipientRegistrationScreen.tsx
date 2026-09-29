@@ -12,8 +12,7 @@ export function RecipientRegistrationScreen() {
         titleAction={
           <RoleSwitchLink href="/donor/register" tKey="welcome.donor" />
         }
-        showBackButton
-        backHref="/recipient"
+        alignTitleToContent
       />
 
       <main className="w-full bg-[var(--color-surface-alt)]">

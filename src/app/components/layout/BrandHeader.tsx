@@ -15,6 +15,12 @@ interface BrandHeaderProps {
   showBackButton?: boolean;
   backHref?: string;
   welcomeName?: string | null;
+  /**
+   * When true, the title row is constrained to the same width/padding as a
+   * registration content column, so the title (and its right-side action) line
+   * up with the form fields below instead of hugging the full-width bar edge.
+   */
+  alignTitleToContent?: boolean;
 }
 
 export function BrandHeader({
@@ -23,8 +29,15 @@ export function BrandHeader({
   showBackButton = false,
   backHref = "/welcome",
   welcomeName,
+  alignTitleToContent = false,
 }: BrandHeaderProps) {
   const goBackLabel = useBilingualText("accessibility.goBack");
+
+  // Padding here is the sum of the content section's padding and the card's
+  // inner padding at each breakpoint, so the title edge matches the field edge.
+  const titleRowClass = alignTitleToContent
+    ? "mx-auto flex w-full items-center gap-2.5 px-8 py-3.5 sm:px-12 sm:py-4 md:max-w-[900px] md:px-[72px] lg:max-w-[1000px] lg:px-20"
+    : "mx-auto flex max-w-[1600px] items-center gap-2.5 px-4 py-3.5 sm:px-6 sm:py-4";
 
   return (
     <header className="w-full bg-white">
@@ -105,7 +118,7 @@ export function BrandHeader({
 
       {title && (
         <div className="border-b border-[var(--color-border-lighter)] bg-white">
-          <div className="mx-auto flex max-w-[1600px] items-center gap-2.5 px-4 py-3.5 sm:px-6 sm:py-4">
+          <div className={titleRowClass}>
             {showBackButton && (
               <Link
                 href={backHref}

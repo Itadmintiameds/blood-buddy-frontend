@@ -354,7 +354,39 @@ export function DonorRegistrationForm() {
           </div>
         )}
 
-        <div className="mt-7 flex w-full justify-center">
+        {/* On mobile the submit button sticks to the bottom of the viewport so
+            it stays visible while scrolling the long form; from sm up it sits
+            inline, centered, as a normal button. */}
+        <div
+          className="
+            sticky
+            bottom-0
+            z-20
+            -mx-4
+            -mb-6
+            mt-7
+            flex
+            w-auto
+            justify-center
+            rounded-b-2xl
+            border-t
+            border-[var(--color-border-lighter)]
+            bg-white/95
+            px-4
+            py-3
+            backdrop-blur
+            sm:static
+            sm:mx-0
+            sm:mb-0
+            sm:w-full
+            sm:rounded-none
+            sm:border-0
+            sm:bg-transparent
+            sm:px-0
+            sm:py-0
+            sm:backdrop-blur-none
+          "
+        >
           <div className="w-full md:w-[240px]">
             <AppButton type="submit" loading={isSubmitting}>
               <BilingualInline
