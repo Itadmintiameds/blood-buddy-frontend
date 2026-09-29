@@ -1358,6 +1358,10 @@ function BloodRequestDetailModal({
                           <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
                             {donor.mobileNumber} · {donor.bloodGroup}
                           </p>
+                          <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+                            <BilingualInline tKey="superAdmin.lastBloodDonation" />
+                            : {formatDate(donor.lastBloodDonationDate)}
+                          </p>
                         </div>
 
                         <CheckCircle2
@@ -1395,6 +1399,10 @@ function BloodRequestDetailModal({
                           <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
                             {donor.mobileNumber} · {donor.bloodGroup} ·{" "}
                             {donor.city}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+                            <BilingualInline tKey="superAdmin.lastBloodDonation" />
+                            : {formatDate(donor.lastBloodDonationDate)}
                           </p>
                         </div>
 
