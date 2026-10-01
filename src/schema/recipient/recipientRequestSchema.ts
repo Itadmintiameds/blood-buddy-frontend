@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requiredSelectionId } from "@/schema/selectionSchema";
 import type { RecipientRequestInput } from "@/types/recipient/receipientTypes";
 
 function isValidIndianMobile(value: string) {
@@ -30,12 +31,8 @@ export const recipientRequestSchema = z.object({
     .regex(/^\d+$/, "Mobile number must contain digits only")
     .length(10, "Mobile number must be exactly 10 digits")
     .refine(isValidIndianMobile, "Enter a valid mobile number"),
-  bloodGroupId: z
-    .union([z.number(), z.literal("")])
-    .refine((value) => value !== "", { message: "Please select a blood group" }),
-  bloodComponentId: z
-    .union([z.number(), z.literal("")])
-    .refine((value) => value !== "", { message: "Please select the blood type required" }),
+  bloodGroupId: requiredSelectionId("Please select a blood group"),
+  bloodComponentId: requiredSelectionId("Please select the blood type required"),
   requiredUnits: z
     .string()
     .trim()

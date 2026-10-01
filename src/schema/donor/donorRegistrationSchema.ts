@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { requiredSelectionId } from "@/schema/selectionSchema";
 import type { DonorRegistrationInput } from "@/types/donor/donorTypes";
 
 const knownInvalidMobileNumbers = new Set([
@@ -55,6 +56,51 @@ function isNotFutureDate(value: string): boolean {
   return date.getTime() <= Date.now();
 }
 
+export const MIN_DONOR_AGE_YEARS = 18;
+export const MAX_DONOR_AGE_YEARS = 65;
+
+function toIsoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+// Earliest / latest date of birth the Date of Birth picker should offer, as
+// YYYY-MM-DD for the <input type="date"> min / max attributes. Mirrors the
+// schema: at least 18 and strictly under 65 years old.
+export function getDonorDobBounds(): { min: string; max: string } {
+  const today = new Date();
+
+  // Born exactly 65 years ago today = turned 65 today, which is not "under 65",
+  // so the earliest allowed date is the day after.
+  const earliest = new Date(
+    today.getFullYear() - MAX_DONOR_AGE_YEARS,
+    today.getMonth(),
+    today.getDate() + 1,
+  );
+  const latest = new Date(
+    today.getFullYear() - MIN_DONOR_AGE_YEARS,
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  return { min: toIsoDate(earliest), max: toIsoDate(latest) };
+}
+
+function isUnder65YearsOld(value: string): boolean {
+  const dob = parseIsoDate(value);
+  if (!dob) return false;
+
+  const today = new Date();
+  const sixtyFiveYearsAgo = new Date(
+    today.getFullYear() - MAX_DONOR_AGE_YEARS,
+    today.getMonth(),
+    today.getDate(),
+  );
+
+  return dob > sixtyFiveYearsAgo;
+}
+
 export const donorRegistrationSchema = z
   .object({
     fullName: z
@@ -83,18 +129,15 @@ export const donorRegistrationSchema = z
       )
       .optional()
       .or(z.literal("")),
-    bloodGroupId: z
-      .union([z.number(), z.literal("")])
-      .refine((value) => value !== "", {
-        message: "Please select a blood group",
-      }),
+    bloodGroupId: requiredSelectionId("Please select a blood group"),
     dob: z
       .string()
       .trim()
       .min(1, "Date of birth is required")
       .refine((value) => parseIsoDate(value) !== null, "Enter a valid date")
       .refine(isNotFutureDate, "Date of birth cannot be in the future")
-      .refine(isAtLeast18YearsOld, "Donor must be at least 18 years old"),
+      .refine(isAtLeast18YearsOld, "Donor must be at least 18 years old")
+      .refine(isUnder65YearsOld, "Donor must be younger than 65 years"),
     address: z
       .string()
       .trim()

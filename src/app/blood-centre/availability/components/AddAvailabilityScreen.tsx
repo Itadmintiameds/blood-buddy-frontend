@@ -166,7 +166,7 @@ export function AddAvailabilityScreen() {
           <section
             className="
               mx-auto
-              min-h-[calc(100vh-100px)]
+              min-h-[calc(100vh-190px)]
               w-full
               px-4
               pb-8

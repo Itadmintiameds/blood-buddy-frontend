@@ -231,16 +231,11 @@ textarea {
   font-family: "Times New Roman", Times, serif;
 }
 
+/* Height comes from ScreenShell (flex-1 inside a min-h-screen column) so the
+   footer below it stays on screen instead of being pushed past a 100vh frame. */
 .mobile-frame {
   width: 100%;
-  min-height: 100vh;
   background: #fff;
-}
-
-@media (min-width: 768px) {
-  .mobile-frame {
-    min-height: auto;
-  }
 }
 
 /* =========================

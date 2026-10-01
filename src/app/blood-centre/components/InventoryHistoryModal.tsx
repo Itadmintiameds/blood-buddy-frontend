@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { History, Loader2, X } from "lucide-react";
 
 import { getApiErrorMessage } from "@/services/api/client";
@@ -9,6 +9,8 @@ import {
   type InventoryAuditResponse,
 } from "@/services/bloodCenter/historyService";
 import { useBilingualText } from "@/app/components/common/Bilingual";
+import { Pagination } from "@/app/components/ui/Pagination";
+import { usePagination } from "@/app/hooks/usePagination";
 import { InventoryHistoryTimeline } from "./InventoryHistoryTimeline";
 
 // Shows the movement history for a single inventory item (blood group +
@@ -27,6 +29,17 @@ export function InventoryHistoryModal({
   const [error, setError] = useState("");
 
   const closeLabel = useBilingualText("common.close");
+
+  // The modal is only 460px wide / 85vh tall, so page the timeline 5 at a time
+  // and pin a compact pager below the scrolling body.
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
+    usePagination(entries, { pageSize: 5, resetKey: String(inventoryId) });
+
+  const handlePageChange = (nextPage: number) => {
+    setPage(nextPage);
+    bodyRef.current?.scrollTo({ top: 0 });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -67,11 +80,6 @@ export function InventoryHistoryModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
@@ -104,7 +112,7 @@ export function InventoryHistoryModal({
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 py-5">
+        <div ref={bodyRef} className="overflow-y-auto px-5 py-5">
           {loading && (
             <div className="flex min-h-[180px] items-center justify-center">
               <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
@@ -137,9 +145,21 @@ export function InventoryHistoryModal({
           )}
 
           {!loading && !error && entries.length > 0 && (
-            <InventoryHistoryTimeline entries={entries} />
+            <InventoryHistoryTimeline entries={pageItems} />
           )}
         </div>
+
+        {!loading && !error && (
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            compact
+            className="shrink-0"
+          />
+        )}
       </div>
     </div>
   );

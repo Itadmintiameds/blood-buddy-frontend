@@ -19,6 +19,7 @@ import { FormInput } from "@/app/components/ui/FormInput";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import {
   donorRegistrationSchema,
+  getDonorDobBounds,
   normalizeDonorForm,
 } from "@/schema/donor/donorRegistrationSchema";
 import type {
@@ -48,8 +49,21 @@ const defaultValues: DonorRegistrationInput = {
   lastBloodDonationDate: "",
 };
 
+// Today as YYYY-MM-DD in the user's local timezone. toISOString() is UTC, which
+// is already "tomorrow" (or still "yesterday") for part of the day in most
+// timezones and would let the date picker offer the wrong cut-off.
+function getLocalTodayIso(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 export function DonorRegistrationForm() {
   const router = useRouter();
+  const dobBounds = getDonorDobBounds();
+  const todayIso = getLocalTodayIso();
   const enterFullName = useBilingualText("common.enterFullName");
   const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
   const enterAlternateMobile = useBilingualText("donor.enterAlternateMobile");
@@ -199,7 +213,8 @@ export function DonorRegistrationForm() {
             label={<Bilingual tKey="donor.dateOfBirth" as="span" />}
             required
             type="date"
-            max={new Date().toISOString().slice(0, 10)}
+            min={dobBounds.min}
+            max={dobBounds.max}
             autoComplete="bday"
             {...register("dob")}
             error={errors.dob?.message}
@@ -339,7 +354,7 @@ export function DonorRegistrationForm() {
             icon={CalendarDays}
             label={<Bilingual tKey="donor.lastBloodDonationDateOptional" as="span" />}
             type="date"
-            max={new Date().toISOString().slice(0, 10)}
+            max={todayIso}
             {...register("lastBloodDonationDate")}
             error={errors.lastBloodDonationDate?.message}
           />

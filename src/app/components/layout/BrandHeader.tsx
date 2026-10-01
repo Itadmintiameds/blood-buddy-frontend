@@ -55,47 +55,28 @@ export function BrandHeader({
               className="
                 flex
                 h-11
-                min-w-[92px]
+                w-11
                 items-center
                 justify-center
                 rounded-full
                 bg-[var(--color-icon-bg-soft-2)]
-                px-3.5
                 sm:h-13
-                sm:min-w-[116px]
-                sm:px-5
-                gap-1.5
+                sm:w-13
               "
             >
               <Image
-                src="/images/smt-logo.png"
-                alt="SMT"
-                width={65}
-                height={25}
+                src="/images/blood-buddy-logo.png"
+                alt="Blood Buddy"
+                width={1112}
+                height={1650}
                 priority
                 className="
-                  h-[32px]
+                  h-[34px]
                   w-auto
                   object-contain
-                  sm:h-[38px]
-                  mt-1
+                  sm:h-[42px]
                 "
               />
-
-              <span
-                className="
-                  ml-0.5
-                  text-[16px]
-                  font-normal
-                  text-[#1769aa]
-                  sm:text-[18px]
-                "
-                style={{
-                  fontFamily: '"Times New Roman", Times, serif',
-                }}
-              >
-                SMT
-              </span>
             </div>
 
             <div className="flex h-11 items-center rounded-full bg-[var(--color-icon-bg-soft-2)] px-3 sm:h-13 sm:px-4">

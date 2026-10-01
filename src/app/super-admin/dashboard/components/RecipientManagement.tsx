@@ -22,8 +22,10 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
   BloodRequestStatus,
+  SuperAdminBloodRequestCentre,
   SuperAdminBloodRequestDetail,
   SuperAdminBloodRequestSummary,
+  SuperAdminDonor,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
   closeBloodRequest,
@@ -38,6 +40,7 @@ import {
 } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import { usePagination } from "@/app/hooks/usePagination";
 import {
   recipientRequestSchema,
   normalizeRecipientForm,
@@ -50,6 +53,7 @@ import type {
 import { StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
+import { Pagination } from "@/app/components/ui/Pagination";
 import {
   Bilingual,
   BilingualInline,
@@ -264,6 +268,20 @@ export function RecipientManagement() {
     cityFilter,
     statusLabels,
   ]);
+
+  const {
+    page,
+    pageSize,
+    totalItems,
+    totalPages,
+    pageItems,
+    startIndex,
+    setPage,
+    setPageSize,
+  } = usePagination(filteredRequests, {
+    pageSize: 10,
+    resetKey: [search, statusFilter, bloodGroupFilter, cityFilter].join("|"),
+  });
 
   return (
     <div className="space-y-6">
@@ -519,13 +537,13 @@ export function RecipientManagement() {
                 </td>
               </tr>
             ) : filteredRequests.length > 0 ? (
-              filteredRequests.map((request, index) => (
+              pageItems.map((request, index) => (
                 <tr
                   key={request.id}
                   onClick={() => setOpenRequestId(request.id)}
                   className="cursor-pointer border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
                 >
-                  <TableCell>{index + 1}</TableCell>
+                  <TableCell>{startIndex + index + 1}</TableCell>
 
                   <TableCell>
                     <div className="flex min-w-0 items-center gap-2">
@@ -615,7 +633,7 @@ export function RecipientManagement() {
             <LoadingState />
           </div>
         ) : filteredRequests.length > 0 ? (
-          filteredRequests.map((request, index) => (
+          pageItems.map((request, index) => (
             <div
               key={request.id}
               onClick={() => setOpenRequestId(request.id)}
@@ -633,7 +651,7 @@ export function RecipientManagement() {
                   <div className="min-w-0">
                     <Bilingual
                       tKey="superAdmin.sNoValue"
-                      params={{ index: index + 1 }}
+                      params={{ index: startIndex + index + 1 }}
                       as="p"
                       className="text-[11px] text-[var(--color-text-placeholder)]"
                     />
@@ -707,6 +725,18 @@ export function RecipientManagement() {
           </div>
         )}
       </div>
+
+      {!loading && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          className="mt-4"
+        />
+      )}
 
       {openRequestId !== null && (
         <BloodRequestDetailModal
@@ -812,11 +842,6 @@ function LogRequestModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !isSubmitting) {
-          onClose();
-        }
-      }}
       className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md transition-opacity duration-200 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
@@ -897,12 +922,22 @@ function LogRequestModal({
             />
 
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]">
+              <label
+                htmlFor="log-request-blood-group"
+                className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              >
                 Blood Group<span className="text-red-500"> *</span>
               </label>
 
               <div className="relative">
                 <select
+                  id="log-request-blood-group"
+                  aria-invalid={errors.bloodGroupId ? true : undefined}
+                  aria-describedby={
+                    errors.bloodGroupId
+                      ? "log-request-blood-group-error"
+                      : undefined
+                  }
                   {...register("bloodGroupId", { valueAsNumber: true })}
                   className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
                     errors.bloodGroupId
@@ -926,19 +961,33 @@ function LogRequestModal({
               </div>
 
               {errors.bloodGroupId && (
-                <p className="mt-1 text-[12px] text-red-500">
+                <p
+                  id="log-request-blood-group-error"
+                  role="alert"
+                  className="mt-1 text-[12px] text-red-500"
+                >
                   {errors.bloodGroupId.message}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]">
+              <label
+                htmlFor="log-request-blood-type"
+                className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              >
                 Blood Type<span className="text-red-500"> *</span>
               </label>
 
               <div className="relative">
                 <select
+                  id="log-request-blood-type"
+                  aria-invalid={errors.bloodComponentId ? true : undefined}
+                  aria-describedby={
+                    errors.bloodComponentId
+                      ? "log-request-blood-type-error"
+                      : undefined
+                  }
                   {...register("bloodComponentId", { valueAsNumber: true })}
                   className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
                     errors.bloodComponentId
@@ -965,7 +1014,11 @@ function LogRequestModal({
               </div>
 
               {errors.bloodComponentId && (
-                <p className="mt-1 text-[12px] text-red-500">
+                <p
+                  id="log-request-blood-type-error"
+                  role="alert"
+                  className="mt-1 text-[12px] text-red-500"
+                >
                   {errors.bloodComponentId.message}
                 </p>
               )}
@@ -1178,11 +1231,6 @@ function BloodRequestDetailModal({
   return (
     <>
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !closing) {
-          onClose();
-        }
-      }}
       className="
         motion-scrim
         fixed
@@ -1270,7 +1318,10 @@ function BloodRequestDetailModal({
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <InfoTile tKey="bloodCentre.bloodGroup" value={detail.bloodGroup} />
+                <InfoTile
+                  tKey="bloodCentre.bloodGroup"
+                  value={detail.bloodGroup}
+                />
                 <InfoTile tKey="superAdmin.bloodComponent" value={detail.bloodType} />
                 <InfoTile tKey="recipient.unitsRequired" value={String(detail.units)} />
                 <InfoTile
@@ -1313,30 +1364,7 @@ function BloodRequestDetailModal({
                 tKey="superAdmin.matchedCentres"
                 params={{ count: detail.matchedCentres.length }}
               >
-                {detail.matchedCentres.length === 0 ? (
-                  <Bilingual
-                    tKey="superAdmin.noCentresMatched"
-                    as="p"
-                    className="text-[12px] text-[var(--color-text-placeholder-alt)]"
-                  />
-                ) : (
-                  <div className="space-y-2">
-                    {detail.matchedCentres.map((centre) => (
-                      <div
-                        key={centre.id}
-                        className="rounded-lg border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-3.5 py-2.5"
-                      >
-                        <p className="text-[12px] font-bold text-[var(--color-text-body)]">
-                          {centre.bloodBankName}
-                        </p>
-                        <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
-                          {centre.address} · {centre.city} ·{" "}
-                          {centre.phoneNumber}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <MatchedCentresList centres={detail.matchedCentres} />
               </Section>
 
               {/* DONATED BY */}
@@ -1345,32 +1373,7 @@ function BloodRequestDetailModal({
                   tKey="superAdmin.donatedBy"
                   params={{ count: detail.donatedBy.length }}
                 >
-                  <div className="space-y-2">
-                    {detail.donatedBy.map((donor) => (
-                      <div
-                        key={donor.id}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-success-bg)] bg-[var(--color-success-bg)] px-3.5 py-2.5"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
-                            {donor.donorName}
-                          </p>
-                          <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
-                            {donor.mobileNumber} · {donor.bloodGroup}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
-                            <BilingualInline tKey="superAdmin.lastBloodDonation" />
-                            : {formatDate(donor.lastBloodDonationDate)}
-                          </p>
-                        </div>
-
-                        <CheckCircle2
-                          size={17}
-                          className="shrink-0 text-[var(--color-success)]"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <DonatedByList donors={detail.donatedBy} />
                 </Section>
               )}
 
@@ -1379,67 +1382,12 @@ function BloodRequestDetailModal({
                 tKey="superAdmin.donorCandidates"
                 params={{ count: detail.donorCandidates.length }}
               >
-                {detail.donorCandidates.length === 0 ? (
-                  <Bilingual
-                    tKey="superAdmin.noMatchingDonorCandidates"
-                    as="p"
-                    className="text-[12px] text-[var(--color-text-placeholder-alt)]"
-                  />
-                ) : (
-                  <div className="space-y-2">
-                    {detail.donorCandidates.map((donor) => (
-                      <div
-                        key={donor.id}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
-                            {donor.donorName}
-                          </p>
-                          <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
-                            {donor.mobileNumber} · {donor.bloodGroup} ·{" "}
-                            {donor.city}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
-                            <BilingualInline tKey="superAdmin.lastBloodDonation" />
-                            : {formatDate(donor.lastBloodDonationDate)}
-                          </p>
-                        </div>
-
-                        {isOpen && (
-                          <button
-                            type="button"
-                            onClick={() => setConfirmDonorId(donor.id)}
-                            disabled={recordingDonorId !== null}
-                            className="
-                              flex
-                              shrink-0
-                              items-center
-                              gap-1.5
-                              rounded-lg
-                              bg-[var(--color-primary)]
-                              px-3
-                              py-1.5
-                              text-[11px]
-                              font-semibold
-                              text-white
-                              shadow-[0_4px_12px_rgba(255,59,63,0.18)]
-                              transition-all
-                              hover:bg-[var(--color-dashboard-cta-hover)]
-                              disabled:cursor-not-allowed
-                              disabled:opacity-60
-                            "
-                          >
-                            {recordingDonorId === donor.id && (
-                              <Loader2 size={12} className="animate-spin shrink-0" />
-                            )}
-                            <BilingualInline tKey="superAdmin.recordDonation" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <DonorCandidatesList
+                  donors={detail.donorCandidates}
+                  isOpen={isOpen}
+                  recordingDonorId={recordingDonorId}
+                  onRecord={setConfirmDonorId}
+                />
               </Section>
 
               {/* CLOSE REQUEST */}
@@ -1567,6 +1515,202 @@ function BloodRequestDetailModal({
         }}
         onCancel={() => setConfirmDonorId(null)}
       />
+    </>
+  );
+}
+
+const MODAL_LIST_PAGE_SIZE = 5;
+
+function MatchedCentresList({
+  centres,
+}: {
+  centres: SuperAdminBloodRequestCentre[];
+}) {
+  const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
+    usePagination(centres, { pageSize: MODAL_LIST_PAGE_SIZE });
+
+  if (centres.length === 0) {
+    return (
+      <Bilingual
+        tKey="superAdmin.noCentresMatched"
+        as="p"
+        className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        {pageItems.map((centre) => (
+          <div
+            key={centre.id}
+            className="rounded-lg border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-3.5 py-2.5"
+          >
+            <p className="text-[12px] font-bold text-[var(--color-text-body)]">
+              {centre.bloodBankName}
+            </p>
+            <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+              {centre.address} · {centre.city} · {centre.phoneNumber}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {totalItems > pageSize && (
+        <Pagination
+          compact
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          className="mt-2 rounded-lg"
+        />
+      )}
+    </>
+  );
+}
+
+function DonatedByList({ donors }: { donors: SuperAdminDonor[] }) {
+  const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
+    usePagination(donors, { pageSize: MODAL_LIST_PAGE_SIZE });
+
+  return (
+    <>
+      <div className="space-y-2">
+        {pageItems.map((donor) => (
+          <div
+            key={donor.id}
+            className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-success-bg)] bg-[var(--color-success-bg)] px-3.5 py-2.5"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
+                {donor.donorName}
+              </p>
+              <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
+                {donor.mobileNumber} · {donor.bloodGroup}
+              </p>
+              <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+                <BilingualInline tKey="superAdmin.lastBloodDonation" />
+                : {formatDate(donor.lastBloodDonationDate)}
+              </p>
+            </div>
+
+            <CheckCircle2
+              size={17}
+              className="shrink-0 text-[var(--color-success)]"
+            />
+          </div>
+        ))}
+      </div>
+
+      {totalItems > pageSize && (
+        <Pagination
+          compact
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          className="mt-2 rounded-lg"
+        />
+      )}
+    </>
+  );
+}
+
+function DonorCandidatesList({
+  donors,
+  isOpen,
+  recordingDonorId,
+  onRecord,
+}: {
+  donors: SuperAdminDonor[];
+  isOpen: boolean;
+  recordingDonorId: number | null;
+  onRecord: (donorId: number) => void;
+}) {
+  const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
+    usePagination(donors, { pageSize: MODAL_LIST_PAGE_SIZE });
+
+  if (donors.length === 0) {
+    return (
+      <Bilingual
+        tKey="superAdmin.noMatchingDonorCandidates"
+        as="p"
+        className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+      />
+    );
+  }
+
+  return (
+    <>
+      <div className="space-y-2">
+        {pageItems.map((donor) => (
+          <div
+            key={donor.id}
+            className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5"
+          >
+            <div className="min-w-0">
+              <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
+                {donor.donorName}
+              </p>
+              <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
+                {donor.mobileNumber} · {donor.bloodGroup} ·{" "}
+                {donor.city}
+              </p>
+              <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+                <BilingualInline tKey="superAdmin.lastBloodDonation" />
+                : {formatDate(donor.lastBloodDonationDate)}
+              </p>
+            </div>
+
+            {isOpen && (
+              <button
+                type="button"
+                onClick={() => onRecord(donor.id)}
+                disabled={recordingDonorId !== null}
+                className="
+                  flex
+                  shrink-0
+                  items-center
+                  gap-1.5
+                  rounded-lg
+                  bg-[var(--color-primary)]
+                  px-3
+                  py-1.5
+                  text-[11px]
+                  font-semibold
+                  text-white
+                  shadow-[0_4px_12px_rgba(255,59,63,0.18)]
+                  transition-all
+                  hover:bg-[var(--color-dashboard-cta-hover)]
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
+                "
+              >
+                {recordingDonorId === donor.id && (
+                  <Loader2 size={12} className="animate-spin shrink-0" />
+                )}
+                <BilingualInline tKey="superAdmin.recordDonation" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {totalItems > pageSize && (
+        <Pagination
+          compact
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          className="mt-2 rounded-lg"
+        />
+      )}
     </>
   );
 }

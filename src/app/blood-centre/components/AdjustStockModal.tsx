@@ -149,7 +149,8 @@ export function AdjustStockModal({
             />
 
             <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)]">
-              {row.bloodGroup} · {row.bloodType} · {row.unitsAvailable}{" "}
+              {row.bloodGroup} · {row.bloodType} ·{" "}
+              {row.unitsAvailable}{" "}
               {unitsAvailableSuffix}
             </p>
           </div>
@@ -180,12 +181,13 @@ export function AdjustStockModal({
         </div>
 
         <div className="px-5 py-5">
-          <Bilingual
-            tKey="bloodCentre.movement"
-            as="label"
+          <label
             htmlFor="movement"
             className="block text-[13px] font-medium text-[var(--color-text-body)]"
-          />
+          >
+            <Bilingual tKey="bloodCentre.movement" as="span" />
+            <span className="text-red-500"> *</span>
+          </label>
 
           <div className="relative mt-2">
             <select
@@ -234,14 +236,18 @@ export function AdjustStockModal({
             />
           </div>
 
-          <Bilingual
-            tKey={
-              isCorrection ? "bloodCentre.newTotalUnits" : "bloodCentre.units"
-            }
-            as="label"
+          <label
             htmlFor="adjustUnits"
             className="mt-4 block text-[13px] font-medium text-[var(--color-text-body)]"
-          />
+          >
+            <Bilingual
+              tKey={
+                isCorrection ? "bloodCentre.newTotalUnits" : "bloodCentre.units"
+              }
+              as="span"
+            />
+            <span className="text-red-500"> *</span>
+          </label>
 
           <input
             id="adjustUnits"

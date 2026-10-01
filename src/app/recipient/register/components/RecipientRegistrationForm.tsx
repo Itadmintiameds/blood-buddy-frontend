@@ -34,6 +34,7 @@ import {
   getBloodGroups,
 } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
+import { HELPLINE_NUMBER } from "@/config/support";
 import type {
   MasterBloodComponent,
   MasterBloodGroup,
@@ -514,10 +515,24 @@ export function RecipientRegistrationForm() {
         description={
           successResult && (
             <>
-              <span className="block">{successResult.message}</span>
+              {successResult.matched ? (
+                <span className="block">{successResult.message}</span>
+              ) : (
+                <Bilingual
+                  tKey="recipient.noCentreMatched"
+                  as="span"
+                  className="block"
+                />
+              )}
               <Bilingual
                 tKey="recipient.requestReferenceId"
                 params={{ id: successResult.bloodRequestId }}
+                as="span"
+                className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
+              />
+              <Bilingual
+                tKey="recipient.helplineCall"
+                params={{ number: HELPLINE_NUMBER }}
                 as="span"
                 className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
               />

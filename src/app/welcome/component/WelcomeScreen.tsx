@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Droplets, HeartPulse, ShieldCheck } from "lucide-react";
 
-import { PoweredBy } from "@/app/components/common/PoweredBy";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
 import {
@@ -15,13 +14,16 @@ import {
 export function WelcomeScreen() {
   return (
     <ScreenShell>
-      <main className="flex min-h-[100dvh] w-full flex-col bg-white lg:h-[100dvh] lg:overflow-hidden">
+      {/* 44px = the "Powered by TiaMeds" footer ScreenShell renders below this, so
+          header + content + footer fill exactly one screen. min-height (not a fixed
+          height) so a short laptop viewport scrolls instead of clipping the content. */}
+      <main className="flex min-h-[calc(100dvh-44px)] w-full flex-col bg-white">
         <div className="shrink-0">
           <BrandHeader />
         </div>
 
-        <section className="min-h-0 flex-1 bg-white lg:overflow-hidden">
-          <div className="flex w-full flex-col lg:h-full lg:flex-row">
+        <section className="flex min-h-0 flex-1 flex-col bg-white">
+          <div className="flex w-full flex-1 flex-col lg:flex-row">
             <div
               className="
                 relative
@@ -347,11 +349,6 @@ export function WelcomeScreen() {
                       className="text-[12px] text-[var(--color-text-tertiary)]"
                     />
                   </div>
-                </div>
-
-                {/* Powered By */}
-                <div className="mt-5 flex justify-center sm:mt-6">
-                  <PoweredBy />
                 </div>
               </div>
             </div>

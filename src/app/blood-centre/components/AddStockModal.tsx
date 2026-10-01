@@ -87,7 +87,8 @@ export function AddStockModal({
             </h2>
 
             <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)]">
-              {row.bloodGroup} · {row.bloodType} · {row.unitsAvailable}{" "}
+              {row.bloodGroup} · {row.bloodType} ·{" "}
+              {row.unitsAvailable}{" "}
               {unitsAvailableSuffix}
             </p>
           </div>
@@ -104,12 +105,13 @@ export function AddStockModal({
         </div>
 
         <div className="px-5 py-5">
-          <Bilingual
-            tKey="bloodCentre.units"
-            as="label"
+          <label
             htmlFor="addUnits"
             className="block text-[13px] font-medium text-[var(--color-text-body)]"
-          />
+          >
+            <Bilingual tKey="bloodCentre.units" as="span" />
+            <span className="text-red-500"> *</span>
+          </label>
 
           <input
             id="addUnits"

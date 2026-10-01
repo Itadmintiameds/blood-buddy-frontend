@@ -40,6 +40,10 @@ export const translations = {
       resend: "Resend OTP",
       back: "Back",
       next: "Next",
+      previous: "Previous",
+      showingRange: "Showing {from}–{to} of {total}",
+      pageOf: "Page {page} of {total}",
+      rowsPerPage: "Rows per page",
       search: "Search",
       close: "Close",
       ok: "OK",
@@ -252,6 +256,9 @@ export const translations = {
       enterHospitalName: "Enter hospital name",
       requestSubmitted: "Request Submitted",
       requestReferenceId: "Your request reference ID is #{id}.",
+      noCentreMatched:
+        "No blood centre has matched your request yet. Our team will arrange a donor for you.",
+      helplineCall: "For urgent help, call our helpline: {number}",
 
       searchTitle: "Search Blood Banks & Donors",
       searchByPincode: "Search by pin code or area",
@@ -447,6 +454,10 @@ export const translations = {
       resend: "OTP ಮರುಕಳುಹಿಸಿ",
       back: "ಹಿಂದಕ್ಕೆ",
       next: "ಮುಂದೆ",
+      previous: "ಹಿಂದಿನ",
+      showingRange: "{total} ರಲ್ಲಿ {from}–{to} ತೋರಿಸಲಾಗುತ್ತಿದೆ",
+      pageOf: "ಪುಟ {page} / {total}",
+      rowsPerPage: "ಪ್ರತಿ ಪುಟಕ್ಕೆ ಸಾಲುಗಳು",
       search: "ಹುಡುಕಿ",
       close: "ಮುಚ್ಚಿ",
       ok: "ಸರಿ",
@@ -661,6 +672,9 @@ export const translations = {
       enterHospitalName: "ಆಸ್ಪತ್ರೆಯ ಹೆಸರನ್ನು ನಮೂದಿಸಿ",
       requestSubmitted: "ಮನವಿ ಸಲ್ಲಿಸಲಾಗಿದೆ",
       requestReferenceId: "ನಿಮ್ಮ ಮನವಿ ಉಲ್ಲೇಖ ಐಡಿ #{id}.",
+      noCentreMatched:
+        "ನಿಮ್ಮ ಮನವಿಗೆ ಇನ್ನೂ ಯಾವುದೇ ರಕ್ತ ಕೇಂದ್ರ ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ. ನಮ್ಮ ತಂಡವು ನಿಮಗಾಗಿ ರಕ್ತದಾನಿಯನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡುತ್ತದೆ.",
+      helplineCall: "ತುರ್ತು ಸಹಾಯಕ್ಕಾಗಿ ನಮ್ಮ ಸಹಾಯವಾಣಿಗೆ ಕರೆ ಮಾಡಿ: {number}",
 
       searchTitle: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳನ್ನು ಹುಡುಕಿ",
       searchByPincode: "ಪಿನ್ ಕೋಡ್ ಅಥವಾ ಪ್ರದೇಶದ ಮೂಲಕ ಹುಡುಕಿ",

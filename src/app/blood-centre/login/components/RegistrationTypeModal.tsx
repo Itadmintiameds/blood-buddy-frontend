@@ -47,7 +47,6 @@ export function RegistrationTypeModal({
         ${visible ? "opacity-100" : "opacity-0"}
       `}
       role="presentation"
-      onMouseDown={onClose}
     >
       <div
         className={`
@@ -72,9 +71,6 @@ export function RegistrationTypeModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="registration-type-title"
-        onMouseDown={(event) => {
-          event.stopPropagation();
-        }}
       >
         {/* Close Button */}
 

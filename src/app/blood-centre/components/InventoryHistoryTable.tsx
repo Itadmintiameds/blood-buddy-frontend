@@ -3,6 +3,8 @@
 import { User } from "lucide-react";
 
 import type { InventoryAuditResponse } from "@/services/bloodCenter/historyService";
+import { Pagination } from "@/app/components/ui/Pagination";
+import { usePagination } from "@/app/hooks/usePagination";
 import { formatTimestamp, movementMeta } from "./InventoryHistoryTimeline";
 
 const COLS =
@@ -18,6 +20,21 @@ export function InventoryHistoryTable({
   // Every row shares the same inventory item, so show the group + component once
   // as a heading rather than repeating them in each row.
   const heading = entries[0];
+
+  // Page over the full (already newest-first) list; a different inventory item
+  // jumps back to page 1.
+  const {
+    page,
+    pageSize,
+    totalItems,
+    totalPages,
+    pageItems,
+    setPage,
+    setPageSize,
+  } = usePagination(entries, {
+    pageSize: 10,
+    resetKey: String(heading?.inventoryId ?? ""),
+  });
 
   return (
     <div>
@@ -47,7 +64,7 @@ export function InventoryHistoryTable({
           </div>
 
           {/* Rows */}
-          {entries.map((entry, index) => {
+          {pageItems.map((entry, index) => {
             const meta = movementMeta[entry.stockMovement];
             const Icon = meta.icon;
             const positive = entry.changedUnits > 0;
@@ -114,6 +131,16 @@ export function InventoryHistoryTable({
           })}
         </div>
       </div>
+
+      <Pagination
+        page={page}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        className="mt-4"
+      />
     </div>
   );
 }

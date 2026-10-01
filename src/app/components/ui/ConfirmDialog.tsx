@@ -41,11 +41,6 @@ export function ConfirmDialog({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !loading) {
-          onCancel();
-        }
-      }}
       className={`
         motion-scrim
         fixed

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Menu } from "lucide-react";
 
 import { BloodCentreAuthGuard } from "@/app/components/auth/BloodCentreAuthGuard";
+import { PoweredByFooter } from "@/app/components/common/PoweredBy";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { getBloodCentreSession } from "@/services/auth/authStorage";
 import { BloodCentreSidebar } from "./BloodCentreSidebar";
@@ -48,8 +49,8 @@ export function BloodCentreShell({
 
         {/* Scroll region — everything below the header scrolls here, so the
             scrollbar starts under the header rather than beside it. */}
-        <div className="flex-1 overflow-y-auto">
-          <main className="lg:ml-[260px]">
+        <div className="flex flex-1 flex-col overflow-y-auto">
+          <main className="flex-1 lg:ml-[260px]">
             {/* Page toolbar */}
             <div
               className={`border-b border-[var(--color-border-lighter)] bg-white ${
@@ -93,6 +94,10 @@ export function BloodCentreShell({
               <div className="mx-auto w-full max-w-[1600px]">{children}</div>
             </section>
           </main>
+
+          {/* Last child of the scroll region: sits at the bottom edge on short
+              pages and follows the content on long ones. Offset by the sidebar. */}
+          <PoweredByFooter className="lg:ml-[260px]" />
         </div>
       </div>
     </BloodCentreAuthGuard>

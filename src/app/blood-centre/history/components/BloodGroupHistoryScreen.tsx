@@ -151,11 +151,11 @@ export function BloodGroupHistoryScreen() {
 
   // When the group changes, the previously-selected component may not exist for
   // the new group — snap it back to the first available so the pair stays valid.
-  useEffect(() => {
-    if (components.length > 0 && !components.includes(selectedComponent)) {
-      setSelectedComponent(components[0]);
-    }
-  }, [components, selectedComponent]);
+  // Adjusted during render (conditional, so it settles in one extra pass) rather
+  // than in an effect, so the stale pair never paints or triggers a lookup.
+  if (components.length > 0 && !components.includes(selectedComponent)) {
+    setSelectedComponent(components[0]);
+  }
 
   // The (group, component) pair maps to an inventory item — that item's id
   // drives the history lookup. Null only transiently while the component snaps
@@ -282,7 +282,9 @@ export function BloodGroupHistoryScreen() {
 
             <p className="mt-3 text-[13px] font-medium text-[var(--color-text-secondary)]">
               No movements recorded
-              {selectedGroup ? ` for ${selectedGroup} · ${selectedComponent}` : ""}{" "}
+              {selectedGroup
+                ? ` for ${selectedGroup} · ${selectedComponent}`
+                : ""}{" "}
               yet
             </p>
 
@@ -310,6 +312,7 @@ function HistorySelect({
   value: string;
   onChange: (value: string) => void;
   options: string[];
+  /** Display-only transform for option text; option values stay raw. */
 }) {
   return (
     <div className="sm:w-[200px]">

@@ -27,6 +27,7 @@ import {
 import { useRouter } from "next/navigation";
 import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
 import type {
+  BloodAvailability,
   SuperAdminBloodBank,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
@@ -43,6 +44,8 @@ import type {
   MasterBloodGroup,
 } from "@/types/master.types";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import { usePagination } from "@/app/hooks/usePagination";
+import { Pagination } from "@/app/components/ui/Pagination";
 import { StatTile } from "@/app/components/ui/StatTile";
 import type { StockLevel } from "@/utils/bloodStock";
 import { getStockLevel, rowAccent, unitBadgeClass } from "@/utils/bloodStock";
@@ -53,6 +56,32 @@ import {
 } from "@/app/components/common/Bilingual";
 
 const ALL = "all";
+
+// Both stock filters are optional; a row passes when it satisfies every one
+// that is set. Shared by the bank list and the detail panel's table so the two
+// can never disagree about what "matches".
+function matchesStockFilters(
+  item: BloodAvailability,
+  bloodGroupFilter: string,
+  bloodTypeFilter: string,
+): boolean {
+  return (
+    (bloodGroupFilter === ALL || item.bloodGroup === bloodGroupFilter) &&
+    (bloodTypeFilter === ALL || item.bloodType === bloodTypeFilter)
+  );
+}
+
+// De-duplicated option names: master entries keep their order, extras found
+// only in the loaded data follow alphabetically.
+function mergeOptionNames(masterNames: string[], dataNames: string[]): string[] {
+  const masters = Array.from(new Set(masterNames.filter(Boolean)));
+  const known = new Set(masters);
+  const extras = Array.from(new Set(dataNames.filter(Boolean)))
+    .filter((name) => !known.has(name))
+    .sort((a, b) => a.localeCompare(b));
+
+  return [...masters, ...extras];
+}
 
 function formatDate(value: string | null | undefined): string {
   if (!value) {
@@ -80,6 +109,8 @@ export default function BloodBankManagement() {
   const [categoryFilter, setCategoryFilter] = useState<string>(ALL);
   const [statusFilter, setStatusFilter] = useState<string>(ALL);
   const [cityFilter, setCityFilter] = useState<string>(ALL);
+  const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
+  const [bloodTypeFilter, setBloodTypeFilter] = useState<string>(ALL);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -200,17 +231,46 @@ export default function BloodBankManagement() {
     [bloodBanks],
   );
 
+  // Master lists first (so options follow the backend's order); anything a
+  // loaded bank holds that the masters lack is appended, which also covers the
+  // case where the masters haven't loaded (or failed to) at all.
+  const bloodGroupOptions = useMemo(
+    () =>
+      mergeOptionNames(
+        masterGroups.map((group) => group.bloodGroupName),
+        bloodBanks.flatMap((bank) =>
+          bank.availability.map((item) => item.bloodGroup),
+        ),
+      ),
+    [masterGroups, bloodBanks],
+  );
+
+  const bloodTypeOptions = useMemo(
+    () =>
+      mergeOptionNames(
+        masterComponents.map((component) => component.bloodComponentName),
+        bloodBanks.flatMap((bank) =>
+          bank.availability.map((item) => item.bloodType),
+        ),
+      ),
+    [masterComponents, bloodBanks],
+  );
+
   const isFiltering =
     search.trim().length > 0 ||
     categoryFilter !== ALL ||
     statusFilter !== ALL ||
-    cityFilter !== ALL;
+    cityFilter !== ALL ||
+    bloodGroupFilter !== ALL ||
+    bloodTypeFilter !== ALL;
 
   const clearFilters = () => {
     setSearch("");
     setCategoryFilter(ALL);
     setStatusFilter(ALL);
     setCityFilter(ALL);
+    setBloodGroupFilter(ALL);
+    setBloodTypeFilter(ALL);
   };
 
   // Refresh: reset any active filters, reload the data, and give the icon a
@@ -246,9 +306,47 @@ export default function BloodBankManagement() {
 
       const matchesCity = cityFilter === ALL || bank.city === cityFilter;
 
-      return matchesSearch && matchesCategory && matchesStatus && matchesCity;
+      // A bank qualifies when a single stock row satisfies every selected
+      // group/type filter (so "O-" + "Platelets" means O- platelets,
+      // not O- somewhere and platelets somewhere else).
+      const matchesStock =
+        (bloodGroupFilter === ALL && bloodTypeFilter === ALL) ||
+        bank.availability.some((item) =>
+          matchesStockFilters(item, bloodGroupFilter, bloodTypeFilter),
+        );
+
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesStatus &&
+        matchesCity &&
+        matchesStock
+      );
     });
-  }, [bloodBanks, search, categoryFilter, statusFilter, cityFilter]);
+  }, [
+    bloodBanks,
+    search,
+    categoryFilter,
+    statusFilter,
+    cityFilter,
+    bloodGroupFilter,
+    bloodTypeFilter,
+  ]);
+
+  // Only the rendered list is paged. `filteredBloodBanks` (the full result set)
+  // still drives the counts and the active-bank fallback below, so the detail
+  // panel never loses its bank just because it sits on another page.
+  const bankPagination = usePagination(filteredBloodBanks, {
+    pageSize: 10,
+    resetKey: [
+      search.trim(),
+      categoryFilter,
+      statusFilter,
+      cityFilter,
+      bloodGroupFilter,
+      bloodTypeFilter,
+    ].join("|"),
+  });
 
   // Keep the detail panel pointed at a bank that's actually in view: fall
   // back to the first result whenever the visible set changes and the
@@ -733,6 +831,64 @@ export default function BloodBankManagement() {
             </div>
           )}
 
+          {/* BLOOD GROUP (A+, O- ...) */}
+          {bloodGroupOptions.length > 0 && (
+            <div className="relative shrink-0">
+              <select
+                value={bloodGroupFilter}
+                onChange={(event) => setBloodGroupFilter(event.target.value)}
+                aria-label="Filter by blood group"
+                className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                  bloodGroupFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All blood groups</option>
+                {bloodGroupOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
+
+          {/* BLOOD TYPE (the component: Whole Blood, Platelets ...) */}
+          {bloodTypeOptions.length > 0 && (
+            <div className="relative shrink-0">
+              <select
+                value={bloodTypeFilter}
+                onChange={(event) => setBloodTypeFilter(event.target.value)}
+                aria-label="Filter by blood type"
+                className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                  bloodTypeFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All blood types</option>
+                {bloodTypeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
+
           {/* REFRESH */}
           <button
             type="button"
@@ -858,7 +1014,7 @@ export default function BloodBankManagement() {
             )}
 
             {!loading &&
-              filteredBloodBanks.map((bank, index) => (
+              bankPagination.pageItems.map((bank, index) => (
                 <BankListRow
                   key={bank.id}
                   bank={bank}
@@ -868,6 +1024,18 @@ export default function BloodBankManagement() {
                 />
               ))}
           </div>
+
+          {!loading && (
+            <Pagination
+              compact
+              page={bankPagination.page}
+              pageSize={bankPagination.pageSize}
+              totalItems={bankPagination.totalItems}
+              totalPages={bankPagination.totalPages}
+              onPageChange={bankPagination.setPage}
+              className="shrink-0"
+            />
+          )}
         </div>
 
         {/* DETAIL PANEL */}
@@ -898,6 +1066,8 @@ export default function BloodBankManagement() {
                 openAddStockModal(activeBank, availabilityId)
               }
               onAddNewBlood={() => openNewBloodModal(activeBank)}
+              bloodGroupFilter={bloodGroupFilter}
+              bloodTypeFilter={bloodTypeFilter}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center px-6 py-14 text-center">
@@ -1027,14 +1197,34 @@ function BankDetailPanel({
   onUpdate,
   onAddStock,
   onAddNewBlood,
+  bloodGroupFilter,
+  bloodTypeFilter,
 }: {
   bank: SuperAdminBloodBank;
   onBack: () => void;
   onUpdate: (availabilityId: number) => void;
   onAddStock: (availabilityId: number) => void;
   onAddNewBlood: () => void;
+  bloodGroupFilter: string;
+  bloodTypeFilter: string;
 }) {
   const unitsWordText = useBilingualText("bloodCentre.units");
+
+  // The toolbar's group/type filters narrow the stock table too, so the admin
+  // lands on the rows that made this bank match. The header totals above stay
+  // computed from the full availability.
+  const visibleAvailability = useMemo(
+    () =>
+      bank.availability.filter((item) =>
+        matchesStockFilters(item, bloodGroupFilter, bloodTypeFilter),
+      ),
+    [bank.availability, bloodGroupFilter, bloodTypeFilter],
+  );
+
+  const availabilityPagination = usePagination(visibleAvailability, {
+    pageSize: 10,
+    resetKey: `${bank.id}|${bloodGroupFilter}|${bloodTypeFilter}`,
+  });
 
   const bankTotalUnits = bank.availability.reduce(
     (sum, item) => sum + item.units,
@@ -1200,6 +1390,12 @@ function BankDetailPanel({
               className="mt-3 text-[12px] text-[var(--color-text-placeholder)]"
             />
           </div>
+        ) : visibleAvailability.length === 0 ? (
+          <div className="rounded-xl border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-6 text-center">
+            <p className="text-[12px] text-[var(--color-text-tertiary)]">
+              No stock matches the selected filters.
+            </p>
+          </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-[var(--color-border-light)]">
             <table className="w-full table-fixed border-collapse">
@@ -1233,7 +1429,7 @@ function BankDetailPanel({
               </thead>
 
               <tbody>
-                {bank.availability.map((availability) => {
+                {availabilityPagination.pageItems.map((availability) => {
                   const level = getStockLevel(availability.units);
 
                   return (
@@ -1296,6 +1492,17 @@ function BankDetailPanel({
             </table>
           </div>
         )}
+
+        {/* Renders nothing when the filters leave no rows. The rows-per-page
+            selector is left out: the panel is narrow beside the 320px list. */}
+        <Pagination
+          page={availabilityPagination.page}
+          pageSize={availabilityPagination.pageSize}
+          totalItems={availabilityPagination.totalItems}
+          totalPages={availabilityPagination.totalPages}
+          onPageChange={availabilityPagination.setPage}
+          className="mt-3"
+        />
       </div>
     </div>
   );
@@ -1379,11 +1586,6 @@ function UpdateUnitsModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !saving) {
-          onClose();
-        }
-      }}
       className={`
         motion-scrim
         fixed
@@ -1850,11 +2052,6 @@ function AddStockModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !saving) {
-          onClose();
-        }
-      }}
       className={`
         motion-scrim
         fixed
@@ -2197,11 +2394,6 @@ function AddBloodModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !saving) {
-          onClose();
-        }
-      }}
       className={`
         motion-scrim
         fixed
@@ -2278,12 +2470,13 @@ function AddBloodModal({
         <div className="overflow-y-auto px-5 py-5">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Bilingual
-                tKey="bloodCentre.bloodGroup"
-                as="label"
+              <label
                 htmlFor="newBloodGroup"
                 className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
-              />
+              >
+                <Bilingual tKey="bloodCentre.bloodGroup" as="span" />
+                <span className="text-red-500"> *</span>
+              </label>
 
               <div className="relative mt-2">
                 <select
@@ -2314,12 +2507,13 @@ function AddBloodModal({
             </div>
 
             <div>
-              <Bilingual
-                tKey="bloodCentre.bloodType"
-                as="label"
+              <label
                 htmlFor="newBloodComponent"
                 className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
-              />
+              >
+                <Bilingual tKey="bloodCentre.bloodType" as="span" />
+                <span className="text-red-500"> *</span>
+              </label>
 
               <div className="relative mt-2">
                 <select
@@ -2354,12 +2548,13 @@ function AddBloodModal({
           </div>
 
           <div className="mt-4">
-            <Bilingual
-              tKey="bloodCentre.unitsAvailableLabel"
-              as="label"
+            <label
               htmlFor="newBloodUnits"
               className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
-            />
+            >
+              <Bilingual tKey="bloodCentre.unitsAvailableLabel" as="span" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <input
               id="newBloodUnits"

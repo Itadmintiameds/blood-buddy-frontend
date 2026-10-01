@@ -13,6 +13,7 @@ import { DonorManagement } from "./DonorManagement";
 import { RecipientManagement } from "./RecipientManagement";
 import BloodBankManagement from "./BloodBankManagement";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
+import { PoweredByFooter } from "@/app/components/common/PoweredBy";
 import { SuperAdminLogoutButton } from "./SuperAdminLogoutButton";
 import { getSuperAdminSession } from "@/services/auth/authStorage";
 import { Bilingual, useBilingualText } from "@/app/components/common/Bilingual";
@@ -82,7 +83,7 @@ export function SuperAdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface-alt)]">
+    <div className="flex min-h-screen flex-col bg-[var(--color-surface-alt)]">
       {/* Full-width brand header — pinned to the top while the page scrolls */}
       <div className="sticky top-0 z-40 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
         <BrandHeader welcomeName={adminName} />
@@ -189,7 +190,7 @@ export function SuperAdminDashboard() {
         </div>
       </aside>
 
-      <main className="lg:ml-[260px]">
+      <main className="flex-1 lg:ml-[260px]">
         {/* Mobile menu toggle — no page title, content starts right below it */}
         <div className="border-b border-[var(--color-border-lighter)] bg-white lg:hidden">
           <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6">
@@ -211,6 +212,9 @@ export function SuperAdminDashboard() {
           </div>
         </section>
       </main>
+
+      {/* Offset by the fixed sidebar so it never slides underneath it */}
+      <PoweredByFooter className="lg:ml-[260px]" />
     </div>
   );
 }

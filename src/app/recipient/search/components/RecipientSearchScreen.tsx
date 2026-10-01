@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
+import { Pagination } from "@/app/components/ui/Pagination";
 import { ScreenShell } from "@/app/components/ui/ScreenShell";
+import { usePagination } from "@/app/hooks/usePagination";
 import { getLastRecipientPincode } from "@/services/recipient/recipientSessionStorage";
 import {
   searchNearbyBloodBanks,
@@ -30,6 +32,9 @@ import {
 
 type Tab = "bloodBanks" | "donors";
 
+// Mobile-style card lists — short pages, no rows-per-page selector.
+const RESULTS_PAGE_SIZE = 5;
+
 export function RecipientSearchScreen() {
   const searchPlaceholder = useBilingualText("recipient.searchByPincode");
   const searchLabel = useBilingualText("common.search");
@@ -40,6 +45,17 @@ export function RecipientSearchScreen() {
   const [bloodBanks, setBloodBanks] = useState<NearbyBloodBank[]>([]);
   const [donors, setDonors] = useState<NearbyDonor[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Each list pages independently; a new pincode or tab sends both back to 1.
+  const paginationResetKey = `${pincode}|${tab}`;
+  const bankPagination = usePagination(bloodBanks, {
+    pageSize: RESULTS_PAGE_SIZE,
+    resetKey: paginationResetKey,
+  });
+  const donorPagination = usePagination(donors, {
+    pageSize: RESULTS_PAGE_SIZE,
+    resetKey: paginationResetKey,
+  });
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrating from session storage on mount, not synchronizing with a reactive value
@@ -177,94 +193,116 @@ export function RecipientSearchScreen() {
               (bloodBanks.length === 0 ? (
                 <EmptyState tKey="recipient.noBloodBanksFound" />
               ) : (
-                bloodBanks.map((bank) => (
-                  <div
-                    key={bank.id}
-                    className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
-                          <Building2 size={18} className="text-[var(--color-primary)]" />
+                <>
+                  {bankPagination.pageItems.map((bank) => (
+                    <div
+                      key={bank.id}
+                      className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
+                            <Building2 size={18} className="text-[var(--color-primary)]" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
+                              {bank.name}
+                            </h3>
+                            <p className="mt-0.5 truncate text-[12px] text-[var(--color-text-placeholder-alt)]">
+                              {bank.address}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
-                            {bank.name}
-                          </h3>
-                          <p className="mt-0.5 truncate text-[12px] text-[var(--color-text-placeholder-alt)]">
-                            {bank.address}
-                          </p>
-                        </div>
+
+                        <BloodGroupBadge value={bank.bloodGroup} />
                       </div>
 
-                      <BloodGroupBadge value={bank.bloodGroup} />
+                      <div className="mt-3 flex items-center justify-between text-[12px]">
+                        <span className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
+                          <Phone size={13} strokeWidth={1.8} className="text-[var(--color-primary)]" />
+                          {bank.mobileNumber}
+                        </span>
+                        <span className="font-semibold text-[var(--color-text-body)]">
+                          {bank.unitsAvailable} {unitsSuffix}
+                        </span>
+                      </div>
                     </div>
+                  ))}
 
-                    <div className="mt-3 flex items-center justify-between text-[12px]">
-                      <span className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
-                        <Phone size={13} strokeWidth={1.8} className="text-[var(--color-primary)]" />
-                        {bank.mobileNumber}
-                      </span>
-                      <span className="font-semibold text-[var(--color-text-body)]">
-                        {bank.unitsAvailable} {unitsSuffix}
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  <Pagination
+                    page={bankPagination.page}
+                    pageSize={bankPagination.pageSize}
+                    totalItems={bankPagination.totalItems}
+                    totalPages={bankPagination.totalPages}
+                    onPageChange={bankPagination.setPage}
+                    className="mt-4"
+                  />
+                </>
               ))}
 
             {!loading && tab === "donors" &&
               (donors.length === 0 ? (
                 <EmptyState tKey="recipient.noDonorsFound" />
               ) : (
-                donors.map((donor) => (
-                  <div
-                    key={donor.id}
-                    className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
-                          <UserRound size={18} className="text-[var(--color-primary)]" />
+                <>
+                  {donorPagination.pageItems.map((donor) => (
+                    <div
+                      key={donor.id}
+                      className="rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
+                            <UserRound size={18} className="text-[var(--color-primary)]" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
+                              {donor.fullName}
+                            </h3>
+                            <p className="mt-0.5 flex items-center gap-1 text-[12px] text-[var(--color-text-secondary)]">
+                              <Phone size={12} strokeWidth={1.8} />
+                              {donor.mobileNumber}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
-                            {donor.fullName}
-                          </h3>
-                          <p className="mt-0.5 flex items-center gap-1 text-[12px] text-[var(--color-text-secondary)]">
-                            <Phone size={12} strokeWidth={1.8} />
-                            {donor.mobileNumber}
-                          </p>
-                        </div>
+
+                        <BloodGroupBadge value={donor.bloodGroup} />
                       </div>
 
-                      <BloodGroupBadge value={donor.bloodGroup} />
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between text-[12px]">
-                      <span
-                        className={`flex items-center gap-1.5 font-semibold ${
-                          donor.available
-                            ? "text-[var(--color-success)]"
-                            : "text-[var(--color-text-muted)]"
-                        }`}
-                      >
-                        {donor.available ? (
-                          <CheckCircle2 size={14} strokeWidth={2} className="shrink-0" />
-                        ) : (
-                          <XCircle size={14} strokeWidth={2} className="shrink-0" />
-                        )}
-                        <BilingualInline
-                          tKey={
+                      <div className="mt-3 flex items-center justify-between text-[12px]">
+                        <span
+                          className={`flex items-center gap-1.5 font-semibold ${
                             donor.available
-                              ? "recipient.availableToDonate"
-                              : "recipient.notAvailable"
-                          }
-                        />
-                      </span>
+                              ? "text-[var(--color-success)]"
+                              : "text-[var(--color-text-muted)]"
+                          }`}
+                        >
+                          {donor.available ? (
+                            <CheckCircle2 size={14} strokeWidth={2} className="shrink-0" />
+                          ) : (
+                            <XCircle size={14} strokeWidth={2} className="shrink-0" />
+                          )}
+                          <BilingualInline
+                            tKey={
+                              donor.available
+                                ? "recipient.availableToDonate"
+                                : "recipient.notAvailable"
+                            }
+                          />
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))}
+
+                  <Pagination
+                    page={donorPagination.page}
+                    pageSize={donorPagination.pageSize}
+                    totalItems={donorPagination.totalItems}
+                    totalPages={donorPagination.totalPages}
+                    onPageChange={donorPagination.setPage}
+                    className="mt-4"
+                  />
+                </>
               ))}
           </div>
         </section>

@@ -24,14 +24,17 @@ import { registerDonor } from "@/services/donor/donorRegistrationService";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
+import { usePagination } from "@/app/hooks/usePagination";
 import {
   donorRegistrationSchema,
+  getDonorDobBounds,
   normalizeDonorForm,
 } from "@/schema/donor/donorRegistrationSchema";
 import type { DonorRegistrationInput } from "@/types/donor/donorTypes";
 import type { MasterBloodGroup } from "@/types/master.types";
 import { StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { Pagination } from "@/app/components/ui/Pagination";
 import {
   Bilingual,
   BilingualInline,
@@ -67,6 +70,16 @@ function formatDate(value: string | null): string {
   }
 
   return date.toLocaleDateString("en-GB");
+}
+
+// Today as YYYY-MM-DD in the viewer's local time (toISOString would give the
+// UTC date, which is "tomorrow"/"yesterday" for part of the day).
+function getTodayIsoDate(): string {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${today.getFullYear()}-${month}-${day}`;
 }
 
 export function DonorManagement() {
@@ -231,6 +244,20 @@ export function DonorManagement() {
       return matchesQuery && matchesGroup && matchesCity && matchesDistrict;
     });
   }, [donors, search, bloodGroupFilter, cityFilter, districtFilter]);
+
+  const {
+    page,
+    pageSize,
+    totalItems,
+    totalPages,
+    pageItems,
+    startIndex,
+    setPage,
+    setPageSize,
+  } = usePagination(filteredDonors, {
+    pageSize: 10,
+    resetKey: [search, bloodGroupFilter, cityFilter, districtFilter].join("|"),
+  });
 
   return (
     <div className="space-y-6">
@@ -489,14 +516,14 @@ export function DonorManagement() {
                     <LoadingState />
                   </td>
                 </tr>
-              ) : filteredDonors?.length > 0 ? (
-                filteredDonors.map((donor, index) => (
+              ) : pageItems.length > 0 ? (
+                pageItems.map((donor, index) => (
                   <tr
                     key={donor.id}
                     onClick={() => setSelectedDonor(donor)}
                     className="cursor-pointer border-b border-[var(--color-border-light)] transition-colors duration-200 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)]"
                   >
-                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{startIndex + index + 1}</TableCell>
 
                     <TableCell>
                       <div className="flex min-w-0 items-center gap-2">
@@ -585,8 +612,8 @@ export function DonorManagement() {
         <div className="divide-y divide-[var(--color-border-lighter)]">
           {loading ? (
             <LoadingState />
-          ) : filteredDonors?.length > 0 ? (
-            filteredDonors.map((donor, index) => (
+          ) : pageItems.length > 0 ? (
+            pageItems.map((donor, index) => (
               <div
                 key={donor.id}
                 onClick={() => setSelectedDonor(donor)}
@@ -603,7 +630,7 @@ export function DonorManagement() {
 
                     <div className="min-w-0">
                       <p className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
-                        {index + 1}. {donor?.donorName}
+                        {startIndex + index + 1}. {donor?.donorName}
                       </p>
 
                       <p className="mt-1 text-[12px] text-[var(--color-text-placeholder-alt)]">
@@ -660,8 +687,8 @@ export function DonorManagement() {
       <div className="space-y-4 sm:hidden">
         {loading ? (
           <LoadingState />
-        ) : filteredDonors.length > 0 ? (
-          filteredDonors.map((donor, index) => (
+        ) : pageItems.length > 0 ? (
+          pageItems.map((donor, index) => (
             <div
               key={donor.id}
               onClick={() => setSelectedDonor(donor)}
@@ -679,7 +706,7 @@ export function DonorManagement() {
                   <div className="min-w-0">
                     <Bilingual
                       tKey="superAdmin.sNoValue"
-                      params={{ index: index + 1 }}
+                      params={{ index: startIndex + index + 1 }}
                       as="p"
                       className="text-[11px] text-[var(--color-text-placeholder)]"
                     />
@@ -750,6 +777,18 @@ export function DonorManagement() {
         )}
       </div>
 
+      {!loading && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          className="mt-4"
+        />
+      )}
+
       {addDonorOpen && (
         <AddDonorModal
           bloodGroups={masterGroups}
@@ -791,6 +830,11 @@ function AddDonorModal({
   const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
 
   const [submitError, setSubmitError] = useState("");
+
+  // Fixed for the lifetime of the modal so the pickers' min/max never shift
+  // under an open form.
+  const [dobBounds] = useState(getDonorDobBounds);
+  const [todayIso] = useState(getTodayIsoDate);
 
   const {
     register,
@@ -836,11 +880,6 @@ function AddDonorModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !isSubmitting) {
-          onClose();
-        }
-      }}
       className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md transition-opacity duration-200 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
@@ -887,7 +926,11 @@ function AddDonorModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form
+          onSubmit={onSubmit}
+          noValidate
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <FormInput
@@ -922,12 +965,20 @@ function AddDonorModal({
             />
 
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]">
+              <label
+                htmlFor="add-donor-blood-group"
+                className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              >
                 Blood Group<span className="text-red-500"> *</span>
               </label>
 
               <div className="relative">
                 <select
+                  id="add-donor-blood-group"
+                  aria-invalid={Boolean(errors.bloodGroupId)}
+                  aria-describedby={
+                    errors.bloodGroupId ? "add-donor-blood-group-error" : undefined
+                  }
                   {...register("bloodGroupId", { valueAsNumber: true })}
                   className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
                     errors.bloodGroupId
@@ -951,7 +1002,11 @@ function AddDonorModal({
               </div>
 
               {errors.bloodGroupId && (
-                <p className="mt-1 text-[12px] text-red-500">
+                <p
+                  id="add-donor-blood-group-error"
+                  role="alert"
+                  className="mt-1 text-[12px] text-red-500"
+                >
                   {errors.bloodGroupId.message}
                 </p>
               )}
@@ -962,6 +1017,8 @@ function AddDonorModal({
               label="Date of Birth"
               required
               type="date"
+              min={dobBounds.min}
+              max={dobBounds.max}
               error={errors.dob?.message}
               {...register("dob")}
             />
@@ -970,6 +1027,7 @@ function AddDonorModal({
               icon={CalendarDays}
               label="Last Donation Date (optional)"
               type="date"
+              max={todayIso}
               error={errors.lastBloodDonationDate?.message}
               {...register("lastBloodDonationDate")}
             />
@@ -1076,11 +1134,6 @@ function DonorDetailModal({
 
   return (
     <div
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
-      }}
       className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md transition-opacity duration-200 ${
         visible ? "opacity-100" : "opacity-0"
       }`}

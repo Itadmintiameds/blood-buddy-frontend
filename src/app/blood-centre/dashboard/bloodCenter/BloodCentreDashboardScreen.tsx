@@ -36,7 +36,9 @@ import {
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+import { Pagination } from "@/app/components/ui/Pagination";
 import { StatTile } from "@/app/components/ui/StatTile";
+import { usePagination } from "@/app/hooks/usePagination";
 import { AdjustStockModal } from "@/app/blood-centre/components/AdjustStockModal";
 import { AddStockModal } from "@/app/blood-centre/components/AddStockModal";
 import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
@@ -172,6 +174,20 @@ export function BloodCentreDashboardScreen() {
       componentFilter === ALL || row.bloodType === componentFilter;
 
     return matchesQuery && matchesLowStock && matchesGroup && matchesComponent;
+  });
+
+  // Page the filtered rows client-side; any filter change jumps back to page 1.
+  const {
+    page,
+    pageSize,
+    totalItems,
+    totalPages,
+    pageItems,
+    setPage,
+    setPageSize,
+  } = usePagination(visibleRows, {
+    pageSize: 10,
+    resetKey: [query, groupFilter, componentFilter, lowStockOnly].join("|"),
   });
 
   const isFiltering =
@@ -470,7 +486,7 @@ export function BloodCentreDashboardScreen() {
 
           {!error &&
             rows.length > 0 &&
-            visibleRows.map((row, index) => {
+            pageItems.map((row, index) => {
               const level = getStockLevel(row.unitsAvailable);
 
               return (
@@ -561,6 +577,19 @@ export function BloodCentreDashboardScreen() {
         </div>
       </div>
 
+      {/* PAGINATION — renders nothing when no rows match the filters */}
+      {!initialLoading && !error && (
+        <Pagination
+          page={page}
+          pageSize={pageSize}
+          totalItems={totalItems}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          className="mt-4"
+        />
+      )}
+
       {/* EDIT STOCK MODAL */}
       {adjustingRow && (
         <AdjustStockModal
@@ -633,6 +662,7 @@ function ToolbarSelect({
   onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
   allLabel: string;
   options: string[];
+  /** Display-only transform for option text; option values stay raw. */
   ariaLabel: string;
 }) {
   const active = value !== ALL;
