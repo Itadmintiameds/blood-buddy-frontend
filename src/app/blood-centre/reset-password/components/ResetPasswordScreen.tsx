@@ -198,18 +198,18 @@ export function ResetPasswordScreen() {
           backHref="/blood-centre/forgot-password"
         />
 
-        <main className="w-full bg-white">
+        <main className="flex w-full flex-1 flex-col bg-white">
           <section
             className="
               mx-auto
               flex
-              min-h-[520px]
               w-full
+              flex-1
               flex-col
               items-center
               px-5
-              pb-10
-              pt-9
+              pb-8
+              pt-7
               md:max-w-[850px]
               md:px-10
               md:pt-12

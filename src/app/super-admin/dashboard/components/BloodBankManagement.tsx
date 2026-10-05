@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -22,6 +22,7 @@ import {
   PlusCircle,
   RefreshCw,
   Search,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -46,7 +47,7 @@ import type {
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { usePagination } from "@/app/hooks/usePagination";
 import { Pagination } from "@/app/components/ui/Pagination";
-import { StatTile } from "@/app/components/ui/StatTile";
+import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import type { StockLevel } from "@/utils/bloodStock";
 import { getStockLevel, rowAccent, unitBadgeClass } from "@/utils/bloodStock";
 import {
@@ -104,6 +105,11 @@ export default function BloodBankManagement() {
 
   const [bloodBanks, setBloodBanks] = useState<SuperAdminBloodBank[]>([]);
   const [activeBankId, setActiveBankId] = useState<number | null>(null);
+  // Phones show either the list or one bank's detail; lg and up show both. This
+  // is separate from activeBankId (which auto-selects the first bank for the
+  // desktop split view) so a phone still lands on the list.
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
+  const masterDetailRef = useRef<HTMLDivElement>(null);
   const [priorFilteredBankIdsKey, setPriorFilteredBankIdsKey] = useState("");
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>(ALL);
@@ -111,6 +117,7 @@ export default function BloodBankManagement() {
   const [cityFilter, setCityFilter] = useState<string>(ALL);
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
   const [bloodTypeFilter, setBloodTypeFilter] = useState<string>(ALL);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -264,6 +271,14 @@ export default function BloodBankManagement() {
     bloodGroupFilter !== ALL ||
     bloodTypeFilter !== ALL;
 
+  const activeFilterCount = [
+    categoryFilter,
+    statusFilter,
+    cityFilter,
+    bloodGroupFilter,
+    bloodTypeFilter,
+  ].filter((value) => value !== ALL).length;
+
   const clearFilters = () => {
     setSearch("");
     setCategoryFilter(ALL);
@@ -365,6 +380,16 @@ export default function BloodBankManagement() {
 
   const activeBank =
     bloodBanks.find((bank) => bank.id === activeBankId) ?? null;
+
+  const showMobileView = (view: "list" | "detail") => {
+    setMobileView(view);
+    window.requestAnimationFrame(() =>
+      masterDetailRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      }),
+    );
+  };
 
   const totalBloodBanks = bloodBanks.length;
 
@@ -677,7 +702,7 @@ export default function BloodBankManagement() {
 
   return (
     <section className="w-full min-w-0">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <StatGrid>
         <StatTile
           icon={Building2}
           value={String(totalBloodBanks)}
@@ -719,13 +744,14 @@ export default function BloodBankManagement() {
           color="var(--color-stat-green)"
           index={2}
         />
-      </div>
+      </StatGrid>
 
       {/* TOOLBAR: search + category filter + low-stock + refresh + add */}
       <div className="animate-rise mt-5 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.025)] sm:p-4">
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-          {/* SEARCH */}
-          <div className="relative w-full min-w-0 sm:w-auto sm:min-w-[240px] sm:flex-1 lg:max-w-[360px]">
+          {/* SEARCH (+ filters toggle on phones) */}
+          <div className="flex w-full items-center gap-2 sm:contents">
+          <div className="relative min-w-0 flex-1 sm:w-auto sm:min-w-[240px] lg:max-w-[360px]">
             <Search
               size={16}
               className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder-alt)]"
@@ -736,14 +762,14 @@ export default function BloodBankManagement() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={searchPlaceholder}
-              className="h-10 w-full min-w-0 rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-9 text-[13px] text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+              className="h-11 w-full min-w-0 rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-9 text-[13px] sm:h-10 text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
             />
 
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
                 aria-label={clearSearchLabel}
               >
                 <X size={14} />
@@ -751,13 +777,38 @@ export default function BloodBankManagement() {
             )}
           </div>
 
+          <button
+            type="button"
+            onClick={() => setFiltersOpen((open) => !open)}
+            aria-expanded={filtersOpen}
+            aria-label="Show filters"
+            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors sm:hidden ${
+              filtersOpen || activeFilterCount > 0
+                ? "border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
+                : "border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)]"
+            }`}
+          >
+            <SlidersHorizontal size={17} />
+
+            {activeFilterCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[10px] font-bold leading-none text-white">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          </div>
+
+          {/* FILTERS — 2-up grid on phones; flattened into the toolbar row from sm */}
+          <div
+            className={`${filtersOpen ? "grid" : "hidden"} w-full grid-cols-2 gap-2 sm:contents [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1`}
+          >
           {/* CATEGORY */}
-          <div className="relative shrink-0">
+          <div className="relative min-w-0 sm:shrink-0">
             <select
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
               aria-label="Filter by category"
-              className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+              className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
                 categoryFilter !== ALL
                   ? "border-[var(--primary-200)] font-medium"
                   : "border-[var(--color-border-light)]"
@@ -779,12 +830,12 @@ export default function BloodBankManagement() {
           </div>
 
           {/* STATUS */}
-          <div className="relative shrink-0">
+          <div className="relative min-w-0 sm:shrink-0">
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               aria-label="Filter by status"
-              className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+              className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
                 statusFilter !== ALL
                   ? "border-[var(--primary-200)] font-medium"
                   : "border-[var(--color-border-light)]"
@@ -804,12 +855,12 @@ export default function BloodBankManagement() {
 
           {/* CITY */}
           {cityOptions.length > 0 && (
-            <div className="relative shrink-0">
+            <div className="relative min-w-0 sm:shrink-0">
               <select
                 value={cityFilter}
                 onChange={(event) => setCityFilter(event.target.value)}
                 aria-label="Filter by city"
-                className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
                   cityFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
@@ -833,12 +884,12 @@ export default function BloodBankManagement() {
 
           {/* BLOOD GROUP (A+, O- ...) */}
           {bloodGroupOptions.length > 0 && (
-            <div className="relative shrink-0">
+            <div className="relative min-w-0 sm:shrink-0">
               <select
                 value={bloodGroupFilter}
                 onChange={(event) => setBloodGroupFilter(event.target.value)}
                 aria-label="Filter by blood group"
-                className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
                   bloodGroupFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
@@ -862,12 +913,12 @@ export default function BloodBankManagement() {
 
           {/* BLOOD TYPE (the component: Whole Blood, Platelets ...) */}
           {bloodTypeOptions.length > 0 && (
-            <div className="relative shrink-0">
+            <div className="relative min-w-0 sm:shrink-0">
               <select
                 value={bloodTypeFilter}
                 onChange={(event) => setBloodTypeFilter(event.target.value)}
                 aria-label="Filter by blood type"
-                className={`h-10 cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
                   bloodTypeFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
@@ -889,12 +940,16 @@ export default function BloodBankManagement() {
             </div>
           )}
 
+          </div>
+
+          {/* ACTIONS — refresh / clear / add share one row on phones */}
+          <div className="flex w-full items-center gap-2 sm:contents">
           {/* REFRESH */}
           <button
             type="button"
             onClick={handleRefresh}
             disabled={loading}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 sm:h-10 sm:w-10 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Refresh and clear filters"
             title="Refresh &amp; clear filters"
           >
@@ -910,7 +965,7 @@ export default function BloodBankManagement() {
             <button
               type="button"
               onClick={clearFilters}
-              className="shrink-0 text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              className="shrink-0 px-2 py-2.5 text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
             >
               Clear
             </button>
@@ -920,7 +975,7 @@ export default function BloodBankManagement() {
           <button
             type="button"
             onClick={() => router.push("/blood-centre/register")}
-            className="flex h-10 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto"
+            className="flex h-11 min-w-0 flex-1 shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:h-10 sm:flex-none"
           >
             <Plus size={16} className="shrink-0" />
             <BilingualInline
@@ -928,6 +983,7 @@ export default function BloodBankManagement() {
               enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
             />
           </button>
+          </div>
         </div>
       </div>
 
@@ -957,7 +1013,10 @@ export default function BloodBankManagement() {
       )}
 
       {/* BLOOD BANK LIST + DETAIL (master-detail) */}
-      <div className="mt-5 flex flex-col gap-4 lg:h-[640px] lg:flex-row lg:gap-5">
+      <div
+        ref={masterDetailRef}
+        className="mt-5 flex scroll-mt-20 flex-col gap-4 lg:h-[640px] lg:flex-row lg:gap-5"
+      >
         {/* LIST PANEL */}
         <div
           className={`
@@ -973,7 +1032,7 @@ export default function BloodBankManagement() {
             lg:flex
             lg:w-[320px]
             lg:shrink-0
-            ${activeBankId !== null ? "hidden lg:flex" : "flex"}
+            ${mobileView === "detail" ? "hidden lg:flex" : "flex"}
           `}
         >
           <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-lighter)] px-4 py-3">
@@ -1020,7 +1079,10 @@ export default function BloodBankManagement() {
                   bank={bank}
                   index={index}
                   active={bank.id === activeBankId}
-                  onSelect={() => setActiveBankId(bank.id)}
+                  onSelect={() => {
+                    setActiveBankId(bank.id);
+                    showMobileView("detail");
+                  }}
                 />
               ))}
           </div>
@@ -1052,13 +1114,13 @@ export default function BloodBankManagement() {
             shadow-[0_4px_20px_rgba(0,0,0,0.035)]
             lg:flex
             lg:flex-1
-            ${activeBankId !== null ? "flex" : "hidden lg:flex"}
+            ${mobileView === "detail" ? "flex" : "hidden lg:flex"}
           `}
         >
           {activeBank ? (
             <BankDetailPanel
               bank={activeBank}
-              onBack={() => setActiveBankId(null)}
+              onBack={() => showMobileView("list")}
               onUpdate={(availabilityId) =>
                 openUpdateModal(activeBank, availabilityId)
               }
@@ -1397,7 +1459,66 @@ function BankDetailPanel({
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-[var(--color-border-light)]">
+          <>
+          <ul className="space-y-2 sm:hidden">
+            {availabilityPagination.pageItems.map((availability) => {
+              const level = getStockLevel(availability.units);
+
+              return (
+                <li
+                  key={availability.id}
+                  className="flex items-center gap-3 overflow-hidden rounded-xl border border-[var(--color-border-light)] bg-white py-2.5 pl-3.5 pr-2.5"
+                  style={{
+                    boxShadow:
+                      level === "healthy"
+                        ? undefined
+                        : `inset 3px 0 0 0 ${rowAccent(level)}`,
+                  }}
+                >
+                  <span className="flex h-10 min-w-12 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] px-2 text-[14px] font-bold text-[var(--color-primary)]">
+                    {availability.bloodGroup}
+                  </span>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words text-[12px] font-medium uppercase leading-4 text-[var(--color-text-secondary)]">
+                      {availability.bloodType}
+                    </p>
+
+                    <span
+                      className={`mt-1 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-bold ${unitBadgeClass(level)}`}
+                    >
+                      {level !== "healthy" && (
+                        <AlertTriangle size={11} strokeWidth={2} />
+                      )}
+                      {availability.units} {unitsWordText}
+                    </span>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onAddStock(availability.id)}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition active:bg-[var(--color-success-bg)] active:text-[var(--color-success)]"
+                      aria-label={`Add stock for ${availability.bloodGroup} ${availability.bloodType}`}
+                    >
+                      <PlusCircle size={16} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onUpdate(availability.id)}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition active:bg-[var(--color-icon-bg-soft)] active:text-[var(--color-primary)]"
+                      aria-label={`Update ${availability.bloodGroup} ${availability.bloodType}`}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-hidden rounded-xl border border-[var(--color-border-light)] sm:block">
             <table className="w-full table-fixed border-collapse">
               <thead>
                 <tr className="border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)]">
@@ -1491,6 +1612,7 @@ function BankDetailPanel({
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Renders nothing when the filters leave no rows. The rows-per-page
@@ -1609,7 +1731,7 @@ function UpdateUnitsModal({
         className={`
           motion-surface
           flex
-          max-h-[90vh]
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[430px]
           flex-col
@@ -2075,7 +2197,7 @@ function AddStockModal({
         className={`
           motion-surface
           flex
-          max-h-[90vh]
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[430px]
           flex-col
@@ -2417,7 +2539,7 @@ function AddBloodModal({
         className={`
           motion-surface
           flex
-          max-h-[90vh]
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[430px]
           flex-col
@@ -2468,7 +2590,7 @@ function AddBloodModal({
         </div>
 
         <div className="overflow-y-auto px-5 py-5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label
                 htmlFor="newBloodGroup"

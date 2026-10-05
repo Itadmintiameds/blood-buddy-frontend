@@ -40,7 +40,7 @@ export function RegistrationTypeModal({
         items-center
         justify-center
         bg-black/45
-        px-4
+        p-4
         backdrop-blur-md
         transition-opacity
         duration-200
@@ -52,13 +52,15 @@ export function RegistrationTypeModal({
         className={`
           motion-surface
           relative
-          max-h-[90vh]
+          flex
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[400px]
-          overflow-y-auto
+          flex-col
+          overflow-hidden
+          max-sm:[&_:is(h2,p,span)>span+span]:text-[11px]
           rounded-2xl
           bg-white
-          p-6
           shadow-[0_25px_70px_rgba(0,0,0,0.2)]
           transition-[transform,opacity]
           duration-200
@@ -80,11 +82,13 @@ export function RegistrationTypeModal({
           aria-label={closeLabel}
           className="
             absolute
-            right-4
-            top-4
+            right-3
+            top-3
+            sm:right-4
+            sm:top-4
             flex
-            h-9
-            w-9
+            h-10
+            w-10
             items-center
             justify-center
             rounded-full
@@ -102,34 +106,36 @@ export function RegistrationTypeModal({
 
         {/* Heading */}
 
-        <div className="pr-8">
-          <Bilingual
-            tKey="bloodCentre.registrationTypeTitle"
-            as="h2"
-            id="registration-type-title"
-            className="
-              text-[19px]
-              font-semibold
-              tracking-[-0.01em]
-              text-[var(--color-text-primary)]
-            "
-          />
-
-          <Bilingual
-            tKey="bloodCentre.registrationTypeDescription"
-            as="p"
-            className="
-              mt-1
-              text-[13px]
-              leading-5
-              text-gray-500
-            "
-          />
+        <div className="shrink-0 px-5 pb-1 pt-5 sm:px-6 sm:pt-6">
+          <div className="pr-10">
+            <Bilingual
+              tKey="bloodCentre.registrationTypeTitle"
+              as="h2"
+              id="registration-type-title"
+              className="
+                text-[19px]
+                font-semibold
+                tracking-[-0.01em]
+                text-[var(--color-text-primary)]
+              "
+            />
+  
+            <Bilingual
+              tKey="bloodCentre.registrationTypeDescription"
+              as="p"
+              className="
+                mt-1
+                text-[13px]
+                leading-5
+                text-gray-500
+              "
+            />
+          </div>
         </div>
 
         {/* Registration Options */}
 
-        <div className="mt-6 space-y-3">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-5 pb-1 pt-5 sm:px-6 sm:pt-6">
           {/* Super Admin */}
 
           <button
@@ -273,26 +279,28 @@ export function RegistrationTypeModal({
 
         {/* Cancel */}
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="
-            mt-5
-            w-full
-            rounded-lg
-            py-2
-            text-[13px]
-            text-gray-500
-            transition
-            hover:bg-gray-50
-            hover:text-[var(--color-text-primary)]
-            focus-visible:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-gray-300
-          "
-        >
-          <BilingualInline tKey="common.cancel" />
-        </button>
+        <div className="shrink-0 px-5 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="
+              min-h-11
+              w-full
+              rounded-lg
+              py-2
+              text-[13px]
+              text-gray-500
+              transition
+              hover:bg-gray-50
+              hover:text-[var(--color-text-primary)]
+              focus-visible:outline-none
+              focus-visible:ring-2
+              focus-visible:ring-gray-300
+            "
+          >
+            <BilingualInline tKey="common.cancel" />
+          </button>
+        </div>
       </div>
     </div>
   );

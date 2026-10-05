@@ -25,14 +25,15 @@ export function SuperAdminRegistrationScreen() {
       <section
         className="
           flex
-          min-h-[420px]
+          flex-1
           flex-col
           items-center
+          justify-center
           bg-white
           px-5
-          pb-10
-          pt-12
+          py-8
           text-center
+          sm:py-12
         "
       >
         <div

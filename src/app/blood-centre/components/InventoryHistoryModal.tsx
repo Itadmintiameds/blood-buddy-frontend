@@ -30,7 +30,7 @@ export function InventoryHistoryModal({
 
   const closeLabel = useBilingualText("common.close");
 
-  // The modal is only 460px wide / 85vh tall, so page the timeline 5 at a time
+  // The modal is only 460px wide / 85dvh tall, so page the timeline 5 at a time
   // and pin a compact pager below the scrolling body.
   const bodyRef = useRef<HTMLDivElement>(null);
   const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
@@ -85,10 +85,10 @@ export function InventoryHistoryModal({
       aria-modal="true"
       aria-labelledby="inventory-history-title"
     >
-      <div className="flex max-h-[85vh] w-full max-w-[460px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)]">
-        <div className="flex items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+      <div className="flex max-h-[calc(100dvh-2rem)] w-full max-w-[460px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] sm:max-h-[85dvh]">
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-5 sm:py-5">
           <div className="flex min-w-0 items-center gap-2">
-            <History size={16} strokeWidth={2} className="text-[var(--color-primary)]" />
+            <History size={16} strokeWidth={2} className="shrink-0 text-[var(--color-primary)]" />
             <div className="min-w-0">
               <h2
                 id="inventory-history-title"
@@ -105,14 +105,14 @@ export function InventoryHistoryModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:m-0 sm:h-8 sm:w-8"
             aria-label={closeLabel}
           >
             <X size={17} />
           </button>
         </div>
 
-        <div ref={bodyRef} className="overflow-y-auto px-5 py-5">
+        <div ref={bodyRef} className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
           {loading && (
             <div className="flex min-h-[180px] items-center justify-center">
               <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />

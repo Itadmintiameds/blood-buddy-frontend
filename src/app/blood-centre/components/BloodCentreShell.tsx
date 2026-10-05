@@ -1,13 +1,30 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 
+import { routes } from "@/config/routes";
 import { BloodCentreAuthGuard } from "@/app/components/auth/BloodCentreAuthGuard";
 import { PoweredByFooter } from "@/app/components/common/PoweredBy";
 import { BrandHeader } from "@/app/components/layout/BrandHeader";
 import { getBloodCentreSession } from "@/services/auth/authStorage";
 import { BloodCentreSidebar } from "./BloodCentreSidebar";
+
+// Names the page in the phone toolbar when a page doesn't pass its own title
+// (the sidebar labels, so the bar and the drawer agree).
+const mobilePageTitles = [
+  {
+    href: routes.bloodCentreDashboard,
+    title: "Dashboard",
+    subtitle: "Overview & availability",
+  },
+  {
+    href: routes.bloodCentreHistory,
+    title: "Group History",
+    subtitle: "Per-group movements",
+  },
+];
 
 // Shared frame for every authenticated Blood Centre page: the brand header
 // spans the full width and is pinned on top; the sidebar sits below it on the
@@ -24,6 +41,11 @@ export function BloodCentreShell({
   children: ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  const fallbackTitle = mobilePageTitles.find(
+    (page) => pathname === page.href || pathname.startsWith(`${page.href}/`),
+  );
 
   const centreName = getBloodCentreSession()?.name ?? null;
 
@@ -45,6 +67,7 @@ export function BloodCentreShell({
         <BloodCentreSidebar
           mobileOpen={mobileOpen}
           onClose={() => setMobileOpen(false)}
+          userName={centreName}
         />
 
         {/* Scroll region — everything below the header scrolls here, so the
@@ -53,11 +76,11 @@ export function BloodCentreShell({
           <main className="flex-1 lg:ml-[260px]">
             {/* Page toolbar */}
             <div
-              className={`border-b border-[var(--color-border-lighter)] bg-white ${
+              className={`border-b border-[var(--color-border-lighter)] bg-white max-lg:sticky max-lg:top-0 max-lg:z-20 ${
                 hasToolbarContent ? "" : "lg:hidden"
               }`}
             >
-              <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6 lg:px-8">
+              <div className="flex items-center gap-3 px-4 py-3 sm:px-6 sm:py-3.5 lg:px-8">
                 <button
                   type="button"
                   onClick={() => setMobileOpen(true)}
@@ -78,6 +101,19 @@ export function BloodCentreShell({
                         {subtitle}
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* Phones only: without a page title the bar would be a lone
+                    menu button, so name the page from the route instead. */}
+                {!title && !subtitle && fallbackTitle && (
+                  <div className="min-w-0 lg:hidden">
+                    <p className="truncate text-[16px] font-bold leading-tight tracking-[-0.2px] text-[var(--color-text-primary)]">
+                      {fallbackTitle.title}
+                    </p>
+                    <p className="mt-0.5 truncate text-[12px] text-[var(--color-text-muted)]">
+                      {fallbackTitle.subtitle}
+                    </p>
                   </div>
                 )}
 

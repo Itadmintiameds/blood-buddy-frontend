@@ -23,7 +23,8 @@ export function RecipientLandingScreen() {
         backHref="/welcome"
       />
 
-      <section className="flex min-h-[460px] flex-col items-center bg-white px-5 pb-10 pt-12">
+      {/* max-sm: lift the small second-language lines from 0.68em (about 9px) to 11px. */}
+      <section className="flex flex-1 flex-col items-center justify-center bg-white px-5 pb-8 pt-8 max-sm:[&_:is(h1,p)>span+span]:text-[11px] max-sm:[&_a>span>span+span]:text-[11px] sm:min-h-[460px] sm:justify-start sm:pb-10 sm:pt-12">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)]">
           <Droplets
             size={30}
@@ -58,7 +59,7 @@ export function RecipientLandingScreen() {
 
         <Link
           href="/welcome"
-          className="mt-6 text-[13px] text-[var(--color-primary)] transition hover:underline"
+          className="mt-4 flex min-h-10 items-center px-3 text-[13px] text-[var(--color-primary)] transition hover:underline sm:mt-6"
         >
           <BilingualInline
             tKey="common.returnToWelcome"

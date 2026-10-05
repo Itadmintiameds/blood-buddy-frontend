@@ -28,6 +28,10 @@
   --color-border-table: #e2e2e2;
   --color-border-input: #e6e6e6;
 
+  /* Primary CTA while its form is still incomplete: clearly muted, but the
+     button stays tappable so a press can surface the missing-field errors. */
+  --color-primary-dull: #e9a6a8;
+
   --color-icon-bg-soft: #fff0f0;
   --color-icon-bg-soft-2: #ffeded;
   --color-surface-hover: #f7f7f7;
@@ -207,6 +211,22 @@
 html,
 body {
   min-height: 100%;
+}
+
+/* Safety net against stray horizontal page scroll on phones. `clip` (unlike
+   `hidden`) does not create a scroll container, so position: sticky inside the
+   page keeps working. */
+html,
+body {
+  overflow-x: clip;
+}
+
+/* No grey tap flash on touch devices -- the controls have their own states. */
+a,
+button,
+select,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
 }
 
 button,

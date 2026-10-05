@@ -44,7 +44,7 @@ function getPageItems(page: number, totalPages: number): PageItem[] {
 }
 
 const navButtonClass =
-  "flex h-8 min-w-8 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white px-2 text-[12px] font-semibold text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--color-border-light)] disabled:hover:bg-white disabled:hover:text-[var(--color-text-secondary)]";
+  "flex h-10 min-w-10 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white px-2 text-[12px] sm:h-8 sm:min-w-8 font-semibold text-[var(--color-text-secondary)] transition-colors duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-[var(--color-border-light)] disabled:hover:bg-white disabled:hover:text-[var(--color-text-secondary)]";
 
 export function Pagination({
   page,

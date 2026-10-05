@@ -10,7 +10,9 @@ export function DonorRegistrationScreen() {
       <BrandHeader
         title={<Bilingual tKey="donor.donorRegistration" as="span" />}
         titleAction={
-          <RoleSwitchLink href="/recipient/register" tKey="welcome.recipient" />
+          <div className="hidden sm:block">
+            <RoleSwitchLink href="/recipient/register" tKey="welcome.recipient" />
+          </div>
         }
         alignTitleToContent
       />
@@ -32,6 +34,11 @@ export function DonorRegistrationScreen() {
             lg:px-10
           "
         >
+          {/* No room beside the title on a phone, so the switch sits above the card there. */}
+          <div className="mb-4 flex justify-end sm:hidden">
+            <RoleSwitchLink href="/recipient/register" tKey="welcome.recipient" />
+          </div>
+
           <div
             className="
               rounded-2xl

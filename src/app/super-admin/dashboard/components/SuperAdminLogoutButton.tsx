@@ -36,7 +36,8 @@ export function SuperAdminLogoutButton() {
       disabled={loading}
       className="
         flex
-        min-h-9
+        min-h-11
+        lg:min-h-9
         w-full
         items-center
         justify-center
@@ -47,7 +48,7 @@ export function SuperAdminLogoutButton() {
         bg-white
         px-3.5
         py-1.5
-        text-[12px]
+        text-[13px]
         font-medium
         text-[var(--color-text-secondary)]
         transition-all

@@ -37,7 +37,7 @@ import {
   useBilingualText,
 } from "@/app/components/common/Bilingual";
 import { Pagination } from "@/app/components/ui/Pagination";
-import { StatTile } from "@/app/components/ui/StatTile";
+import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { usePagination } from "@/app/hooks/usePagination";
 import { AdjustStockModal } from "@/app/blood-centre/components/AdjustStockModal";
 import { AddStockModal } from "@/app/blood-centre/components/AddStockModal";
@@ -220,7 +220,7 @@ export function BloodCentreDashboardScreen() {
   return (
     <>
       {/* STAT CARDS */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <StatGrid>
         <StatTile
           icon={Droplets}
           value={String(totalGroupsListed)}
@@ -269,13 +269,13 @@ export function BloodCentreDashboardScreen() {
               : undefined
           }
         />
-      </div>
+      </StatGrid>
 
       {/* AVAILABILITY SECTION */}
       <div className="animate-rise mt-5 overflow-hidden rounded-2xl border border-[var(--color-border-light)] bg-white shadow-[0_5px_22px_rgba(0,0,0,0.045)] lg:mt-6">
         {/* Section Header */}
-        <div className="border-b border-[var(--color-border-lighter)] px-5 py-4 sm:px-6 sm:py-5">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-6 sm:py-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <div>
               <Bilingual
                 tKey="bloodCentre.bloodAvailability"
@@ -288,11 +288,11 @@ export function BloodCentreDashboardScreen() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 sm:flex-wrap">
               <Link
                 href={routes.addAvailability}
                 style={{ color: "var(--color-white)" }}
-                className="flex h-9 items-center gap-1.5 rounded-lg bg-[var(--color-primary)] px-3.5 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(255,59,63,0.20)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-primary-hover-alt)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
+                className="flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg sm:h-9 sm:min-h-0 sm:flex-none sm:justify-start bg-[var(--color-primary)] px-3.5 text-[13px] font-semibold text-white shadow-[0_4px_12px_rgba(255,59,63,0.20)] sm:text-[12px] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-primary-hover-alt)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2"
               >
                 <Plus size={15} strokeWidth={2.2} />
                 <BilingualInline
@@ -305,7 +305,7 @@ export function BloodCentreDashboardScreen() {
                 type="button"
                 onClick={handleRefresh}
                 disabled={loading}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 sm:h-9 sm:w-9 disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label="Refresh and clear filters"
                 title="Refresh &amp; clear filters"
               >
@@ -333,7 +333,7 @@ export function BloodCentreDashboardScreen() {
 
           {/* Toolbar: search + group / component / low-stock filters */}
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-            <div className="relative sm:w-[260px]">
+            <div className="relative w-full sm:w-[260px]">
               <Search
                 size={15}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder)]"
@@ -360,62 +360,69 @@ export function BloodCentreDashboardScreen() {
               )}
             </div>
 
-            <ToolbarSelect
-              value={groupFilter}
-              onChange={(event) => setGroupFilter(event.target.value)}
-              allLabel="All groups"
-              options={groupOptions}
-              ariaLabel="Filter by blood group"
-            />
+            {/* Phones: two selects share a row (the short "All groups" gets the
+                narrower column); below 350px they stack. From sm up the wrapper
+                dissolves and they join the toolbar's wrapping row. */}
+            <div className="grid grid-cols-1 gap-2 min-[350px]:grid-cols-[minmax(0,4fr)_minmax(0,5fr)] sm:contents">
+              <ToolbarSelect
+                value={groupFilter}
+                onChange={(event) => setGroupFilter(event.target.value)}
+                allLabel="All groups"
+                options={groupOptions}
+                ariaLabel="Filter by blood group"
+              />
 
-            <ToolbarSelect
-              value={componentFilter}
-              onChange={(event) => setComponentFilter(event.target.value)}
-              allLabel="All components"
-              options={componentOptions}
-              ariaLabel="Filter by blood component"
-            />
+              <ToolbarSelect
+                value={componentFilter}
+                onChange={(event) => setComponentFilter(event.target.value)}
+                allLabel="All components"
+                options={componentOptions}
+                ariaLabel="Filter by blood component"
+              />
+            </div>
 
-            <button
-              type="button"
-              onClick={() => setLowStockOnly((value) => !value)}
-              disabled={lowStockCount === 0 && !lowStockOnly}
-              aria-pressed={lowStockOnly}
-              className={`flex h-10 items-center gap-1.5 rounded-lg border px-3 text-[12px] font-semibold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
-                lowStockOnly
-                  ? "border-transparent bg-[var(--danger-50)] text-[var(--danger-700)]"
-                  : "border-[var(--color-border-light)] bg-white text-[var(--color-text-quaternary)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
-              }`}
-            >
-              <AlertTriangle size={14} strokeWidth={2} />
-              Low stock
-              <span
-                className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
-                  lowStockOnly
-                    ? "bg-[var(--danger-700)] text-white"
-                    : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
-                }`}
-              >
-                {lowStockCount}
-              </span>
-            </button>
-
-            {isFiltering && (
+            <div className="flex items-center gap-2 sm:contents">
               <button
                 type="button"
-                onClick={clearFilters}
-                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+                onClick={() => setLowStockOnly((value) => !value)}
+                disabled={lowStockCount === 0 && !lowStockOnly}
+                aria-pressed={lowStockOnly}
+                className={`flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border px-3 text-[13px] font-semibold transition-all duration-150 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none sm:justify-start sm:text-[12px] ${
+                  lowStockOnly
+                    ? "border-transparent bg-[var(--danger-50)] text-[var(--danger-700)]"
+                    : "border-[var(--color-border-light)] bg-white text-[var(--color-text-quaternary)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
+                }`}
               >
-                Clear
+                <AlertTriangle size={14} strokeWidth={2} />
+                Low stock
+                <span
+                  className={`ml-0.5 inline-flex min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-bold ${
+                    lowStockOnly
+                      ? "bg-[var(--danger-700)] text-white"
+                      : "bg-[var(--color-surface-alt)] text-[var(--color-text-tertiary)]"
+                  }`}
+                >
+                  {lowStockCount}
+                </span>
               </button>
-            )}
+
+              {isFiltering && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="h-10 shrink-0 px-3 text-[13px] font-medium text-[var(--color-primary)] transition hover:underline sm:h-auto sm:px-0 sm:text-[12px]"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Table */}
         <div className="w-full overflow-hidden">
           {/* Table Header */}
-          <div className="grid grid-cols-[1fr_1.3fr_0.8fr_116px] items-center border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-4 py-3 text-[10px] font-bold uppercase tracking-[0.04em] text-[var(--color-text-quaternary)] sm:grid-cols-[1fr_1.4fr_0.9fr_132px] sm:px-6 sm:py-3.5 sm:text-[11px]">
+          <div className="hidden grid-cols-[1fr_1.4fr_0.9fr_132px] items-center border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.04em] text-[var(--color-text-quaternary)] sm:grid">
             <Bilingual tKey="bloodCentre.bloodGroup" as="div" className="text-left" />
             <Bilingual tKey="bloodCentre.bloodType" as="div" className="text-left" />
             <Bilingual tKey="bloodCentre.bloodUnits" as="div" className="text-left" />
@@ -477,103 +484,110 @@ export function BloodCentreDashboardScreen() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="mt-3 rounded-lg border border-[var(--color-border-light)] bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-icon-bg-soft)]"
+                className="mt-3 min-h-10 rounded-lg border border-[var(--color-border-light)] bg-white px-4 py-1.5 text-[13px] font-semibold text-[var(--color-primary)] transition hover:bg-[var(--color-icon-bg-soft)] sm:min-h-0 sm:px-3 sm:text-[12px]"
               >
                 Clear filters
               </button>
             </div>
           )}
 
-          {!error &&
-            rows.length > 0 &&
-            pageItems.map((row, index) => {
-              const level = getStockLevel(row.unitsAvailable);
+          {!error && rows.length > 0 && (
+            <div className="space-y-2.5 bg-[var(--color-surface-alt)] p-3 sm:space-y-0 sm:bg-transparent sm:p-0">
+              {pageItems.map((row, index) => {
+                const level = getStockLevel(row.unitsAvailable);
 
-              return (
-                <div
-                  key={`${reloadToken}-${row.bloodGroup}-${row.bloodType}`}
-                  className={`animate-rise grid min-h-[58px] grid-cols-[1fr_1.3fr_0.8fr_116px] items-center border-b border-[var(--color-border-lighter)] px-4 text-[12px] text-[var(--color-text-body)] transition-colors duration-150 last:border-b-0 hover:bg-[var(--color-icon-bg-soft)] sm:min-h-[62px] sm:grid-cols-[1fr_1.4fr_0.9fr_132px] sm:px-6 sm:text-[13px] ${
-                    index % 2 === 0
-                      ? "bg-[var(--color-white)]"
-                      : "bg-[var(--color-surface-hover)]"
-                  }`}
-                  style={{
-                    boxShadow:
-                      level === "healthy"
-                        ? undefined
-                        : `inset 3px 0 0 0 ${rowAccent(level)}`,
-                    animationDelay: `${Math.min(index, 12) * 35}ms`,
-                  }}
-                >
-                  {/* Blood Group */}
-                  <div className="flex min-w-0 items-center justify-start">
-                    <div className="mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:mr-3">
-                      <Droplets size={14} strokeWidth={1.8} className="text-[var(--color-primary)]" />
+                return (
+                  // Phones: a stacked card (group + units, component, actions).
+                  // sm and up: one row of the four-column table.
+                  <div
+                    key={`${reloadToken}-${row.bloodGroup}-${row.bloodType}`}
+                    className={`animate-rise grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 rounded-xl border border-[var(--color-border-lighter)] bg-white px-3.5 py-3.5 text-[13px] text-[var(--color-text-body)] transition-colors duration-150 hover:bg-[var(--color-icon-bg-soft)] sm:min-h-[62px] sm:grid-cols-[1fr_1.4fr_0.9fr_132px] sm:gap-x-0 sm:rounded-none sm:border-0 sm:border-b sm:px-6 sm:py-0 sm:last:border-b-0 ${
+                      index % 2 === 0
+                        ? "sm:bg-[var(--color-white)]"
+                        : "sm:bg-[var(--color-surface-hover)]"
+                    }`}
+                    style={{
+                      boxShadow:
+                        level === "healthy"
+                          ? undefined
+                          : `inset 3px 0 0 0 ${rowAccent(level)}`,
+                      animationDelay: `${Math.min(index, 12) * 35}ms`,
+                    }}
+                  >
+                    {/* Blood Group */}
+                    <div className="col-start-1 row-start-1 flex min-w-0 items-center justify-start sm:col-start-auto sm:row-start-auto">
+                      <div className="mr-3 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:h-7 sm:w-7">
+                        <Droplets size={16} strokeWidth={1.8} className="text-[var(--color-primary)]" />
+                      </div>
+
+                      <span className="truncate text-[16px] font-bold text-[var(--color-text-body)] sm:text-[13px] sm:font-semibold">
+                        {row.bloodGroup}
+                      </span>
                     </div>
 
-                    <span className="truncate font-semibold text-[var(--color-text-body)]">
-                      {row.bloodGroup}
-                    </span>
-                  </div>
+                    {/* Blood Type */}
+                    <div className="col-span-2 col-start-1 row-start-2 min-w-0 pl-12 text-left font-medium text-[var(--color-text-quaternary)] sm:col-span-1 sm:col-start-auto sm:row-start-auto sm:pl-0 sm:pr-2">
+                      <span className="break-words">{row.bloodType}</span>
+                    </div>
 
-                  {/* Blood Type */}
-                  <div className="min-w-0 pr-2 text-left font-medium text-[var(--color-text-quaternary)]">
-                    <span className="break-words">{row.bloodType}</span>
-                  </div>
+                    {/* Units */}
+                    <div className="col-start-2 row-start-1 flex min-w-0 items-center justify-end gap-1.5 sm:col-start-auto sm:row-start-auto sm:justify-start">
+                      {level !== "healthy" && (
+                        <AlertTriangle
+                          size={13}
+                          strokeWidth={2}
+                          className={
+                            level === "critical"
+                              ? "text-[var(--color-stat-red)]"
+                              : "text-[var(--color-stat-yellow)]"
+                          }
+                        />
+                      )}
 
-                  {/* Units */}
-                  <div className="flex items-center justify-start gap-1.5">
-                    {level !== "healthy" && (
-                      <AlertTriangle
-                        size={13}
-                        strokeWidth={2}
-                        className={
-                          level === "critical"
-                            ? "text-[var(--color-stat-red)]"
-                            : "text-[var(--color-stat-yellow)]"
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-bold sm:whitespace-nowrap ${unitBadgeClass(level)}`}
+                      >
+                        {row.unitsAvailable} {unitsWordText}
+                      </span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-2 col-start-1 row-start-3 mt-3 grid grid-cols-3 gap-2 sm:col-span-1 sm:col-start-auto sm:row-start-auto sm:mt-0 sm:flex sm:items-center sm:justify-center sm:gap-1.5">
+                      <RowActionButton
+                        icon={Plus}
+                        text="Add"
+                        label={`Add ${row.bloodGroup} ${row.bloodType} stock`}
+                        onClick={() => setAddingRow(row)}
+                        disabled={
+                          row.bloodGroupId === undefined ||
+                          row.bloodComponentId === undefined
                         }
                       />
-                    )}
 
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold sm:px-3 sm:text-[12px] ${unitBadgeClass(level)}`}
-                    >
-                      {row.unitsAvailable} {unitsWordText}
-                    </span>
+                      <RowActionButton
+                        icon={Pencil}
+                        text="Edit"
+                        label={`Edit ${row.bloodGroup} ${row.bloodType} stock`}
+                        onClick={() => setAdjustingRow(row)}
+                        disabled={
+                          row.bloodGroupId === undefined ||
+                          row.bloodComponentId === undefined
+                        }
+                      />
+
+                      <RowActionButton
+                        icon={History}
+                        text="History"
+                        label={`${row.bloodGroup} ${row.bloodType} history`}
+                        onClick={() => setHistoryRow(row)}
+                        disabled={!Number.isFinite(Number(row.id))}
+                      />
+                    </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-center gap-1 sm:gap-1.5">
-                    <RowActionButton
-                      icon={Plus}
-                      label={`Add ${row.bloodGroup} ${row.bloodType} stock`}
-                      onClick={() => setAddingRow(row)}
-                      disabled={
-                        row.bloodGroupId === undefined ||
-                        row.bloodComponentId === undefined
-                      }
-                    />
-
-                    <RowActionButton
-                      icon={Pencil}
-                      label={`Edit ${row.bloodGroup} ${row.bloodType} stock`}
-                      onClick={() => setAdjustingRow(row)}
-                      disabled={
-                        row.bloodGroupId === undefined ||
-                        row.bloodComponentId === undefined
-                      }
-                    />
-
-                    <RowActionButton
-                      icon={History}
-                      label={`${row.bloodGroup} ${row.bloodType} history`}
-                      onClick={() => setHistoryRow(row)}
-                      disabled={!Number.isFinite(Number(row.id))}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -628,11 +642,14 @@ export function BloodCentreDashboardScreen() {
 
 function RowActionButton({
   icon: Icon,
+  text,
   label,
   onClick,
   disabled,
 }: {
   icon: typeof Pencil;
+  /** Visible caption on phones; from sm up the button is icon-only. */
+  text: string;
   label: string;
   onClick: () => void;
   disabled?: boolean;
@@ -644,9 +661,10 @@ function RowActionButton({
       disabled={disabled}
       aria-label={label}
       title={label}
-      className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] shadow-[0_1px_4px_rgba(0,0,0,0.03)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9"
+      className="flex h-10 min-w-0 items-center justify-center gap-1.5 rounded-lg border border-[var(--color-border-light)] bg-white px-2 text-[13px] font-medium text-[var(--color-text-quaternary)] shadow-[0_1px_4px_rgba(0,0,0,0.03)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:h-9 sm:w-9 sm:px-0 sm:text-[var(--color-text-muted)]"
     >
-      <Icon size={14} />
+      <Icon size={15} className="shrink-0 max-[359px]:hidden" />
+      <span className="truncate sm:hidden">{text}</span>
     </button>
   );
 }
@@ -668,12 +686,12 @@ function ToolbarSelect({
   const active = value !== ALL;
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <select
         value={value}
         onChange={onChange}
         aria-label={ariaLabel}
-        className={`h-10 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+        className={`h-10 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-2.5 pr-6 sm:pl-3 sm:pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
           active
             ? "border-[var(--primary-200)] font-medium"
             : "border-[var(--color-border-light)]"

@@ -35,8 +35,9 @@ export function WelcomeScreen() {
                 justify-center
                 bg-[var(--color-icon-bg-soft)]
                 px-5
-                py-6
+                py-4
                 shadow-[4px_0_18px_rgba(0,0,0,0.08)]
+                sm:py-6
                 sm:px-8
                 lg:overflow-hidden
                 lg:px-10
@@ -63,7 +64,7 @@ export function WelcomeScreen() {
                   priority
                   className="
                     h-auto
-                    w-[145px]
+                    w-[104px]
                     max-w-full
                     object-contain
                     sm:w-[175px]
@@ -74,7 +75,7 @@ export function WelcomeScreen() {
                 />
 
                 {/* Small icons */}
-                <div className="mt-2.5 flex items-center gap-3 sm:mt-3 sm:gap-4">
+                <div className="mt-2.5 flex items-center gap-3 sm:mt-3 sm:gap-4 max-sm:[@media(max-height:620px)]:hidden">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)] sm:h-9 sm:w-9">
                     <Droplets
                       size={18}
@@ -172,8 +173,9 @@ export function WelcomeScreen() {
                 justify-center
                 bg-white
                 px-6
-                py-6
+                py-5
                 sm:px-10
+                sm:py-6
                 lg:overflow-hidden
                 lg:px-10
                 lg:py-4
@@ -203,6 +205,7 @@ export function WelcomeScreen() {
                     shadow-[0_4px_14px_rgba(255,59,59,0.10)]
                     sm:h-14
                     sm:w-14
+                    max-sm:[@media(max-height:620px)]:hidden
                   "
                 >
                   <Droplets
@@ -297,7 +300,7 @@ export function WelcomeScreen() {
                       !inline-block
                       !text-[var(--color-stat-red)]
                       px-2
-                      py-2
+                      py-2.5
                       text-[13px]
                       font-semibold
                       !underline

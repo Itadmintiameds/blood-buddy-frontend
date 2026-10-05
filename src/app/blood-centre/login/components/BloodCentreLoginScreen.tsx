@@ -152,13 +152,14 @@ export function BloodCentreLoginScreen() {
       <section
         className="
           flex
-          min-h-[510px]
+          flex-1
           flex-col
           items-center
+          justify-center
           bg-white
           px-5
-          pb-10
-          pt-12
+          py-8
+          sm:py-12
         "
       >
         <div
@@ -194,7 +195,7 @@ export function BloodCentreLoginScreen() {
 
         <div
           className="
-            mt-8
+            mt-6
             w-full
             max-w-[360px]
           "
@@ -245,7 +246,7 @@ export function BloodCentreLoginScreen() {
             </p>
           )}
 
-          <div className="mt-8">
+          <div className="mt-6">
             <AppButton type="button" loading={loading} onClick={submit}>
               <BilingualInline
                 tKey="common.login"
@@ -283,7 +284,6 @@ export function BloodCentreLoginScreen() {
 
           <div
             className="
-              mt-2.5
               text-center
               text-[13px]
             "
@@ -291,6 +291,9 @@ export function BloodCentreLoginScreen() {
             <Link
               href="/blood-centre/forgot-password"
               className="
+                inline-block
+                px-2
+                py-2
                 text-[var(--color-text-secondary)]
                 underline
                 underline-offset-2
@@ -304,7 +307,6 @@ export function BloodCentreLoginScreen() {
 
           <div
             className="
-              mt-2.5
               text-center
               text-[13px]
             "
@@ -312,6 +314,9 @@ export function BloodCentreLoginScreen() {
             <Link
               href="/welcome"
               className="
+                inline-block
+                px-2
+                py-2
                 text-[var(--color-primary)]
                 transition
                 hover:underline

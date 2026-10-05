@@ -101,7 +101,7 @@ export function SuperAdminLoginScreen() {
     <ScreenShell>
       <BrandHeader />
 
-      <section className="flex min-h-[620px] flex-col items-center bg-white px-5 pt-10">
+      <section className="flex flex-1 flex-col items-center justify-center bg-white px-5 py-8 sm:py-12">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-icon-bg-soft)] shadow-sm">
           <ShieldIcon />
         </div>
@@ -112,7 +112,7 @@ export function SuperAdminLoginScreen() {
           className="mt-3 text-[17px] font-medium text-[var(--color-text-primary)]"
         />
 
-        <div className="mt-8 w-full max-w-[360px]">
+        <div className="mt-6 w-full max-w-[360px]">
           <div className="mb-2.5">
             <FormInput
               id="superAdminEmail"
@@ -159,6 +159,15 @@ export function SuperAdminLoginScreen() {
             </p>
           )}
 
+          <div className="mt-6">
+            <AppButton type="button" loading={loading} onClick={handleSubmit}>
+              <BilingualInline
+                tKey="common.login"
+                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+              />
+            </AppButton>
+          </div>
+
           <div className="mt-3 text-center text-[13px]">
             <button
               type="button"
@@ -167,15 +176,6 @@ export function SuperAdminLoginScreen() {
             >
               <BilingualInline tKey="superAdmin.backToWelcome" />
             </button>
-          </div>
-
-          <div className="mt-28">
-            <AppButton type="button" loading={loading} onClick={handleSubmit}>
-              <BilingualInline
-                tKey="common.login"
-                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-              />
-            </AppButton>
           </div>
         </div>
       </section>

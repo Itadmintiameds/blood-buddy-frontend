@@ -166,7 +166,7 @@ export function AddAvailabilityScreen() {
           <section
             className="
               mx-auto
-              min-h-[calc(100vh-190px)]
+              min-h-[calc(100dvh-190px)]
               w-full
               px-4
               pb-8
@@ -591,7 +591,7 @@ export function AddAvailabilityScreen() {
           <div
             className="
               animate-modalFadeSlide
-              max-h-[90vh]
+              max-h-[calc(100dvh-2rem)]
               w-full
               max-w-[340px]
               overflow-y-auto

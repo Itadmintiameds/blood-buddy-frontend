@@ -11,7 +11,8 @@ const COLS =
   "grid-cols-[1.3fr_1fr_0.55fr_0.55fr_1.3fr_1.9fr]";
 
 // Dense, scrollable table view of an inventory item's audit trail. Used on the
-// full History page (the modal keeps the compact timeline).
+// full History page (the modal keeps the compact timeline). Narrower than lg it
+// renders the same entries as cards instead.
 export function InventoryHistoryTable({
   entries,
 }: {
@@ -49,7 +50,70 @@ export function InventoryHistoryTable({
         </div>
       )}
 
-      <div className="overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--color-border-light)]">
+      {/* Below lg the six columns can't fit, so each movement becomes a card. */}
+      <ol className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 lg:hidden">
+        {pageItems.map((entry, index) => {
+          const meta = movementMeta[entry.stockMovement];
+          const Icon = meta.icon;
+          const positive = entry.changedUnits > 0;
+
+          return (
+            <li
+              key={entry.inventoryAuditId}
+              className="animate-rise min-w-0 rounded-xl border border-[var(--color-border-light)] bg-white p-3.5"
+              style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold ${meta.className}`}
+                >
+                  <Icon size={13} strokeWidth={2} />
+                  {meta.label}
+                </span>
+
+                <span
+                  className={`text-[16px] font-bold ${
+                    positive
+                      ? "text-[var(--color-stat-green)]"
+                      : "text-[var(--color-primary)]"
+                  }`}
+                >
+                  {positive ? "+" : ""}
+                  {entry.changedUnits}
+                  <span className="ml-1 text-[12px] font-medium text-[var(--color-text-muted)]">
+                    units
+                  </span>
+                </span>
+              </div>
+
+              <p className="mt-2.5 text-[13px] text-[var(--color-text-secondary)]">
+                {formatTimestamp(entry.createdAt)}
+              </p>
+
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+                <span className="font-medium text-[var(--color-text-body)]">
+                  Balance: {entry.remainingUnits}
+                </span>
+
+                {entry.createdBy && (
+                  <span className="flex min-w-0 items-center gap-1 break-all text-[12px] text-[var(--color-text-tertiary)]">
+                    <User size={12} strokeWidth={2} className="shrink-0" />
+                    {entry.createdBy}
+                  </span>
+                )}
+              </div>
+
+              {entry.remarks && (
+                <p className="mt-2.5 break-words rounded-lg bg-[var(--color-surface-alt)] px-3 py-2 text-[13px] text-[var(--color-text-secondary)]">
+                  {entry.remarks}
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="hidden overflow-x-auto overflow-y-hidden rounded-xl border border-[var(--color-border-light)] lg:block">
         <div className="min-w-[760px]">
           {/* Header */}
           <div

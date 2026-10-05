@@ -213,7 +213,7 @@ export function BloodGroupHistoryScreen() {
   return (
     <div className="animate-rise overflow-hidden rounded-2xl border border-[var(--color-border-light)] bg-white shadow-[0_5px_22px_rgba(0,0,0,0.045)]">
       {/* Inventory picker */}
-      <div className="border-b border-[var(--color-border-lighter)] px-5 py-4 sm:px-6 sm:py-5">
+      <div className="border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-6 sm:py-5">
         <div className="flex items-center gap-2">
           <History size={16} strokeWidth={2} className="text-[var(--color-primary)]" />
           <h2 className="text-[16px] font-bold text-[var(--color-text-primary)] sm:text-[17px]">
@@ -258,7 +258,7 @@ export function BloodGroupHistoryScreen() {
       </div>
 
       {/* History timeline */}
-      <div className="px-5 py-5 sm:px-6">
+      <div className="px-4 py-4 sm:px-6 sm:py-5">
         {historyLoading && (
           <div className="flex min-h-[200px] items-center justify-center">
             <Loader2 size={22} className="animate-spin text-[var(--color-primary)]" />
@@ -316,7 +316,7 @@ function HistorySelect({
 }) {
   return (
     <div className="sm:w-[200px]">
-      <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-placeholder)]">
+      <span className="mb-1 block text-[11px] sm:text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-text-placeholder)]">
         {label}
       </span>
 

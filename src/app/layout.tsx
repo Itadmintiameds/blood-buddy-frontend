@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Noto_Sans_Kannada, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -27,6 +27,13 @@ const notoSansKannada = Noto_Sans_Kannada({
 export const metadata: Metadata = {
   title: "Blood Buddy",
   description: "Blood Buddy blood centre management",
+};
+
+// Tints the mobile browser chrome to match the red brand bar at the top.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ff3b3f",
 };
 
 export default function RootLayout({

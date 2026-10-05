@@ -19,7 +19,10 @@ import {
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { AppButton } from "@/app/components/ui/AppButton";
+import {
+  STICKY_FORM_CLASS,
+  StickySubmitBar,
+} from "@/app/components/ui/StickySubmitBar";
 import { FormInput } from "@/app/components/ui/FormInput";
 import {
   bloodCentreRegistrationSchema,
@@ -130,7 +133,7 @@ export function BloodCentreRegistrationForm() {
     trigger,
     getValues,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<BloodCentreRegistrationInput>({
     resolver: zodResolver(
       bloodCentreRegistrationSchema,
@@ -325,7 +328,7 @@ export function BloodCentreRegistrationForm() {
 
   return (
     <>
-      <form noValidate onSubmit={handleSubmit(onSubmit)} className="w-full">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className={STICKY_FORM_CLASS}>
         <div
           className="
             grid
@@ -366,7 +369,9 @@ export function BloodCentreRegistrationForm() {
               htmlFor="category"
               className="
                 mb-1.5
-                block
+                flex
+                items-start
+                gap-0.5
                 text-[13px]
                 font-medium
                 leading-4
@@ -374,7 +379,7 @@ export function BloodCentreRegistrationForm() {
               "
             >
               <Bilingual tKey="bloodCentre.category" as="span" />
-              <span className="text-red-500"> *</span>
+              <span className="text-red-500">*</span>
             </label>
 
             <div className="relative">
@@ -540,48 +545,71 @@ export function BloodCentreRegistrationForm() {
               {...register("email", { onChange: resetOtpState })}
               error={errors.email?.message}
               rightElement={
-                otpStatus === "verified" ? (
-                  <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-[var(--color-success)]">
-                    <CheckCircle2 size={15} strokeWidth={2} />
-                    {verifiedText}
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={
-                      otpStatus === "sent" ? handleResendOtp : handleSendOtp
-                    }
-                    disabled={
-                      otpStatus === "sending" ||
-                      (otpStatus === "sent" && resendSeconds > 0)
-                    }
-                    className="
-                      whitespace-nowrap
-                      rounded-md
-                      bg-[var(--color-primary)]
-                      px-2
-                      py-1
-                      text-[13px]
-                      font-semibold
-                      text-white
-                      transition-colors
-                      duration-200
-                      hover:bg-[var(--color-primary-hover)]
-                      disabled:cursor-not-allowed
-                      disabled:opacity-60
-                    "
-                  >
-                    {otpStatus === "sending"
-                      ? sendingText
-                      : otpStatus === "sent"
-                        ? resendSeconds > 0
-                          ? resendWithSecondsText
-                          : resendOtpText
-                        : sendOtpText}
-                  </button>
-                )
+                <div className="hidden sm:flex">
+                  {otpStatus === "verified" ? (
+                    <span className="flex items-center gap-1 whitespace-nowrap text-[12px] font-semibold text-[var(--color-success)]">
+                      <CheckCircle2 size={15} strokeWidth={2} />
+                      {verifiedText}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={
+                        otpStatus === "sent" ? handleResendOtp : handleSendOtp
+                      }
+                      disabled={
+                        otpStatus === "sending" ||
+                        (otpStatus === "sent" && resendSeconds > 0)
+                      }
+                      className="
+                        whitespace-nowrap
+                        rounded-md
+                        bg-[var(--color-primary)]
+                        px-2.5
+                        py-1.5
+                        text-[12px]
+                        font-semibold
+                        sm:text-[13px]
+                        text-white
+                        transition-colors
+                        duration-200
+                        hover:bg-[var(--color-primary-hover)]
+                        disabled:cursor-not-allowed
+                        disabled:opacity-60
+                      "
+                    >
+                      {otpStatus === "sending"
+                        ? sendingText
+                        : otpStatus === "sent"
+                          ? resendSeconds > 0
+                            ? resendWithSecondsText
+                            : resendOtpText
+                          : sendOtpText}
+                    </button>
+                  )}
+                </div>
               }
             />
+
+            {/* No room for the OTP control inside the field on a phone: it sits
+                under the field instead (see rightElement above for sm+). */}
+            {otpStatus === "verified" && (
+              <div className="mt-2 flex items-center gap-1.5 text-[13px] font-semibold text-[var(--color-success)] sm:hidden">
+                <CheckCircle2 size={16} strokeWidth={2} />
+                {verifiedText}
+              </div>
+            )}
+
+            {(otpStatus === "idle" || otpStatus === "sending") && (
+              <button
+                type="button"
+                onClick={handleSendOtp}
+                disabled={otpStatus === "sending"}
+                className="mt-2 flex h-11 w-full items-center justify-center rounded-lg bg-[var(--color-primary)] px-4 text-white transition-colors duration-200 hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-60 sm:hidden"
+              >
+                {otpStatus === "sending" ? sendingText : sendOtpText}
+              </button>
+            )}
 
             {(otpStatus === "sent" || otpStatus === "verifying") && (
               <div className="mt-2 flex items-center gap-2">
@@ -597,8 +625,9 @@ export function BloodCentreRegistrationForm() {
                     if (otpError) setOtpError("");
                   }}
                   placeholder={enter6DigitOtp}
+                  autoComplete="one-time-code"
                   className="
-                    h-10
+                    h-11
                     w-full
                     min-w-0
                     flex-1
@@ -625,7 +654,7 @@ export function BloodCentreRegistrationForm() {
                   onClick={handleVerifyOtp}
                   disabled={otpStatus === "verifying"}
                   className="
-                    h-10
+                    h-11
                     shrink-0
                     rounded-lg
                     bg-[var(--color-primary)]
@@ -648,6 +677,19 @@ export function BloodCentreRegistrationForm() {
                       enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
                     />
                   )}
+                </button>
+              </div>
+            )}
+
+            {(otpStatus === "sent" || otpStatus === "verifying") && (
+              <div className="mt-1 flex justify-end sm:hidden">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendSeconds > 0 || otpStatus === "verifying"}
+                  className="min-h-10 px-2 text-[14px]! text-[var(--color-primary)] disabled:cursor-not-allowed disabled:text-[var(--color-text-muted)]"
+                >
+                  {resendSeconds > 0 ? resendWithSecondsText : resendOtpText}
                 </button>
               </div>
             )}
@@ -770,7 +812,10 @@ export function BloodCentreRegistrationForm() {
               disabled={locating}
               className="
                 flex
+                min-h-11
+                w-full
                 items-center
+                justify-center
                 gap-2
                 rounded-lg
                 border
@@ -778,6 +823,7 @@ export function BloodCentreRegistrationForm() {
                 bg-white
                 px-3.5
                 py-2
+                sm:w-auto
                 text-[13px]
                 font-semibold
                 text-[var(--color-primary)]
@@ -861,32 +907,15 @@ export function BloodCentreRegistrationForm() {
           </div>
         )}
 
-        <div
-          className="
-            mt-7
-            flex
-            w-full
-            justify-center
-          "
+        <StickySubmitBar
+          ready={isValid && otpStatus === "verified"}
+          loading={isSubmitting}
         >
-          <div
-            className="
-              w-full
-              md:w-[240px]
-            "
-          >
-            <AppButton
-              type="submit"
-              loading={isSubmitting}
-              disabled={otpStatus !== "verified"}
-            >
-              <BilingualInline
-                tKey="common.register"
-                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-              />
-            </AppButton>
-          </div>
-        </div>
+          <BilingualInline
+            tKey="common.register"
+            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+          />
+        </StickySubmitBar>
       </form>
 
       <RegistrationSuccessModal

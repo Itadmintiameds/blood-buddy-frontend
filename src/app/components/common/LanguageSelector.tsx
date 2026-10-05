@@ -93,7 +93,7 @@ function LanguageDropdown({ language, setLanguage }: Props) {
         aria-haspopup="listbox"
         className="
           flex
-          h-9
+          h-10
           items-center
           gap-1.5
           rounded-full
@@ -163,7 +163,7 @@ function LanguageDropdown({ language, setLanguage }: Props) {
                   setLanguage(lang.code);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[var(--color-surface-hover)] ${
+                className={`flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-[var(--color-surface-hover)] ${
                   active ? "bg-[var(--color-surface-hover)]" : ""
                 }`}
               >

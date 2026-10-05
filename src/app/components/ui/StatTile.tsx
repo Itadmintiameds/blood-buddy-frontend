@@ -89,8 +89,11 @@ export function StatTile({
   // Count up to the value, staggered in step with the card's rise animation.
   const displayValue = useCountUp(value, index * 80);
 
+  // Phones: compact stacked card (icon on top, value and label underneath) so
+  // three of them fit one row at 320-390px. From `sm` up: the roomier
+  // icon-beside-text layout.
   const baseClass =
-    "group animate-rise relative flex min-h-[112px] w-full items-center gap-4 overflow-hidden rounded-2xl px-5 py-5 text-left text-white shadow-[0_6px_20px_rgba(0,0,0,0.10)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_9px_25px_rgba(0,0,0,0.13)] sm:min-h-[120px] sm:px-6";
+    "group animate-rise relative flex min-h-[108px] w-full min-w-0 flex-col items-start justify-between gap-2.5 overflow-hidden rounded-2xl px-3 py-3 text-left text-white shadow-[0_6px_20px_rgba(0,0,0,0.10)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_9px_25px_rgba(0,0,0,0.13)] sm:min-h-[120px] sm:flex-row sm:items-center sm:justify-start sm:gap-4 sm:px-6 sm:py-5";
 
   const style = {
     backgroundColor: color,
@@ -103,26 +106,26 @@ export function StatTile({
       <Icon
         size={104}
         strokeWidth={1.4}
-        className="pointer-events-none absolute -right-3 -top-3 text-white/10 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110"
+        className="pointer-events-none absolute -right-4 -top-4 size-[76px] text-white/10 transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110 sm:-right-3 sm:-top-3 sm:size-[104px]"
       />
 
-      <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15 transition-transform duration-200 group-hover:scale-105 sm:h-13 sm:w-13">
-        <Icon size={22} strokeWidth={1.8} />
+      <div className="relative flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/15 transition-transform duration-200 group-hover:scale-105 sm:size-13 sm:rounded-xl">
+        <Icon size={22} strokeWidth={1.8} className="size-[18px] sm:size-[22px]" />
 
         {alert && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
+          <span className="absolute -right-0.5 -top-0.5 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-white" />
+            <span className="relative inline-flex h-full w-full rounded-full bg-white" />
           </span>
         )}
       </div>
 
-      <div className="relative min-w-0">
-        <div className="text-[25px] font-bold leading-7 tracking-[-0.3px] tabular-nums sm:text-[28px]">
+      <div className="relative min-w-0 max-w-full">
+        <div className="text-[22px] font-bold leading-6 tracking-[-0.3px] tabular-nums sm:text-[28px] sm:leading-7">
           {displayValue}
         </div>
 
-        <div className="mt-1 text-[11px] font-medium leading-4 text-white/90 sm:text-[12px]">
+        <div className="mt-0.5 break-words text-[10.5px] font-medium leading-[14px] text-white/90 sm:mt-1 sm:text-[12px] sm:leading-4">
           {label}
         </div>
       </div>
@@ -156,4 +159,10 @@ export function StatTile({
       {content}
     </div>
   );
+}
+
+// The KPI row both dashboards render: three tiles across on every screen size
+// (compact on phones), so the Super Admin and Blood Centre dashboards match.
+export function StatGrid({ children }: { children: ReactNode }) {
+  return <div className="grid grid-cols-3 gap-2.5 sm:gap-4">{children}</div>;
 }

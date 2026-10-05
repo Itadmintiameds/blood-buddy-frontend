@@ -50,7 +50,7 @@ import type {
   MasterBloodComponent,
   MasterBloodGroup,
 } from "@/types/master.types";
-import { StatTile } from "@/app/components/ui/StatTile";
+import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
 import { Pagination } from "@/app/components/ui/Pagination";
@@ -61,6 +61,11 @@ import {
 } from "@/app/components/common/Bilingual";
 
 const ALL = "all";
+
+// English sub-line colour for Kannada labels on solid red/primary buttons (the
+// default muted grey is unreadable there).
+const ON_SOLID_EN_CLASS =
+  "mt-0.5 text-[0.68em] font-normal leading-tight text-white/85";
 
 const emptyRecipientForm: RecipientRequestInput = {
   patientName: "",
@@ -283,9 +288,29 @@ export function RecipientManagement() {
     resetKey: [search, statusFilter, bloodGroupFilter, cityFilter].join("|"),
   });
 
+  // Rendered twice: beside "Log Request" on phones, and in the filter row from
+  // `sm` up (display is controlled by the caller so only one is ever visible).
+  const renderRefreshButton = (displayClass: string) => (
+    <button
+      type="button"
+      onClick={handleRefresh}
+      disabled={loading}
+      className={`${displayClass} h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50`}
+      aria-label="Refresh and clear filters"
+      title="Refresh &amp; clear filters"
+    >
+      <RefreshCw
+        size={15}
+        className={
+          spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
+        }
+      />
+    </button>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="w-full min-w-0 space-y-5 sm:space-y-6">
+      <StatGrid>
         <StatTile
           icon={Users}
           value={String(totalRequests)}
@@ -327,12 +352,12 @@ export function RecipientManagement() {
           color="var(--color-stat-green)"
           index={2}
         />
-      </div>
+      </StatGrid>
 
       {/* Search + filters */}
-      <div className="animate-rise space-y-3 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
+      <div className="animate-rise space-y-3 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_3px_15px_rgba(0,0,0,0.025)] sm:p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-          <div className="relative w-full sm:max-w-[480px] sm:flex-1">
+          <div className="relative w-full min-w-0 sm:max-w-[480px] sm:flex-1">
             <Search
               size={18}
               strokeWidth={1.7}
@@ -351,7 +376,7 @@ export function RecipientManagement() {
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:right-2.5 sm:h-7 sm:w-7"
                 aria-label={clearSearchLabel}
               >
                 <X size={14} />
@@ -359,23 +384,33 @@ export function RecipientManagement() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setLogRequestOpen(true)}
-            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
-          >
-            <Plus size={16} className="shrink-0" />
-            Log Request
-          </button>
+          {/* Phones: "Log Request" and refresh share a row. From sm the
+              wrapper dissolves, so the button sits in the toolbar row as before. */}
+          <div className="flex items-center gap-2 sm:contents">
+            <button
+              type="button"
+              onClick={() => setLogRequestOpen(true)}
+              className="flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:flex-none sm:shrink-0 sm:text-[14px]"
+            >
+              <Plus size={16} className="shrink-0" />
+              Log Request
+            </button>
+
+            {renderRefreshButton("flex sm:hidden")}
+          </div>
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-          <div className="relative">
+          {/* Selects: 2-up grid on phones, with the longest label ("All blood
+              groups") on its own row so it isn't clipped; flattened into the
+              toolbar row from sm. */}
+          <div className="grid grid-cols-2 gap-2 sm:contents">
+          <div className="relative min-w-0 max-sm:order-1">
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               aria-label="Filter by status"
-              className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+              className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 max-sm:truncate max-sm:pl-2.5 max-sm:pr-6 sm:w-auto ${
                 statusFilter !== ALL
                   ? "border-[var(--primary-200)] font-medium"
                   : "border-[var(--color-border-light)]"
@@ -391,17 +426,17 @@ export function RecipientManagement() {
             <ChevronDown
               size={15}
               strokeWidth={1.8}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              className="pointer-events-none absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
             />
           </div>
 
           {bloodGroupOptions.length > 0 && (
-            <div className="relative">
+            <div className="relative min-w-0 max-sm:order-3 max-sm:col-span-2">
               <select
                 value={bloodGroupFilter}
                 onChange={(event) => setBloodGroupFilter(event.target.value)}
                 aria-label="Filter by blood group"
-                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 max-sm:truncate max-sm:pl-2.5 max-sm:pr-6 sm:w-auto ${
                   bloodGroupFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
@@ -418,18 +453,18 @@ export function RecipientManagement() {
               <ChevronDown
                 size={15}
                 strokeWidth={1.8}
-                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                className="pointer-events-none absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
               />
             </div>
           )}
 
           {cityOptions.length > 0 && (
-            <div className="relative">
+            <div className="relative min-w-0 max-sm:order-2">
               <select
                 value={cityFilter}
                 onChange={(event) => setCityFilter(event.target.value)}
                 aria-label="Filter by city"
-                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 max-sm:truncate max-sm:pl-2.5 max-sm:pr-6 sm:w-auto ${
                   cityFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
@@ -446,33 +481,20 @@ export function RecipientManagement() {
               <ChevronDown
                 size={15}
                 strokeWidth={1.8}
-                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+                className="pointer-events-none absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
               />
             </div>
           )}
+          </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={handleRefresh}
-              disabled={loading}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
-              aria-label="Refresh and clear filters"
-              title="Refresh &amp; clear filters"
-            >
-              <RefreshCw
-                size={15}
-                className={
-                  spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
-                }
-              />
-            </button>
+          <div className="flex items-center gap-3 max-sm:contents">
+            {renderRefreshButton("hidden sm:flex")}
 
             {isFiltering && (
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline max-sm:h-10 max-sm:rounded-lg max-sm:border max-sm:border-[var(--primary-200)] max-sm:bg-[var(--color-icon-bg-soft)]"
               >
                 Clear
               </button>
@@ -627,7 +649,7 @@ export function RecipientManagement() {
       </div>
 
       {/* Mobile / Tablet Cards */}
-      <div className="space-y-4 lg:hidden">
+      <div className="space-y-3 sm:space-y-4 lg:hidden">
         {loading ? (
           <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white">
             <LoadingState />
@@ -640,7 +662,7 @@ export function RecipientManagement() {
               className="cursor-pointer rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)] transition-colors duration-150 active:bg-[var(--color-icon-bg-soft)]"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
                     <UserRound
                       size={19}
@@ -656,7 +678,7 @@ export function RecipientManagement() {
                       className="text-[11px] text-[var(--color-text-placeholder)]"
                     />
 
-                    <h3 className="truncate text-[15px] font-bold text-[var(--color-text-body)]">
+                    <h3 className="break-words text-[15px] font-bold leading-tight text-[var(--color-text-body)]">
                       {request.recipientName}
                     </h3>
                   </div>
@@ -665,7 +687,7 @@ export function RecipientManagement() {
                 <BloodGroupBadge value={request.bloodGroup} />
               </div>
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <MobileInfoRow
                   icon={Phone}
                   tKey="superAdmin.phoneNumber"
@@ -688,7 +710,7 @@ export function RecipientManagement() {
                 />
               </div>
 
-              <div className="mt-4 flex items-center justify-between gap-3">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
                 <StatusBadge status={request.status} />
 
                 <button
@@ -698,6 +720,8 @@ export function RecipientManagement() {
                     setOpenRequestId(request.id);
                   }}
                   className="
+                    ml-auto
+                    min-h-10
                     rounded-lg
                     border
                     border-[var(--color-border-lighter)]
@@ -842,7 +866,7 @@ function LogRequestModal({
 
   return (
     <div
-      className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 backdrop-blur-md transition-opacity duration-200 ${
+      className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 py-4 backdrop-blur-md transition-opacity duration-200 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
       role="dialog"
@@ -850,13 +874,13 @@ function LogRequestModal({
       aria-labelledby="log-request-title"
     >
       <div
-        className={`motion-surface flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 ${
+        className={`motion-surface flex max-h-[calc(100dvh-2rem)] w-full max-w-[560px] flex-col overflow-hidden sm:max-h-[90dvh] rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 ${
           visible
             ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
             : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
         }`}
       >
-        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-5 sm:py-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
@@ -881,7 +905,7 @@ function LogRequestModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50 sm:m-0 sm:h-8 sm:w-8"
             aria-label={closeLabel}
           >
             <X size={17} />
@@ -889,7 +913,7 @@ function LogRequestModal({
         </div>
 
         <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-y-auto overscroll-contain px-4 py-4 sm:grid-cols-2 sm:px-5 sm:py-5">
             <div className="sm:col-span-2">
               <FormInput
                 icon={UserRound}
@@ -1087,7 +1111,7 @@ function LogRequestModal({
             )}
           </div>
 
-          <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-5 py-4">
+          <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-3 sm:px-5 sm:py-4">
             <button
               type="button"
               onClick={onClose}
@@ -1106,7 +1130,10 @@ function LogRequestModal({
                 <Loader2 size={14} className="animate-spin shrink-0" />
               )}
               {isSubmitting ? (
-                <BilingualInline tKey="common.saving" />
+                <BilingualInline
+                  tKey="common.saving"
+                  enClassName={ON_SOLID_EN_CLASS}
+                />
               ) : (
                 "Log Request"
               )}
@@ -1241,6 +1268,7 @@ function BloodRequestDetailModal({
         justify-center
         bg-black/45
         px-4
+        py-4
         backdrop-blur-md
       "
       role="dialog"
@@ -1251,7 +1279,7 @@ function BloodRequestDetailModal({
         className="
           motion-surface
           flex
-          max-h-[90vh]
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[640px]
           flex-col
@@ -1259,9 +1287,10 @@ function BloodRequestDetailModal({
           rounded-2xl
           bg-white
           shadow-[0_25px_70px_rgba(0,0,0,0.18)]
+          sm:max-h-[90dvh]
         "
       >
-        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-5 sm:py-5">
           <div className="min-w-0">
             <Bilingual
               tKey="superAdmin.bloodRequestDetails"
@@ -1281,14 +1310,14 @@ function BloodRequestDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:m-0 sm:h-8 sm:w-8"
             aria-label={closeLabel}
           >
             <X size={17} />
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
           {loading && <LoadingState />}
 
           {!loading && error && (
@@ -1305,11 +1334,11 @@ function BloodRequestDetailModal({
             <div className="space-y-5">
               {/* SUMMARY */}
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="truncate text-[16px] font-bold text-[var(--color-text-body)]">
+                <div className="min-w-0 max-w-full">
+                  <h3 className="break-words text-[16px] font-bold text-[var(--color-text-body)] sm:truncate">
                     {detail.recipientName}
                   </h3>
-                  <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
+                  <p className="mt-0.5 break-words text-[12px] text-[var(--color-text-placeholder-alt)]">
                     {detail.mobileNumber}
                   </p>
                 </div>
@@ -1399,7 +1428,9 @@ function BloodRequestDetailModal({
                       onClick={() => setShowCloseForm(true)}
                       className="
                         flex
+                        min-h-11
                         items-center
+                        justify-center
                         gap-2
                         rounded-lg
                         border
@@ -1407,6 +1438,8 @@ function BloodRequestDetailModal({
                         bg-white
                         px-4
                         py-2.5
+                        sm:min-h-0
+                        sm:justify-start
                         text-[12px]
                         font-semibold
                         text-[var(--color-text-quaternary)]
@@ -1454,7 +1487,7 @@ function BloodRequestDetailModal({
                           type="button"
                           onClick={() => setShowCloseForm(false)}
                           disabled={closing}
-                          className="min-h-[38px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[12px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="min-h-11 flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[12px] sm:min-h-[38px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           <BilingualInline tKey="common.cancel" />
                         </button>
@@ -1463,15 +1496,21 @@ function BloodRequestDetailModal({
                           type="button"
                           onClick={() => setConfirmCloseOpen(true)}
                           disabled={closing}
-                          className="flex min-h-[38px] flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(239,68,68,0.22)] transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 sm:min-h-[38px] text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(239,68,68,0.22)] transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {closing && (
                             <Loader2 size={13} className="animate-spin shrink-0" />
                           )}
                           {closing ? (
-                            <BilingualInline tKey="superAdmin.closing" />
+                            <BilingualInline
+                              tKey="superAdmin.closing"
+                              enClassName={ON_SOLID_EN_CLASS}
+                            />
                           ) : (
-                            <BilingualInline tKey="superAdmin.confirmClose" />
+                            <BilingualInline
+                              tKey="superAdmin.confirmClose"
+                              enClassName={ON_SOLID_EN_CLASS}
+                            />
                           )}
                         </button>
                       </div>
@@ -1490,7 +1529,10 @@ function BloodRequestDetailModal({
         title="Close this request?"
         description="This marks the blood request as closed. This can't be undone from here."
         confirmLabel={
-          <BilingualInline tKey="superAdmin.confirmClose" />
+          <BilingualInline
+            tKey="superAdmin.confirmClose"
+            enClassName={ON_SOLID_EN_CLASS}
+          />
         }
         danger
         loading={closing}
@@ -1506,7 +1548,12 @@ function BloodRequestDetailModal({
             ? `This marks ${confirmDonorName} as having donated for this request.`
             : "This marks the selected donor as having donated for this request."
         }
-        confirmLabel={<BilingualInline tKey="superAdmin.recordDonation" />}
+        confirmLabel={
+          <BilingualInline
+            tKey="superAdmin.recordDonation"
+            enClassName={ON_SOLID_EN_CLASS}
+          />
+        }
         loading={recordingDonorId !== null}
         onConfirm={() => {
           if (confirmDonorId !== null) {
@@ -1547,10 +1594,10 @@ function MatchedCentresList({
             key={centre.id}
             className="rounded-lg border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-3.5 py-2.5"
           >
-            <p className="text-[12px] font-bold text-[var(--color-text-body)]">
+            <p className="break-words text-[13px] font-bold text-[var(--color-text-body)] sm:text-[12px]">
               {centre.bloodBankName}
             </p>
-            <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+            <p className="mt-0.5 break-words text-[12px] text-[var(--color-text-placeholder-alt)] sm:text-[11px]">
               {centre.address} · {centre.city} · {centre.phoneNumber}
             </p>
           </div>
@@ -1585,13 +1632,13 @@ function DonatedByList({ donors }: { donors: SuperAdminDonor[] }) {
             className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-success-bg)] bg-[var(--color-success-bg)] px-3.5 py-2.5"
           >
             <div className="min-w-0">
-              <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
+              <p className="break-words text-[13px] font-bold text-[var(--color-text-body)] sm:truncate sm:text-[12px]">
                 {donor.donorName}
               </p>
-              <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
+              <p className="text-[12px] text-[var(--color-text-placeholder-alt)] sm:text-[11px]">
                 {donor.mobileNumber} · {donor.bloodGroup}
               </p>
-              <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+              <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)] sm:text-[11px]">
                 <BilingualInline tKey="superAdmin.lastBloodDonation" />
                 : {formatDate(donor.lastBloodDonationDate)}
               </p>
@@ -1650,17 +1697,17 @@ function DonorCandidatesList({
         {pageItems.map((donor) => (
           <div
             key={donor.id}
-            className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5"
+            className="flex flex-col gap-2.5 rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
             <div className="min-w-0">
-              <p className="truncate text-[12px] font-bold text-[var(--color-text-body)]">
+              <p className="break-words text-[13px] font-bold text-[var(--color-text-body)] sm:truncate sm:text-[12px]">
                 {donor.donorName}
               </p>
-              <p className="text-[11px] text-[var(--color-text-placeholder-alt)]">
+              <p className="break-words text-[12px] text-[var(--color-text-placeholder-alt)] sm:text-[11px]">
                 {donor.mobileNumber} · {donor.bloodGroup} ·{" "}
                 {donor.city}
               </p>
-              <p className="mt-0.5 text-[11px] text-[var(--color-text-placeholder-alt)]">
+              <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)] sm:text-[11px]">
                 <BilingualInline tKey="superAdmin.lastBloodDonation" />
                 : {formatDate(donor.lastBloodDonationDate)}
               </p>
@@ -1673,13 +1720,18 @@ function DonorCandidatesList({
                 disabled={recordingDonorId !== null}
                 className="
                   flex
+                  min-h-10
+                  w-full
                   shrink-0
                   items-center
+                  justify-center
                   gap-1.5
                   rounded-lg
                   bg-[var(--color-primary)]
                   px-3
                   py-1.5
+                  sm:min-h-0
+                  sm:w-auto
                   text-[11px]
                   font-semibold
                   text-white
@@ -1693,7 +1745,10 @@ function DonorCandidatesList({
                 {recordingDonorId === donor.id && (
                   <Loader2 size={12} className="animate-spin shrink-0" />
                 )}
-                <BilingualInline tKey="superAdmin.recordDonation" />
+                <BilingualInline
+                  tKey="superAdmin.recordDonation"
+                  enClassName={ON_SOLID_EN_CLASS}
+                />
               </button>
             )}
           </div>
@@ -1745,7 +1800,7 @@ function InfoTile({ tKey, value }: { tKey: string; value: string }) {
         as="p"
         className="text-[11px] text-[var(--color-text-placeholder-alt)]"
       />
-      <p className="mt-1 break-words text-[12px] font-bold text-[var(--color-text-body)]">
+      <p className="mt-1 break-words text-[13px] font-bold text-[var(--color-text-body)] sm:text-[12px]">
         {value}
       </p>
     </div>
@@ -1800,7 +1855,7 @@ function TableCell({ children }: { children: React.ReactNode }) {
 
 function BloodGroupBadge({ value }: { value: string }) {
   return (
-    <span className="inline-flex min-w-[42px] items-center justify-center rounded-full border border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
+    <span className="inline-flex min-w-[42px] shrink-0 items-center justify-center rounded-full border border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] px-2.5 py-1 text-[11px] font-bold text-[var(--color-primary)]">
       {value}
     </span>
   );
@@ -1816,24 +1871,24 @@ function MobileInfoRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl bg-[var(--color-surface-alt)] px-3 py-2.5">
-      <Icon
-        size={15}
-        strokeWidth={1.7}
-        className="mt-0.5 shrink-0 text-[var(--color-primary)]"
-      />
+    <div className="min-w-0 rounded-xl bg-[var(--color-surface-alt)] px-3 py-2.5">
+      <div className="flex items-start gap-1.5">
+        <Icon
+          size={13}
+          strokeWidth={1.7}
+          className="mt-px shrink-0 text-[var(--color-primary)]"
+        />
 
-      <div className="min-w-0 flex-1">
         <Bilingual
           tKey={tKey}
           as="p"
-          className="text-[11px] font-semibold text-[var(--color-text-placeholder)]"
+          className="min-w-0 flex-1 text-[11px] font-semibold leading-[14px] text-[var(--color-text-placeholder)]"
         />
-
-        <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
-          {value}
-        </p>
       </div>
+
+      <p className="mt-1 break-words text-[13px] font-medium text-[var(--color-text-secondary)]">
+        {value}
+      </p>
     </div>
   );
 }

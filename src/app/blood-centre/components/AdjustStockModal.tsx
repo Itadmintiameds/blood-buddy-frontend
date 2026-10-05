@@ -121,8 +121,11 @@ export function AdjustStockModal({
     >
       <div
         className="
+          flex
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[420px]
+          flex-col
           overflow-hidden
           rounded-2xl
           bg-white
@@ -132,12 +135,16 @@ export function AdjustStockModal({
         <div
           className="
             flex
+            shrink-0
             items-start
             justify-between
+            gap-2
             border-b
             border-[var(--color-border-lighter)]
-            px-5
-            py-5
+            px-4
+            py-4
+            sm:px-5
+            sm:py-5
           "
         >
           <div className="min-w-0">
@@ -160,9 +167,11 @@ export function AdjustStockModal({
             onClick={onClose}
             disabled={saving}
             className="
+              -mr-1
+              -mt-1
               flex
-              h-8
-              w-8
+              h-10
+              w-10
               shrink-0
               items-center
               justify-center
@@ -173,6 +182,9 @@ export function AdjustStockModal({
               hover:text-[var(--color-text-secondary)]
               disabled:cursor-not-allowed
               disabled:opacity-50
+              sm:m-0
+              sm:h-8
+              sm:w-8
             "
             aria-label={closeLabel}
           >
@@ -180,7 +192,7 @@ export function AdjustStockModal({
           </button>
         </div>
 
-        <div className="px-5 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
           <label
             htmlFor="movement"
             className="block text-[13px] font-medium text-[var(--color-text-body)]"
@@ -329,12 +341,15 @@ export function AdjustStockModal({
         <div
           className="
             flex
+            shrink-0
             gap-2
             border-t
             border-[var(--color-border-lighter)]
             bg-[var(--color-surface-hover)]
-            px-5
-            py-4
+            px-4
+            py-3
+            sm:px-5
+            sm:py-4
           "
         >
           <button
@@ -342,8 +357,9 @@ export function AdjustStockModal({
             onClick={onClose}
             disabled={saving}
             className="
-              min-h-[40px]
+              min-h-11
               flex-1
+              sm:min-h-[40px]
               rounded-lg
               border
               border-[var(--color-border)]
@@ -368,8 +384,9 @@ export function AdjustStockModal({
             disabled={saving}
             className="
               flex
-              min-h-[40px]
+              min-h-11
               flex-1
+              sm:min-h-[40px]
               items-center
               justify-center
               gap-2

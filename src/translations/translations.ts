@@ -49,6 +49,7 @@ export const translations = {
       ok: "OK",
       pleaseWait: "Please wait...",
       poweredBy: "Powered by",
+      fillRequiredFields: "Fill in all required fields to continue",
 
       selectLanguage: "Select Language",
       english: "English",
@@ -80,6 +81,7 @@ export const translations = {
     },
 
     bloodCentre: {
+      roleLabel: "Blood Centre",
       registration: "Blood Centre Registration",
       bloodCentreName: "Blood Centre Name",
       licenseNumber: "License Number",
@@ -463,6 +465,7 @@ export const translations = {
       ok: "ಸರಿ",
       pleaseWait: "ದಯವಿಟ್ಟು ಕಾಯಿರಿ...",
       poweredBy: "ಇವರಿಂದ ಚಾಲಿತ",
+      fillRequiredFields: "ಮುಂದುವರಿಸಲು ಎಲ್ಲಾ ಅಗತ್ಯ ಕ್ಷೇತ್ರಗಳನ್ನು ಭರ್ತಿ ಮಾಡಿ",
 
       selectLanguage: "ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
       english: "English",
@@ -494,6 +497,7 @@ export const translations = {
     },
 
     bloodCentre: {
+      roleLabel: "ರಕ್ತ ಕೇಂದ್ರ",
       registration: "ರಕ್ತ ಕೇಂದ್ರ ನೋಂದಣಿ",
       bloodCentreName: "ರಕ್ತ ಕೇಂದ್ರದ ಹೆಸರು",
       licenseNumber: "ಪರವಾನಗಿ ಸಂಖ್ಯೆ",

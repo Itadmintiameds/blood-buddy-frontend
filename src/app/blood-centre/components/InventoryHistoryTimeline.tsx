@@ -60,7 +60,7 @@ export function InventoryHistoryTimeline({
   entries: InventoryAuditResponse[];
 }) {
   return (
-    <ol className="space-y-4">
+    <ol className="space-y-3 sm:space-y-4">
       {entries.map((entry, index) => {
         const meta = movementMeta[entry.stockMovement];
         const Icon = meta.icon;
@@ -69,17 +69,17 @@ export function InventoryHistoryTimeline({
         return (
           <li
             key={entry.inventoryAuditId}
-            className="animate-rise flex gap-3"
+            className="animate-rise flex gap-2.5 sm:gap-3"
             style={{ animationDelay: `${Math.min(index, 12) * 35}ms` }}
           >
             <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${meta.className}`}
+              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full sm:h-9 sm:w-9 ${meta.className}`}
             >
               <Icon size={16} strokeWidth={2} />
             </span>
 
-            <div className="min-w-0 flex-1 rounded-xl border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-3">
-              <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1 rounded-xl border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-3 py-3 sm:px-4">
+              <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
                 <span className="text-[13px] font-semibold text-[var(--color-text-body)]">
                   {meta.label}
                 </span>
@@ -106,15 +106,15 @@ export function InventoryHistoryTimeline({
                 </span>
 
                 {entry.createdBy && (
-                  <span className="flex items-center gap-1 text-[11px] text-[var(--color-text-placeholder-alt)]">
-                    <User size={11} strokeWidth={2} />
+                  <span className="flex min-w-0 items-center gap-1 break-all text-[11px] text-[var(--color-text-placeholder-alt)]">
+                    <User size={11} strokeWidth={2} className="shrink-0" />
                     {entry.createdBy}
                   </span>
                 )}
               </div>
 
               {entry.remarks && (
-                <p className="mt-1.5 text-[12px] text-[var(--color-text-secondary)]">
+                <p className="mt-1.5 break-words text-[12px] text-[var(--color-text-secondary)]">
                   {entry.remarks}
                 </p>
               )}

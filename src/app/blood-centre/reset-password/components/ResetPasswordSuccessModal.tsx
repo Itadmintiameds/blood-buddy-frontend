@@ -33,7 +33,7 @@ export function ResetPasswordSuccessModal({
         items-center
         justify-center
         bg-black/40
-        px-5
+        p-4
         backdrop-blur-md
         transition-opacity
         duration-200
@@ -43,24 +43,24 @@ export function ResetPasswordSuccessModal({
       aria-modal="true"
       aria-labelledby="reset-password-success-title"
     >
+      {/* The message scrolls if it is long (Kannada + English on a small
+          phone); the OK button stays pinned below it. */}
       <div
         className={`
           motion-surface
-          max-h-[90vh]
+          flex
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-[340px]
-          overflow-y-auto
+          flex-col
+          overflow-hidden
           rounded-2xl
           bg-white
-          px-5
-          py-7
           text-center
           shadow-[0_25px_70px_rgba(0,0,0,0.2)]
           transition-[transform,opacity]
           duration-200
-
           sm:max-w-[380px]
-          sm:px-7
           ${
             visible
               ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
@@ -68,98 +68,101 @@ export function ResetPasswordSuccessModal({
           }
         `}
       >
-        {/* Success Icon */}
-        <div className="mb-4 flex justify-center">
-          <div
-            className="
-              flex
-              h-14
-              w-14
-              items-center
-              justify-center
-              rounded-full
-              bg-[var(--color-success-bg)]
-            "
-          >
-            <CheckCircle2
-              size={30}
-              strokeWidth={2}
-              className="text-[var(--color-success)]"
-            />
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain max-sm:[&_:is(h2,p,span)>span+span]:text-[11px] px-5 pt-6 sm:px-7 sm:pt-7">
+          {/* Success Icon */}
+          <div className="mb-4 flex justify-center">
+            <div
+              className="
+                flex
+                h-14
+                w-14
+                items-center
+                justify-center
+                rounded-full
+                bg-[var(--color-success-bg)]
+              "
+            >
+              <CheckCircle2
+                size={30}
+                strokeWidth={2}
+                className="text-[var(--color-success)]"
+              />
+            </div>
           </div>
+
+          {/* Title */}
+          <Bilingual
+            tKey="bloodCentre.passwordResetTitle"
+            as="h2"
+            id="reset-password-success-title"
+            className="
+              text-[18px]
+              font-semibold
+              leading-6
+              tracking-[-0.01em]
+              text-[var(--color-text-primary)]
+            "
+          />
+
+          {/* Message */}
+          <Bilingual
+            tKey="bloodCentre.passwordResetMessage"
+            as="p"
+            className="
+              mt-2
+              text-[13px]
+              leading-5
+              text-[var(--color-text-muted)]
+            "
+          />
+
+          <Bilingual
+            tKey="bloodCentre.passwordResetLoginHint"
+            as="p"
+            className="
+              mt-1
+              text-[13px]
+              leading-5
+              text-[var(--color-text-muted)]
+            "
+          />
         </div>
 
-        {/* Title */}
-        <Bilingual
-          tKey="bloodCentre.passwordResetTitle"
-          as="h2"
-          id="reset-password-success-title"
-          className="
-            text-[18px]
-            font-semibold
-            leading-6
-            tracking-[-0.01em]
-            text-[var(--color-text-primary)]
-          "
-        />
-
-        {/* Message */}
-        <Bilingual
-          tKey="bloodCentre.passwordResetMessage"
-          as="p"
-          className="
-            mt-2
-            text-[13px]
-            leading-5
-            text-[var(--color-text-muted)]
-          "
-        />
-
-        <Bilingual
-          tKey="bloodCentre.passwordResetLoginHint"
-          as="p"
-          className="
-            mt-1
-            text-[13px]
-            leading-5
-            text-[var(--color-text-muted)]
-          "
-        />
-
         {/* OK Button */}
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="
-            mt-6
-            flex
-            min-h-11
-            w-full
-            items-center
-            justify-center
-            rounded-lg
-            bg-[var(--color-primary)]
-            px-4
-            py-2
-            text-[14px]
-            font-semibold
-            text-white
-            shadow-[0_4px_14px_rgba(255,59,63,0.22)]
-            transition-all
-            duration-200
-            hover:bg-[var(--color-primary-hover-alt)]
-            active:scale-[0.98]
-            focus:outline-none
-            focus:ring-2
-            focus:ring-[var(--color-primary)]
-            focus:ring-offset-2
-          "
-        >
-          <BilingualInline
-            tKey="common.ok"
-            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-          />
-        </button>
+        <div className="shrink-0 px-5 pb-6 pt-5 sm:px-7 sm:pb-7 sm:pt-6">
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="
+              flex
+              min-h-11
+              w-full
+              items-center
+              justify-center
+              rounded-lg
+              bg-[var(--color-primary)]
+              px-4
+              py-2
+              text-[14px]
+              font-semibold
+              text-white
+              shadow-[0_4px_14px_rgba(255,59,63,0.22)]
+              transition-all
+              duration-200
+              hover:bg-[var(--color-primary-hover-alt)]
+              active:scale-[0.98]
+              focus:outline-none
+              focus:ring-2
+              focus:ring-[var(--color-primary)]
+              focus:ring-offset-2
+            "
+          >
+            <BilingualInline
+              tKey="common.ok"
+              enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+            />
+          </button>
+        </div>
       </div>
     </div>
   );

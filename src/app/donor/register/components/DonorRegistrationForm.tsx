@@ -14,7 +14,10 @@ import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 
-import { AppButton } from "@/app/components/ui/AppButton";
+import {
+  STICKY_FORM_CLASS,
+  StickySubmitBar,
+} from "@/app/components/ui/StickySubmitBar";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import {
@@ -86,7 +89,7 @@ export function DonorRegistrationForm() {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<DonorRegistrationInput>({
     resolver: zodResolver(
       donorRegistrationSchema,
@@ -154,7 +157,7 @@ export function DonorRegistrationForm() {
 
   return (
     <>
-      <form noValidate onSubmit={handleSubmit(onSubmit)} className="w-full">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className={STICKY_FORM_CLASS}>
         <div className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2 md:gap-x-10 md:gap-y-5">
           <FormInput
             id="fullName"
@@ -369,48 +372,12 @@ export function DonorRegistrationForm() {
           </div>
         )}
 
-        {/* On mobile the submit button sticks to the bottom of the viewport so
-            it stays visible while scrolling the long form; from sm up it sits
-            inline, centered, as a normal button. */}
-        <div
-          className="
-            sticky
-            bottom-0
-            z-20
-            -mx-4
-            -mb-6
-            mt-7
-            flex
-            w-auto
-            justify-center
-            rounded-b-2xl
-            border-t
-            border-[var(--color-border-lighter)]
-            bg-white/95
-            px-4
-            py-3
-            backdrop-blur
-            sm:static
-            sm:mx-0
-            sm:mb-0
-            sm:w-full
-            sm:rounded-none
-            sm:border-0
-            sm:bg-transparent
-            sm:px-0
-            sm:py-0
-            sm:backdrop-blur-none
-          "
-        >
-          <div className="w-full md:w-[240px]">
-            <AppButton type="submit" loading={isSubmitting}>
-              <BilingualInline
-                tKey="common.register"
-                enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-              />
-            </AppButton>
-          </div>
-        </div>
+        <StickySubmitBar ready={isValid} loading={isSubmitting}>
+          <BilingualInline
+            tKey="common.register"
+            enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+          />
+        </StickySubmitBar>
       </form>
 
       <SuccessModal

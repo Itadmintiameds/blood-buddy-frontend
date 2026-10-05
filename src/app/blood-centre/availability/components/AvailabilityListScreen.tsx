@@ -98,7 +98,8 @@ export function AvailabilityListScreen() {
                 <p
                   className="
                     mt-2.5
-                    text-[12px]
+                    break-words
+                    text-[13px]
                     text-[var(--color-text-secondary)]
                   "
                 >
@@ -108,7 +109,8 @@ export function AvailabilityListScreen() {
                 <p
                   className="
                     mt-0.5
-                    text-[12px]
+                    break-words
+                    text-[13px]
                     text-[var(--color-text-secondary)]
                   "
                 >

@@ -32,6 +32,13 @@ import {
 
 type Tab = "bloodBanks" | "donors";
 
+// Second-language line under a tab label: readable on phones, and white-ish on
+// the red active pill (the default grey is unreadable there).
+const TAB_SUB =
+  "mt-0.5 text-[11px] font-normal leading-tight text-[var(--color-text-muted)] sm:text-[0.68em]";
+const TAB_SUB_ACTIVE =
+  "mt-0.5 text-[11px] font-normal leading-tight text-white/85 sm:text-[0.68em]";
+
 // Mobile-style card lists — short pages, no rows-per-page selector.
 const RESULTS_PAGE_SIZE = 5;
 
@@ -115,7 +122,7 @@ export function RecipientSearchScreen() {
                   setPincode(event.target.value.replace(/\D/g, "").slice(0, 6))
                 }
                 placeholder={searchPlaceholder}
-                className="h-11 w-full rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-3 text-[14px] text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
+                className="h-11 w-full text-ellipsis rounded-lg border border-[var(--color-border)] bg-white pl-10 pr-3 text-[14px] text-[var(--color-text-body)] outline-none transition-all duration-200 placeholder:text-[var(--color-text-placeholder)] hover:border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20"
               />
             </div>
 
@@ -131,7 +138,7 @@ export function RecipientSearchScreen() {
           {/* Map placeholder — no search endpoint or maps provider wired up
               yet; the list below is fully functional against sample data
               (see recipientSearchService.ts). */}
-          <div className="mt-4 flex h-[160px] w-full items-center justify-center rounded-2xl border border-dashed border-[var(--color-border)] bg-white">
+          <div className="mt-4 flex h-[120px] w-full sm:h-[160px] items-center justify-center rounded-2xl border border-dashed border-[var(--color-border)] bg-white">
             <div className="text-center">
               <MapPin
                 size={22}
@@ -151,7 +158,8 @@ export function RecipientSearchScreen() {
             <button
               type="button"
               onClick={() => setTab("bloodBanks")}
-              className={`flex min-h-9 items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all duration-200 ${
+              aria-pressed={tab === "bloodBanks"}
+              className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-center text-[13px] font-semibold max-sm:text-[14px]! transition-all duration-200 sm:min-h-9 sm:flex-none sm:px-4 ${
                 tab === "bloodBanks"
                   ? "bg-[var(--color-primary)] text-white shadow-[0_4px_14px_rgba(255,59,63,0.22)]"
                   : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-border)]"
@@ -160,13 +168,15 @@ export function RecipientSearchScreen() {
               <BilingualInline
                 tKey="recipient.bloodBanksTab"
                 params={{ count: bloodBanks.length }}
+                enClassName={tab === "bloodBanks" ? TAB_SUB_ACTIVE : TAB_SUB}
               />
             </button>
 
             <button
               type="button"
               onClick={() => setTab("donors")}
-              className={`flex min-h-9 items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all duration-200 ${
+              aria-pressed={tab === "donors"}
+              className={`flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-full px-2 py-1.5 text-center text-[13px] font-semibold max-sm:text-[14px]! transition-all duration-200 sm:min-h-9 sm:flex-none sm:px-4 ${
                 tab === "donors"
                   ? "bg-[var(--color-primary)] text-white shadow-[0_4px_14px_rgba(255,59,63,0.22)]"
                   : "border border-[var(--color-border)] bg-white text-[var(--color-text-secondary)] hover:border-[var(--color-border)]"
@@ -175,6 +185,7 @@ export function RecipientSearchScreen() {
               <BilingualInline
                 tKey="recipient.donorsTab"
                 params={{ count: donors.length }}
+                enClassName={tab === "donors" ? TAB_SUB_ACTIVE : TAB_SUB}
               />
             </button>
           </div>
@@ -205,10 +216,10 @@ export function RecipientSearchScreen() {
                             <Building2 size={18} className="text-[var(--color-primary)]" />
                           </div>
                           <div className="min-w-0">
-                            <h3 className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
+                            <h3 className="line-clamp-2 break-words text-[14px] font-bold leading-5 text-[var(--color-text-body)]">
                               {bank.name}
                             </h3>
-                            <p className="mt-0.5 truncate text-[12px] text-[var(--color-text-placeholder-alt)]">
+                            <p className="mt-0.5 line-clamp-2 break-words text-[12px] leading-4 text-[var(--color-text-placeholder-alt)]">
                               {bank.address}
                             </p>
                           </div>
@@ -217,11 +228,14 @@ export function RecipientSearchScreen() {
                         <BloodGroupBadge value={bank.bloodGroup} />
                       </div>
 
-                      <div className="mt-3 flex items-center justify-between text-[12px]">
-                        <span className="flex items-center gap-1.5 text-[var(--color-text-secondary)]">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[13px] sm:text-[12px]">
+                        <a
+                          href={`tel:${bank.mobileNumber}`}
+                          className="flex min-h-10 items-center gap-1.5 text-[var(--color-text-secondary)] sm:min-h-0"
+                        >
                           <Phone size={13} strokeWidth={1.8} className="text-[var(--color-primary)]" />
                           {bank.mobileNumber}
-                        </span>
+                        </a>
                         <span className="font-semibold text-[var(--color-text-body)]">
                           {bank.unitsAvailable} {unitsSuffix}
                         </span>
@@ -256,20 +270,23 @@ export function RecipientSearchScreen() {
                             <UserRound size={18} className="text-[var(--color-primary)]" />
                           </div>
                           <div className="min-w-0">
-                            <h3 className="truncate text-[14px] font-bold text-[var(--color-text-body)]">
+                            <h3 className="line-clamp-2 break-words text-[14px] font-bold leading-5 text-[var(--color-text-body)]">
                               {donor.fullName}
                             </h3>
-                            <p className="mt-0.5 flex items-center gap-1 text-[12px] text-[var(--color-text-secondary)]">
+                            <a
+                              href={`tel:${donor.mobileNumber}`}
+                              className="-mb-2 mt-0.5 flex min-h-10 items-center gap-1 text-[13px] text-[var(--color-text-secondary)] sm:mb-0 sm:min-h-0 sm:text-[12px]"
+                            >
                               <Phone size={12} strokeWidth={1.8} />
                               {donor.mobileNumber}
-                            </p>
+                            </a>
                           </div>
                         </div>
 
                         <BloodGroupBadge value={donor.bloodGroup} />
                       </div>
 
-                      <div className="mt-3 flex items-center justify-between text-[12px]">
+                      <div className="mt-3 flex items-center justify-between text-[13px] sm:text-[12px]">
                         <span
                           className={`flex items-center gap-1.5 font-semibold ${
                             donor.available

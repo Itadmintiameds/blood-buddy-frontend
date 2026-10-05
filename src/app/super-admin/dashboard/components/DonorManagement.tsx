@@ -32,7 +32,7 @@ import {
 } from "@/schema/donor/donorRegistrationSchema";
 import type { DonorRegistrationInput } from "@/types/donor/donorTypes";
 import type { MasterBloodGroup } from "@/types/master.types";
-import { StatTile } from "@/app/components/ui/StatTile";
+import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { Pagination } from "@/app/components/ui/Pagination";
 import {
@@ -80,6 +80,14 @@ function getTodayIsoDate(): string {
   const day = String(today.getDate()).padStart(2, "0");
 
   return `${today.getFullYear()}-${month}-${day}`;
+}
+
+function formatLocation(donor: SuperAdminDonor): string {
+  const place = [donor.address, donor.city, donor.district]
+    .filter((part, index, all) => Boolean(part) && all.indexOf(part) === index)
+    .join(", ");
+
+  return donor.pincode ? [place, donor.pincode].filter(Boolean).join(" - ") : place;
 }
 
 export function DonorManagement() {
@@ -260,8 +268,8 @@ export function DonorManagement() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="space-y-4 sm:space-y-6">
+      <StatGrid>
         <StatTile
           icon={Users}
           value={String(totalDonors)}
@@ -303,10 +311,10 @@ export function DonorManagement() {
           color="var(--color-stat-green)"
           index={2}
         />
-      </div>
+      </StatGrid>
 
       {/* Search + filters */}
-      <div className="animate-rise space-y-3 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)]">
+      <div className="animate-rise space-y-2.5 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_3px_15px_rgba(0,0,0,0.025)] sm:space-y-3 sm:p-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <div className="relative w-full sm:max-w-[480px] sm:flex-1">
             <Search
@@ -320,14 +328,14 @@ export function DonorManagement() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={searchPlaceholder}
-              className="h-[46px] w-full rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-10 text-[13px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
+              className="h-11 w-full text-ellipsis rounded-xl border border-[var(--color-border-light)] bg-white pl-11 pr-10 text-[13px] sm:h-[46px] text-[var(--color-text-body)] outline-none transition placeholder:text-[var(--color-text-placeholder)] focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
             />
 
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+                className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[var(--color-text-placeholder-alt)] sm:right-2.5 sm:h-7 sm:w-7 transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
                 aria-label={clearSearchLabel}
               >
                 <X size={14} />
@@ -345,13 +353,13 @@ export function DonorManagement() {
           </button>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
-          <div className="relative">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
+          <div className="relative order-1 min-w-0 sm:order-none">
             <select
               value={bloodGroupFilter}
               onChange={(event) => setBloodGroupFilter(event.target.value)}
               aria-label="Filter by blood group"
-              className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
+              className={`h-10 w-full cursor-pointer appearance-none text-ellipsis rounded-lg border bg-white pl-2.5 pr-7 text-[13px] sm:pl-3 sm:pr-8 text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:h-11 sm:w-auto ${
                 bloodGroupFilter !== ALL
                   ? "border-[var(--primary-200)] font-medium"
                   : "border-[var(--color-border-light)]"
@@ -368,72 +376,76 @@ export function DonorManagement() {
             <ChevronDown
               size={15}
               strokeWidth={1.8}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] sm:right-2.5"
             />
           </div>
 
-          {cityOptions.length > 0 && (
-            <div className="relative">
-              <select
-                value={cityFilter}
-                onChange={(event) => setCityFilter(event.target.value)}
-                aria-label="Filter by city"
-                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
-                  cityFilter !== ALL
-                    ? "border-[var(--primary-200)] font-medium"
-                    : "border-[var(--color-border-light)]"
-                }`}
-              >
-                <option value={ALL}>All cities</option>
-                {cityOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
+          {(cityOptions.length > 0 || districtOptions.length > 0) && (
+            <div className="order-3 col-span-2 grid grid-cols-2 gap-2 sm:contents">
+              {cityOptions.length > 0 && (
+                <div className="relative min-w-0">
+                  <select
+                    value={cityFilter}
+                    onChange={(event) => setCityFilter(event.target.value)}
+                    aria-label="Filter by city"
+                    className={`h-10 w-full cursor-pointer appearance-none text-ellipsis rounded-lg border bg-white pl-2.5 pr-7 text-[13px] sm:pl-3 sm:pr-8 text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:h-11 sm:w-auto ${
+                      cityFilter !== ALL
+                        ? "border-[var(--primary-200)] font-medium"
+                        : "border-[var(--color-border-light)]"
+                    }`}
+                  >
+                    <option value={ALL}>All cities</option>
+                    {cityOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
 
-              <ChevronDown
-                size={15}
-                strokeWidth={1.8}
-                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-              />
+                  <ChevronDown
+                    size={15}
+                    strokeWidth={1.8}
+                    className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] sm:right-2.5"
+                  />
+                </div>
+              )}
+
+              {districtOptions.length > 0 && (
+                <div className="relative min-w-0">
+                  <select
+                    value={districtFilter}
+                    onChange={(event) => setDistrictFilter(event.target.value)}
+                    aria-label="Filter by district"
+                    className={`h-10 w-full cursor-pointer appearance-none text-ellipsis rounded-lg border bg-white pl-2.5 pr-7 text-[13px] sm:pl-3 sm:pr-8 text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:h-11 sm:w-auto ${
+                      districtFilter !== ALL
+                        ? "border-[var(--primary-200)] font-medium"
+                        : "border-[var(--color-border-light)]"
+                    }`}
+                  >
+                    <option value={ALL}>All districts</option>
+                    {districtOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+
+                  <ChevronDown
+                    size={15}
+                    strokeWidth={1.8}
+                    className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)] sm:right-2.5"
+                  />
+                </div>
+              )}
             </div>
           )}
 
-          {districtOptions.length > 0 && (
-            <div className="relative">
-              <select
-                value={districtFilter}
-                onChange={(event) => setDistrictFilter(event.target.value)}
-                aria-label="Filter by district"
-                className={`h-11 w-full cursor-pointer appearance-none rounded-lg border bg-white pl-3 pr-8 text-[13px] text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 sm:w-auto ${
-                  districtFilter !== ALL
-                    ? "border-[var(--primary-200)] font-medium"
-                    : "border-[var(--color-border-light)]"
-                }`}
-              >
-                <option value={ALL}>All districts</option>
-                {districtOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown
-                size={15}
-                strokeWidth={1.8}
-                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-              />
-            </div>
-          )}
-
-          <div className="flex items-center gap-3">
+          <div className="order-2 flex items-center gap-3 sm:order-none">
             <button
               type="button"
               onClick={handleRefresh}
               disabled={loading}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] sm:h-11 sm:w-11 transition-all duration-150 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="Refresh and clear filters"
               title="Refresh &amp; clear filters"
             >
@@ -449,7 +461,7 @@ export function DonorManagement() {
               <button
                 type="button"
                 onClick={clearFilters}
-                className="text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+                className="flex h-10 items-center px-1 text-[13px] font-medium text-[var(--color-primary)] transition hover:underline sm:h-auto sm:px-0 sm:text-[12px]"
               >
                 Clear
               </button>
@@ -670,7 +682,7 @@ export function DonorManagement() {
                       event.stopPropagation();
                       setSelectedDonor(donor);
                     }}
-                    className="rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[12px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
+                    className="inline-flex min-h-10 items-center rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[12px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
                   >
                     <BilingualInline tKey="superAdmin.viewDetails" />
                   </button>
@@ -684,7 +696,7 @@ export function DonorManagement() {
       </div>
 
       {/* Mobile Cards */}
-      <div className="space-y-4 sm:hidden">
+      <div className="space-y-3 sm:hidden">
         {loading ? (
           <LoadingState />
         ) : pageItems.length > 0 ? (
@@ -692,13 +704,13 @@ export function DonorManagement() {
             <div
               key={donor.id}
               onClick={() => setSelectedDonor(donor)}
-              className="cursor-pointer rounded-2xl border border-[var(--color-border-lighter)] bg-white p-4 shadow-[0_3px_15px_rgba(0,0,0,0.025)] transition-colors duration-150 active:bg-[var(--color-icon-bg-soft)]"
+              className="cursor-pointer rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3.5 shadow-[0_3px_15px_rgba(0,0,0,0.025)] transition-colors duration-150 active:bg-[var(--color-icon-bg-soft)]"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
+                <div className="flex min-w-0 items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
                     <UserRound
-                      size={19}
+                      size={18}
                       className="text-[var(--color-primary)]"
                     />
                   </div>
@@ -708,10 +720,10 @@ export function DonorManagement() {
                       tKey="superAdmin.sNoValue"
                       params={{ index: startIndex + index + 1 }}
                       as="p"
-                      className="text-[11px] text-[var(--color-text-placeholder)]"
+                      className="text-[11px] leading-4 text-[var(--color-text-placeholder)]"
                     />
 
-                    <h3 className="break-words text-[15px] font-bold text-[var(--color-text-body)]">
+                    <h3 className="break-words text-[15px] font-bold leading-5 text-[var(--color-text-body)]">
                       {donor.donorName}
                     </h3>
                   </div>
@@ -720,56 +732,50 @@ export function DonorManagement() {
                 <BloodGroupBadge value={donor.bloodGroup} />
               </div>
 
-              <div className="mt-5 space-y-3">
-                <MobileInfoRow
-                  icon={Phone}
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-[var(--color-border-lighter)] pt-3">
+                <InfoItem
                   tKey="common.mobileNumber"
                   value={donor.mobileNumber}
+                  wrap
                 />
 
-                <MobileInfoRow
-                  icon={Phone}
+                <InfoItem
+                  tKey="superAdmin.lastDonation"
+                  value={formatDate(donor.lastBloodDonationDate)}
+                  wrap
+                />
+
+                <InfoItem
                   tKey="superAdmin.alternateMobile"
                   value={donor.alternateMobileNumber}
+                  wrap
                 />
 
-                <MobileInfoRow
-                  icon={CalendarDays}
+                <InfoItem
                   tKey="donor.dateOfBirth"
                   value={formatDate(donor.dateOfBirth)}
+                  wrap
                 />
 
-                <MobileInfoRow
-                  icon={MapPin}
-                  tKey="common.address"
-                  value={donor.address}
-                />
-
-                <MobileInfoRow
-                  icon={MapPin}
-                  tKey="superAdmin.pincode"
-                  value={donor.pincode}
-                />
-
-                <MobileInfoRow
-                  icon={Droplets}
-                  tKey="superAdmin.lastBloodDonation"
-                  value={formatDate(donor.lastBloodDonationDate)}
-                />
+                <div className="col-span-2">
+                  <InfoItem
+                    tKey="common.address"
+                    value={formatLocation(donor)}
+                    wrap
+                  />
+                </div>
               </div>
 
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setSelectedDonor(donor);
-                  }}
-                  className="rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[12px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
-                >
-                  <BilingualInline tKey="superAdmin.viewDetails" />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setSelectedDonor(donor);
+                }}
+                className="mt-3.5 flex min-h-[44px] w-full items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[13px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
+              >
+                <BilingualInline tKey="superAdmin.viewDetails" />
+              </button>
             </div>
           ))
         ) : (
@@ -888,13 +894,13 @@ function AddDonorModal({
       aria-labelledby="add-donor-title"
     >
       <div
-        className={`motion-surface flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 ${
+        className={`motion-surface flex max-h-[calc(100dvh-2rem)] w-full max-w-[560px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 sm:max-h-[90dvh] ${
           visible
             ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
             : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
         }`}
       >
-        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-5 sm:py-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
@@ -919,7 +925,7 @@ function AddDonorModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50 sm:m-0 sm:h-8 sm:w-8"
             aria-label={closeLabel}
           >
             <X size={17} />
@@ -931,13 +937,14 @@ function AddDonorModal({
           noValidate
           className="flex min-h-0 flex-1 flex-col"
         >
-          <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-5 py-5 sm:grid-cols-2">
+          <div className="grid flex-1 grid-cols-1 content-start gap-3.5 overflow-y-auto overscroll-contain px-4 py-4 sm:grid-cols-2 sm:gap-4 sm:px-5 sm:py-5">
             <div className="sm:col-span-2">
               <FormInput
                 icon={UserRound}
                 label="Full Name"
                 required
                 placeholder={enterFullName}
+                className="text-ellipsis"
                 error={errors.fullName?.message}
                 {...register("fullName")}
               />
@@ -950,6 +957,7 @@ function AddDonorModal({
               inputMode="numeric"
               maxLength={10}
               placeholder={enter10DigitMobile}
+              className="text-ellipsis"
               error={errors.mobileNumber?.message}
               {...register("mobileNumber")}
             />
@@ -960,6 +968,7 @@ function AddDonorModal({
               inputMode="numeric"
               maxLength={10}
               placeholder={enterAlternateMobile}
+              className="text-ellipsis"
               error={errors.alternativeMobileNumber?.message}
               {...register("alternativeMobileNumber")}
             />
@@ -1037,6 +1046,7 @@ function AddDonorModal({
                 icon={MapPin}
                 label="Address (optional)"
                 placeholder={enterAddress}
+                className="text-ellipsis"
                 error={errors.address?.message}
                 {...register("address")}
               />
@@ -1047,6 +1057,7 @@ function AddDonorModal({
               label="District"
               required
               placeholder={enterDistrict}
+              className="text-ellipsis"
               error={errors.district?.message}
               {...register("district")}
             />
@@ -1056,6 +1067,7 @@ function AddDonorModal({
               label="City"
               required
               placeholder={enterCity}
+              className="text-ellipsis"
               error={errors.city?.message}
               {...register("city")}
             />
@@ -1067,41 +1079,53 @@ function AddDonorModal({
               inputMode="numeric"
               maxLength={6}
               placeholder={enter6DigitPinCode}
+              className="text-ellipsis"
               error={errors.pincode?.message}
               {...register("pincode")}
             />
 
             {submitError && (
-              <p role="alert" className="sm:col-span-2 text-[12px] text-red-500">
+              <p
+                role="alert"
+                className="hidden text-[12px] text-red-500 sm:col-span-2 sm:block"
+              >
                 {submitError}
               </p>
             )}
           </div>
 
-          <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-5 py-4">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="min-h-[40px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[11px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <BilingualInline tKey="common.cancel" />
-            </button>
+          <div className="shrink-0 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-3 sm:px-5 sm:py-4">
+            {submitError && (
+              <p role="alert" className="mb-2 text-[13px] text-red-500 sm:hidden">
+                {submitError}
+              </p>
+            )}
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-[11px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all hover:bg-[var(--color-dashboard-cta-hover)] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSubmitting && (
-                <Loader2 size={14} className="animate-spin shrink-0" />
-              )}
-              {isSubmitting ? (
-                <BilingualInline tKey="common.saving" />
-              ) : (
-                "Add Donor"
-              )}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="min-h-[44px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[13px] font-semibold sm:min-h-[40px] sm:text-[11px] text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <BilingualInline tKey="common.cancel" />
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-[13px] font-semibold sm:min-h-[40px] sm:text-[11px] text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all hover:bg-[var(--color-dashboard-cta-hover)] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting && (
+                  <Loader2 size={14} className="animate-spin shrink-0" />
+                )}
+                {isSubmitting ? (
+                  <BilingualInline tKey="common.saving" />
+                ) : (
+                  "Add Donor"
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -1142,14 +1166,14 @@ function DonorDetailModal({
       aria-labelledby="donor-detail-title"
     >
       <div
-        className={`motion-surface flex max-h-[90vh] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 ${
+        className={`motion-surface flex max-h-[calc(100dvh-2rem)] w-full max-w-[520px] flex-col overflow-hidden rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 sm:max-h-[90dvh] ${
           visible
             ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
             : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
         }`}
       >
-        <div className="flex shrink-0 items-start justify-between border-b border-[var(--color-border-lighter)] px-5 py-5">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-5 sm:py-5">
+          <div className="flex min-w-0 items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--color-icon-bg-soft)]">
               <UserRound size={19} className="text-[var(--color-primary)]" />
             </div>
@@ -1170,14 +1194,14 @@ function DonorDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)]"
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:m-0 sm:h-8 sm:w-8"
             aria-label={closeLabel}
           >
             <X size={17} />
           </button>
         </div>
 
-        <div className="space-y-4 overflow-y-auto px-5 py-5">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
           <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-3.5 py-2.5">
             <Bilingual
               tKey="bloodCentre.bloodGroup"
@@ -1188,10 +1212,11 @@ function DonorDetailModal({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <InfoItem tKey="common.mobileNumber" value={donor.mobileNumber} />
+            <InfoItem tKey="common.mobileNumber" value={donor.mobileNumber} wrap />
             <InfoItem
               tKey="superAdmin.alternateMobile"
               value={donor.alternateMobileNumber || "—"}
+              wrap
             />
             <InfoItem
               tKey="donor.dateOfBirth"
@@ -1201,7 +1226,7 @@ function DonorDetailModal({
               tKey="superAdmin.lastBloodDonationDate"
               value={formatDate(donor.lastBloodDonationDate)}
             />
-            <InfoItem tKey="superAdmin.pincode" value={donor.pincode} />
+            <InfoItem tKey="superAdmin.pincode" value={donor.pincode} wrap />
             <InfoItem
               tKey="superAdmin.registeredOn"
               value={formatDate(donor.createdAt)}
@@ -1218,6 +1243,16 @@ function DonorDetailModal({
               {locationLine || "—"}
             </p>
           </div>
+        </div>
+
+        <div className="shrink-0 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-3 sm:hidden">
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-[44px] w-full rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[13px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)]"
+          >
+            <BilingualInline tKey="common.close" />
+          </button>
         </div>
       </div>
     </div>
@@ -1252,7 +1287,15 @@ function BloodGroupBadge({ value }: { value: string }) {
   );
 }
 
-function InfoItem({ tKey, value }: { tKey: string; value: string | null }) {
+function InfoItem({
+  tKey,
+  value,
+  wrap = false,
+}: {
+  tKey: string;
+  value: string | null;
+  wrap?: boolean;
+}) {
   return (
     <div className="min-w-0">
       <Bilingual
@@ -1261,41 +1304,13 @@ function InfoItem({ tKey, value }: { tKey: string; value: string | null }) {
         className="text-[11px] font-semibold uppercase tracking-wide text-[var(--color-text-placeholder)]"
       />
 
-      <p className="mt-1 truncate text-[12px] font-medium text-[var(--color-text-secondary)]">
+      <p
+        className={`mt-1 text-[13px] font-medium text-[var(--color-text-secondary)] sm:text-[12px] ${
+          wrap ? "break-words" : "truncate"
+        }`}
+      >
         {value || "—"}
       </p>
-    </div>
-  );
-}
-
-function MobileInfoRow({
-  icon: Icon,
-  tKey,
-  value,
-}: {
-  icon: typeof Phone;
-  tKey: string;
-  value: string | null;
-}) {
-  return (
-    <div className="flex items-start gap-3 rounded-xl bg-[var(--color-surface-alt)] px-3 py-2.5">
-      <Icon
-        size={15}
-        strokeWidth={1.7}
-        className="mt-0.5 shrink-0 text-[var(--color-primary)]"
-      />
-
-      <div className="min-w-0 flex-1">
-        <Bilingual
-          tKey={tKey}
-          as="p"
-          className="text-[11px] font-semibold text-[var(--color-text-placeholder)]"
-        />
-
-        <p className="mt-0.5 break-words text-[12px] font-medium text-[var(--color-text-secondary)]">
-          {value || "—"}
-        </p>
-      </div>
     </div>
   );
 }
