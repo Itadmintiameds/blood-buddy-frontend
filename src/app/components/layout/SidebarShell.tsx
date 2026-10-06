@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useEffect, type ComponentType, type ReactNode } from "react";
 import { X } from "lucide-react";
 
-import { PoweredBy } from "@/app/components/common/PoweredBy";
 import { useBilingualText } from "@/app/components/common/Bilingual";
 
 interface SidebarShellProps {
@@ -23,7 +22,7 @@ interface SidebarShellProps {
 //   - lg and up: a persistent rail pinned under the 76px brand header.
 //   - below lg:  an off-canvas drawer with a branded header (logo, role, name),
 //     a dimmed backdrop, scroll lock, Esc to close and a footer that holds the
-//     logout control and the "Powered by" mark.
+//     logout control. "Powered by" lives only in the page footer.
 export function SidebarShell({
   open,
   onClose,
@@ -86,11 +85,13 @@ export function SidebarShell({
             className="pointer-events-none absolute -bottom-12 right-10 size-28 rounded-full bg-white/[0.07]"
           />
 
+          {/* z-10: the logo/name row below is `relative` and full-width, so it
+              would otherwise sit on top of this button and swallow taps. */}
           <button
             type="button"
             onClick={onClose}
             aria-label={closeMenuLabel}
-            className="absolute right-3 top-3 flex size-10 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            className="absolute right-3 top-3 z-10 flex size-10 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
           >
             <X size={20} />
           </button>
@@ -125,10 +126,6 @@ export function SidebarShell({
         {/* Footer */}
         <div className="shrink-0 border-t border-[var(--color-border-lighter)] bg-white p-4">
           {footer}
-
-          <div className="mt-3 flex justify-center lg:hidden">
-            <PoweredBy />
-          </div>
         </div>
       </aside>
     </>

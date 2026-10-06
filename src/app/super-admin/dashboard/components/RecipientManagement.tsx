@@ -50,6 +50,7 @@ import type {
   MasterBloodComponent,
   MasterBloodGroup,
 } from "@/types/master.types";
+import { ageFromDob, dobFromAge } from "@/utils/age";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
@@ -73,7 +74,7 @@ const emptyRecipientForm: RecipientRequestInput = {
   bloodGroupId: "",
   bloodComponentId: "",
   requiredUnits: "",
-  dob: "",
+  age: "",
   hospitalName: "",
   address: "",
   district: "",
@@ -814,9 +815,14 @@ function LogRequestModal({
   const closeLabel = useBilingualText("common.close");
   const enterFullName = useBilingualText("recipient.enterPatientName");
   const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
-  const enterAddress = useBilingualText("common.enterAddress");
-  const enterDistrict = useBilingualText("common.enterDistrict");
-  const enterCity = useBilingualText("common.enterCity");
+  const enterAge = useBilingualText("recipient.enterAge");
+  const enterHospitalAddress = useBilingualText(
+    "recipient.enterHospitalAddress",
+  );
+  const enterHospitalDistrict = useBilingualText(
+    "recipient.enterHospitalDistrict",
+  );
+  const enterHospitalCity = useBilingualText("recipient.enterHospitalCity");
   const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
 
   const [submitError, setSubmitError] = useState("");
@@ -846,7 +852,7 @@ function LogRequestModal({
         bloodGroupId: Number(normalized.bloodGroupId),
         bloodComponentId: Number(normalized.bloodComponentId),
         requiredUnits: Number(normalized.requiredUnits),
-        dob: normalized.dob,
+        dob: dobFromAge(Number(normalized.age)),
         hospitalName: normalized.hospitalName || undefined,
         address: normalized.address || undefined,
         city: normalized.city,
@@ -938,11 +944,13 @@ function LogRequestModal({
 
             <FormInput
               icon={CalendarDays}
-              label="Date of Birth"
+              label="Age"
               required
-              type="date"
-              error={errors.dob?.message}
-              {...register("dob")}
+              inputMode="numeric"
+              maxLength={3}
+              placeholder={enterAge}
+              error={errors.age?.message}
+              {...register("age")}
             />
 
             <div>
@@ -1000,7 +1008,7 @@ function LogRequestModal({
                 htmlFor="log-request-blood-type"
                 className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
               >
-                Blood Type<span className="text-red-500"> *</span>
+                Blood Component<span className="text-red-500"> *</span>
               </label>
 
               <div className="relative">
@@ -1019,7 +1027,7 @@ function LogRequestModal({
                       : "border-[var(--color-border)]"
                   } focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20`}
                 >
-                  <option value="">Select blood type</option>
+                  <option value="">Select blood component</option>
                   {bloodComponents.map((component) => (
                     <option
                       key={component.bloodComponentId}
@@ -1068,8 +1076,8 @@ function LogRequestModal({
             <div className="sm:col-span-2">
               <FormInput
                 icon={MapPin}
-                label="Address (optional)"
-                placeholder={enterAddress}
+                label="Hospital Address (optional)"
+                placeholder={enterHospitalAddress}
                 error={errors.address?.message}
                 {...register("address")}
               />
@@ -1077,18 +1085,18 @@ function LogRequestModal({
 
             <FormInput
               icon={MapPin}
-              label="District"
+              label="Hospital District"
               required
-              placeholder={enterDistrict}
+              placeholder={enterHospitalDistrict}
               error={errors.district?.message}
               {...register("district")}
             />
 
             <FormInput
               icon={MapPin}
-              label="City"
+              label="Hospital City"
               required
-              placeholder={enterCity}
+              placeholder={enterHospitalCity}
               error={errors.city?.message}
               {...register("city")}
             />
@@ -1210,6 +1218,30 @@ function BloodRequestDetailModal({
 
   const isOpen =
     detail?.status === "CENTRES_FOUND" || detail?.status === "NO_CENTRES_FOUND";
+  const isClosed = detail?.status === "CLOSED";
+
+  // The API stores a date of birth; the request form collects an age.
+  const age = ageFromDob(detail?.dateOfBirth);
+  const ageText = useBilingualText("superAdmin.ageYears", { age: age ?? "" });
+
+  // A recorded donation is one unit. Units issued by a blood centre are not
+  // recorded anywhere, so this only counts donations made through Blood Buddy.
+  const donatedUnits = detail?.donatedBy.length ?? 0;
+  const unitsClosedText = useBilingualText("superAdmin.unitsClosedValue", {
+    closed: donatedUnits,
+    required: detail?.units ?? 0,
+  });
+
+  // Candidates who already donated for this request are left out, and the
+  // list is sized to the units still needed (see DonorCandidatesList).
+  const pendingCandidates = useMemo(() => {
+    if (!detail) return [];
+
+    const donatedIds = new Set(detail.donatedBy.map((donor) => donor.id));
+    return detail.donorCandidates.filter((donor) => !donatedIds.has(donor.id));
+  }, [detail]);
+
+  const unitsStillNeeded = Math.max((detail?.units ?? 0) - donatedUnits, 0);
 
   const handleRecordDonation = async (donorId: number) => {
     setConfirmDonorId(null);
@@ -1354,15 +1386,15 @@ function BloodRequestDetailModal({
                 <InfoTile tKey="superAdmin.bloodComponent" value={detail.bloodType} />
                 <InfoTile tKey="recipient.unitsRequired" value={String(detail.units)} />
                 <InfoTile
-                  tKey="donor.dateOfBirth"
-                  value={formatDate(detail.dateOfBirth)}
+                  tKey="superAdmin.age"
+                  value={age !== null ? ageText : "—"}
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <InfoTile tKey="superAdmin.hospital" value={detail.hospitalName || "—"} />
                 <InfoTile
-                  tKey="common.address"
+                  tKey="superAdmin.hospitalAddress"
                   value={
                     [detail.address, detail.city, detail.district, detail.pincode]
                       .filter(
@@ -1374,8 +1406,17 @@ function BloodRequestDetailModal({
                 />
               </div>
 
-              {detail.remarks && (
-                <InfoTile tKey="superAdmin.remarks" value={detail.remarks} />
+              {(isClosed || detail.remarks) && (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {isClosed && (
+                    <InfoTile tKey="superAdmin.unitsClosed" value={unitsClosedText} />
+                  )}
+                  {detail.remarks && (
+                    <div className={isClosed ? "min-w-0" : "min-w-0 sm:col-span-2"}>
+                      <InfoTile tKey="superAdmin.remarks" value={detail.remarks} />
+                    </div>
+                  )}
+                </div>
               )}
 
               {actionError && (
@@ -1409,10 +1450,11 @@ function BloodRequestDetailModal({
               {/* DONOR CANDIDATES */}
               <Section
                 tKey="superAdmin.donorCandidates"
-                params={{ count: detail.donorCandidates.length }}
+                params={{ count: pendingCandidates.length }}
               >
                 <DonorCandidatesList
-                  donors={detail.donorCandidates}
+                  donors={pendingCandidates}
+                  unitsNeeded={unitsStillNeeded}
                   isOpen={isOpen}
                   recordingDonorId={recordingDonorId}
                   onRecord={setConfirmDonorId}
@@ -1667,19 +1709,33 @@ function DonatedByList({ donors }: { donors: SuperAdminDonor[] }) {
   );
 }
 
+// One donor per unit: a request for 5 units lists 5 donors to call. The rest
+// stay one tap away for when a listed donor can't donate.
 function DonorCandidatesList({
   donors,
+  unitsNeeded,
   isOpen,
   recordingDonorId,
   onRecord,
 }: {
   donors: SuperAdminDonor[];
+  unitsNeeded: number;
   isOpen: boolean;
   recordingDonorId: number | null;
   onRecord: (donorId: number) => void;
 }) {
+  const [showAll, setShowAll] = useState(false);
+  const hasMore = donors.length > unitsNeeded;
+  const visibleDonors = useMemo(
+    () => (hasMore && !showAll ? donors.slice(0, unitsNeeded) : donors),
+    [donors, hasMore, showAll, unitsNeeded],
+  );
+
   const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
-    usePagination(donors, { pageSize: MODAL_LIST_PAGE_SIZE });
+    usePagination(visibleDonors, {
+      pageSize: MODAL_LIST_PAGE_SIZE,
+      resetKey: String(showAll),
+    });
 
   if (donors.length === 0) {
     return (
@@ -1693,6 +1749,44 @@ function DonorCandidatesList({
 
   return (
     <>
+      {hasMore && (
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          {!showAll && (
+            <Bilingual
+              tKey={
+                unitsNeeded > 1
+                  ? "superAdmin.candidatesForUnits"
+                  : unitsNeeded === 1
+                    ? "superAdmin.candidatesForOneUnit"
+                    : "superAdmin.allUnitsDonated"
+              }
+              params={{
+                shown: visibleDonors.length,
+                total: donors.length,
+                units: unitsNeeded,
+              }}
+              as="p"
+              className="min-w-0 text-[12px] text-[var(--color-text-placeholder-alt)]"
+            />
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowAll((value) => !value)}
+            className="ml-auto min-h-10 shrink-0 px-1 text-[12px] font-semibold text-[var(--color-primary)] transition hover:underline sm:min-h-0"
+          >
+            <BilingualInline
+              tKey={
+                showAll
+                  ? "superAdmin.showFewerCandidates"
+                  : "superAdmin.showAllCandidates"
+              }
+              params={{ count: donors.length }}
+            />
+          </button>
+        </div>
+      )}
+
       <div className="space-y-2">
         {pageItems.map((donor) => (
           <div

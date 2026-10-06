@@ -5,16 +5,13 @@ import {
   Building2,
   CalendarDays,
   CheckCircle2,
-  ChevronDown,
   FileCheck2,
   Link2,
-  LocateFixed,
   LockKeyhole,
   Mail,
   MapPin,
   MapPinned,
   Phone,
-  Tags,
 } from "lucide-react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +26,6 @@ import {
   normalizeBloodCentreForm,
 } from "@/schema/bloodCenter/registrationSchema";
 import type {
-  BloodCentreCategory,
   BloodCentreRegistrationInput,
   BloodCentreRegistrationPayload,
 } from "@/types/bloodCenter/bloodCenterTypes";
@@ -51,7 +47,6 @@ import {
 const defaultValues: BloodCentreRegistrationInput = {
   bloodCentreName: "",
   licenseNumber: "",
-  category: "",
   dateOfExpiry: "",
   email: "",
   mobileNumber: "",
@@ -87,22 +82,6 @@ export function BloodCentreRegistrationForm() {
   const enterLatitude = useBilingualText("bloodCentre.enterLatitude");
   const enterLongitude = useBilingualText("bloodCentre.enterLongitude");
   const enterLocationUrl = useBilingualText("bloodCentre.enterLocationUrl");
-  const useCurrentLocationText = useBilingualText(
-    "bloodCentre.useCurrentLocation",
-  );
-  const locatingYouText = useBilingualText("bloodCentre.locatingYou");
-  const unableToDetectLocationText = useBilingualText(
-    "bloodCentre.unableToDetectLocation",
-  );
-  const selectCategoryText = useBilingualText("bloodCentre.selectCategory");
-  const categoryGovernmentText = useBilingualText(
-    "bloodCentre.categoryGovernment",
-  );
-  const categoryPrivateText = useBilingualText("bloodCentre.categoryPrivate");
-  const categoryCharitableText = useBilingualText(
-    "bloodCentre.categoryCharitable",
-  );
-  const categoryRedcrossText = useBilingualText("bloodCentre.categoryRedcross");
   const verifiedText = useBilingualText("bloodCentre.verified");
   const sendingText = useBilingualText("bloodCentre.sending");
   const resendOtpText = useBilingualText("common.resend");
@@ -110,9 +89,6 @@ export function BloodCentreRegistrationForm() {
   const verifyingText = useBilingualText("bloodCentre.verifying");
 
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState(
-    defaultValues.category,
-  );
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [otpStatus, setOtpStatus] = useState<OtpStatus>("idle");
@@ -124,15 +100,11 @@ export function BloodCentreRegistrationForm() {
     { count: resendSeconds },
   );
 
-  const [locating, setLocating] = useState(false);
-  const [locationError, setLocationError] = useState("");
-
   const {
     register,
     handleSubmit,
     trigger,
     getValues,
-    setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<BloodCentreRegistrationInput>({
     resolver: zodResolver(
@@ -233,37 +205,6 @@ export function BloodCentreRegistrationForm() {
     }
   };
 
-  const handleUseCurrentLocation = () => {
-    if (!("geolocation" in navigator)) {
-      setLocationError(unableToDetectLocationText);
-      return;
-    }
-
-    setLocationError("");
-    setLocating(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-
-        setValue("latitude", latitude.toFixed(6), { shouldValidate: true });
-        setValue("longitude", longitude.toFixed(6), { shouldValidate: true });
-        setValue(
-          "locationUrl",
-          `https://www.google.com/maps?q=${latitude},${longitude}`,
-          { shouldValidate: true },
-        );
-
-        setLocating(false);
-      },
-      () => {
-        setLocationError(unableToDetectLocationText);
-        setLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 },
-    );
-  };
-
   const onSubmit = async (rawData: BloodCentreRegistrationInput) => {
     setSubmitError(null);
 
@@ -278,7 +219,6 @@ export function BloodCentreRegistrationForm() {
 
     const payload: BloodCentreRegistrationPayload = {
       bloodCentreName: data.bloodCentreName,
-      bloodBankCategory: data.category as BloodCentreCategory,
       bloodCentreLicenceNumber: data.licenseNumber,
       licenceExpiryDate: data.dateOfExpiry,
       email: data.email,
@@ -363,159 +303,6 @@ export function BloodCentreRegistrationForm() {
             {...register("licenseNumber")}
             error={errors.licenseNumber?.message}
           />
-
-          <div className="w-full">
-            <label
-              htmlFor="category"
-              className="
-                mb-1.5
-                flex
-                items-start
-                gap-0.5
-                text-[13px]
-                font-medium
-                leading-4
-                text-[var(--color-text-body)]
-              "
-            >
-              <Bilingual tKey="bloodCentre.category" as="span" />
-              <span className="text-red-500">*</span>
-            </label>
-
-            <div className="relative">
-              <Tags
-                size={18}
-                strokeWidth={1.5}
-                className="
-                  pointer-events-none
-                  absolute
-                  left-3.5
-                  top-1/2
-                  z-10
-                  -translate-y-1/2
-                  text-[var(--color-primary)]
-                "
-              />
-
-              {/* Category Select */}
-
-              <select
-                id="category"
-                defaultValue=""
-                {...register("category", {
-                  onChange: (event) => {
-                    setSelectedCategory(event.target.value);
-                  },
-                })}
-                className={`
-                  h-11
-                  w-full
-                  appearance-none
-                  rounded-lg
-                  border
-                  bg-[var(--color-white)]
-                  pl-10
-                  pr-10
-                  text-[14px]
-                  font-normal
-                  outline-none
-                  transition-all
-                  duration-200
-
-                  ${
-                    errors.category
-                      ? `
-                        border-red-400
-                        focus:border-red-500
-                        focus:ring-2
-                        focus:ring-red-500/10
-                      `
-                      : `
-                        border-[var(--color-border)]
-                        hover:border-[var(--color-border)]
-                        focus:border-[var(--color-primary)]
-                        focus:ring-2
-                        focus:ring-[var(--color-primary)]/15
-                      `
-                  }
-
-                  ${
-                    selectedCategory
-                      ? "text-[var(--color-text-body)]"
-                      : "text-[var(--color-input-placeholder)]"
-                  }
-                `}
-              >
-                {/* Placeholder */}
-                <option
-                  value=""
-                  disabled
-                  className="text-[var(--color-input-placeholder)]"
-                >
-                  {selectCategoryText}
-                </option>
-
-                {/* Options */}
-                <option
-                  value="Government"
-                  className="text-[var(--color-text-body)]"
-                >
-                  {categoryGovernmentText}
-                </option>
-
-                <option
-                  value="Private"
-                  className="text-[var(--color-text-body)]"
-                >
-                  {categoryPrivateText}
-                </option>
-
-                <option
-                  value="Charitable"
-                  className="text-[var(--color-text-body)]"
-                >
-                  {categoryCharitableText}
-                </option>
-
-                <option
-                  value="Redcross"
-                  className="text-[var(--color-text-body)]"
-                >
-                  {categoryRedcrossText}
-                </option>
-              </select>
-
-              {/* Custom Dropdown Arrow */}
-              <ChevronDown
-                size={17}
-                strokeWidth={1.8}
-                className="
-                  pointer-events-none
-                  absolute
-                  right-3
-                  top-1/2
-                  -translate-y-1/2
-                  text-[var(--color-primary)]
-                "
-              />
-            </div>
-
-            {/* Category Error */}
-            {errors.category?.message && (
-              <p
-                role="alert"
-                className="
-                  mt-1.5
-                  px-1
-                  text-[12px]
-                  leading-4
-                  text-red-500
-                "
-              >
-                {errors.category.message}
-              </p>
-            )}
-          </div>
 
           <FormInput
             id="dateOfExpiry"
@@ -804,49 +591,6 @@ export function BloodCentreRegistrationForm() {
             })}
             error={errors.pinCode?.message}
           />
-
-          <div className="md:col-span-2">
-            <button
-              type="button"
-              onClick={handleUseCurrentLocation}
-              disabled={locating}
-              className="
-                flex
-                min-h-11
-                w-full
-                items-center
-                justify-center
-                gap-2
-                rounded-lg
-                border
-                border-[var(--color-border)]
-                bg-white
-                px-3.5
-                py-2
-                sm:w-auto
-                text-[13px]
-                font-semibold
-                text-[var(--color-primary)]
-                transition-colors
-                duration-200
-                hover:bg-[var(--color-icon-bg-soft)]
-                disabled:cursor-not-allowed
-                disabled:opacity-60
-              "
-            >
-              <LocateFixed size={16} strokeWidth={1.8} className="shrink-0" />
-              {locating ? locatingYouText : useCurrentLocationText}
-            </button>
-
-            {locationError && (
-              <p
-                role="alert"
-                className="mt-1.5 px-1 text-[12px] leading-4 text-red-500"
-              >
-                {locationError}
-              </p>
-            )}
-          </div>
 
           <FormInput
             id="latitude"

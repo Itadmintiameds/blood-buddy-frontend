@@ -79,17 +79,6 @@ export function BrandHeader({
               />
             </div>
 
-            <div className="flex h-11 items-center rounded-full bg-[var(--color-icon-bg-soft-2)] px-3 sm:h-13 sm:px-4">
-              <Image
-                src="/images/rotary-logo.png"
-                alt="Rotary"
-                width={90}
-                height={30}
-                priority
-                className="h-auto w-[82px] object-contain sm:w-[98px]"
-              />
-            </div>
-
             {welcomeName && (
               <div className="ml-1 hidden min-w-0 items-center border-l border-white/25 pl-3 sm:flex">
                 <p className="truncate text-[13px] font-medium text-white sm:text-[14px]">

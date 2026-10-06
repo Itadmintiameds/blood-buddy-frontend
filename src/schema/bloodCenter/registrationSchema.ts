@@ -1,8 +1,5 @@
 import { z } from "zod";
-import type {
-  BloodCentreCategory,
-  BloodCentreRegistrationInput,
-} from "@/types/bloodCenter/bloodCenterTypes";
+import type { BloodCentreRegistrationInput } from "@/types/bloodCenter/bloodCenterTypes";
 
 const knownInvalidMobileNumbers = new Set([
   "0000000000",
@@ -32,13 +29,6 @@ function isValidIndianMobile(value: string) {
   return !ascending && !descending;
 }
 
-const categorySchema = z.enum(
-  ["Government", "Private", "Charitable", "Redcross"] as const,
-  {
-    error: "Please select a category",
-  },
-);
-
 function isFutureDate(value: string) {
   const date = new Date(`${value}T23:59:59`);
   if (Number.isNaN(date.getTime())) return false;
@@ -64,7 +54,6 @@ export const bloodCentreRegistrationSchema = z
       .min(16, "License Number must be at least 16 characters")
       .max(30, "License Number must not exceed 30 characters")
       .regex(/^[A-Za-z0-9][A-Za-z0-9./_-]*$/, "Enter a valid license number"),
-    category: categorySchema,
     dateOfExpiry: z
       .string()
       .trim()
@@ -151,7 +140,6 @@ export function normalizeBloodCentreForm(
   return {
     bloodCentreName: data.bloodCentreName.trim().replace(/\s+/g, " "),
     licenseNumber: data.licenseNumber.trim().toUpperCase(),
-    category: data.category as BloodCentreCategory,
     dateOfExpiry: data.dateOfExpiry.trim(),
     email: data.email.trim().toLowerCase(),
     mobileNumber: data.mobileNumber.replace(/\D/g, "").slice(-10),

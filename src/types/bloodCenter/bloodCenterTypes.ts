@@ -1,13 +1,6 @@
-export type BloodCentreCategory =
-  | "Government"
-  | "Private"
-  | "Charitable"
-  | "Redcross";
-
 export interface BloodCentreRegistrationInput {
   bloodCentreName: string;
   licenseNumber: string;
-  category: BloodCentreCategory | "";
   dateOfExpiry: string;
   email: string;
   mobileNumber: string;
@@ -23,9 +16,9 @@ export interface BloodCentreRegistrationInput {
 }
 
 // Sent to POST /public/blood-centres/register (bloodbuddy.backend.dto.centre.BloodCentreRegistrationRequest).
+// bloodBankCategory is optional there and no longer collected at registration.
 export interface BloodCentreRegistrationPayload {
   bloodCentreName: string;
-  bloodBankCategory: BloodCentreCategory;
   bloodCentreLicenceNumber: string;
   licenceExpiryDate: string;
   email: string;

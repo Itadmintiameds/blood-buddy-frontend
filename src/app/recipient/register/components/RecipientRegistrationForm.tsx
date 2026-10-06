@@ -38,6 +38,7 @@ import {
 } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { HELPLINE_NUMBER } from "@/config/support";
+import { dobFromAge } from "@/utils/age";
 import type {
   MasterBloodComponent,
   MasterBloodGroup,
@@ -54,12 +55,19 @@ export function RecipientRegistrationForm() {
   const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
   const loadingText = useBilingualText("bloodCentre.loadingOptions");
   const selectBloodGroupText = useBilingualText("recipient.selectBloodGroup");
-  const selectBloodTypeText = useBilingualText("recipient.selectBloodType");
+  const selectBloodComponentText = useBilingualText(
+    "recipient.selectBloodComponent",
+  );
   const enterUnitsRequired = useBilingualText("recipient.enterUnitsRequired");
+  const enterAge = useBilingualText("recipient.enterAge");
   const enterHospitalName = useBilingualText("recipient.enterHospitalName");
-  const enterAddress = useBilingualText("common.enterAddress");
-  const enterDistrict = useBilingualText("common.enterDistrict");
-  const enterCity = useBilingualText("common.enterCity");
+  const enterHospitalAddress = useBilingualText(
+    "recipient.enterHospitalAddress",
+  );
+  const enterHospitalDistrict = useBilingualText(
+    "recipient.enterHospitalDistrict",
+  );
+  const enterHospitalCity = useBilingualText("recipient.enterHospitalCity");
   const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
 
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -77,7 +85,7 @@ export function RecipientRegistrationForm() {
     bloodGroupId: "",
     bloodComponentId: "",
     requiredUnits: "",
-    dob: "",
+    age: "",
     hospitalName: "",
     address: "",
     district: "",
@@ -146,7 +154,7 @@ export function RecipientRegistrationForm() {
         bloodGroupId: Number(data.bloodGroupId),
         bloodComponentId: Number(data.bloodComponentId),
         requiredUnits: Number(data.requiredUnits),
-        dob: data.dob,
+        dob: dobFromAge(Number(data.age)),
         hospitalName: data.hospitalName || undefined,
         address: data.address || undefined,
         city: data.city,
@@ -289,7 +297,7 @@ export function RecipientRegistrationForm() {
               htmlFor="bloodComponentId"
               className="mb-1.5 flex items-start gap-0.5 text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
             >
-              <Bilingual tKey="recipient.bloodTypeRequired" as="span" />
+              <Bilingual tKey="recipient.bloodComponentRequired" as="span" />
               <span className="text-red-500">*</span>
             </label>
 
@@ -335,7 +343,7 @@ export function RecipientRegistrationForm() {
                 `}
               >
                 <option value="" disabled>
-                  {mastersLoading ? loadingText : selectBloodTypeText}
+                  {mastersLoading ? loadingText : selectBloodComponentText}
                 </option>
 
                 {bloodComponents.map((component) => (
@@ -382,15 +390,22 @@ export function RecipientRegistrationForm() {
           />
 
           <FormInput
-            id="dob"
+            id="age"
             icon={CalendarDays}
-            label={<Bilingual tKey="donor.dateOfBirth" as="span" />}
+            label={<Bilingual tKey="recipient.age" as="span" />}
             required
-            type="date"
-            max={new Date().toISOString().slice(0, 10)}
-            autoComplete="bday"
-            {...register("dob")}
-            error={errors.dob?.message}
+            placeholder={enterAge}
+            inputMode="numeric"
+            maxLength={3}
+            autoComplete="off"
+            {...register("age", {
+              onChange: (event) => {
+                event.target.value = event.target.value
+                  .replace(/\D/g, "")
+                  .slice(0, 3);
+              },
+            })}
+            error={errors.age?.message}
           />
 
           <FormInput
@@ -404,13 +419,15 @@ export function RecipientRegistrationForm() {
             error={errors.hospitalName?.message}
           />
 
+          {/* Address, district and city are the hospital's (where the blood
+              is needed), so the browser's own address autofill stays off. */}
           <FormInput
             id="address"
             icon={MapPin}
-            label={<Bilingual tKey="donor.addressOptional" as="span" />}
-            placeholder={enterAddress}
+            label={<Bilingual tKey="recipient.hospitalAddressOptional" as="span" />}
+            placeholder={enterHospitalAddress}
             maxLength={200}
-            autoComplete="street-address"
+            autoComplete="off"
             {...register("address")}
             error={errors.address?.message}
           />
@@ -418,11 +435,11 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="district"
             icon={MapPinned}
-            label={<Bilingual tKey="common.district" as="span" />}
+            label={<Bilingual tKey="recipient.hospitalDistrict" as="span" />}
             required
-            placeholder={enterDistrict}
+            placeholder={enterHospitalDistrict}
             maxLength={100}
-            autoComplete="address-level2"
+            autoComplete="off"
             {...register("district")}
             error={errors.district?.message}
           />
@@ -430,11 +447,11 @@ export function RecipientRegistrationForm() {
           <FormInput
             id="city"
             icon={MapPinned}
-            label={<Bilingual tKey="common.city" as="span" />}
+            label={<Bilingual tKey="recipient.hospitalCity" as="span" />}
             required
-            placeholder={enterCity}
+            placeholder={enterHospitalCity}
             maxLength={100}
-            autoComplete="address-level2"
+            autoComplete="off"
             {...register("city")}
             error={errors.city?.message}
           />

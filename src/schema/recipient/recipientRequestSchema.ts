@@ -6,17 +6,7 @@ function isValidIndianMobile(value: string) {
   return /^[6-9]\d{9}$/.test(value);
 }
 
-function parseIsoDate(value: string): Date | null {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-  const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function isNotFutureDate(value: string): boolean {
-  const date = parseIsoDate(value);
-  if (!date) return false;
-  return date.getTime() <= Date.now();
-}
+export const MAX_RECIPIENT_AGE_YEARS = 100;
 
 export const recipientRequestSchema = z.object({
   patientName: z
@@ -32,7 +22,9 @@ export const recipientRequestSchema = z.object({
     .length(10, "Mobile number must be exactly 10 digits")
     .refine(isValidIndianMobile, "Enter a valid mobile number"),
   bloodGroupId: requiredSelectionId("Please select a blood group"),
-  bloodComponentId: requiredSelectionId("Please select the blood type required"),
+  bloodComponentId: requiredSelectionId(
+    "Please select the blood component required",
+  ),
   requiredUnits: z
     .string()
     .trim()
@@ -41,12 +33,14 @@ export const recipientRequestSchema = z.object({
     .refine((value) => Number(value) >= 1 && Number(value) <= 999, {
       message: "Enter units between 1 and 999",
     }),
-  dob: z
+  age: z
     .string()
     .trim()
-    .min(1, "Date of birth is required")
-    .refine((value) => parseIsoDate(value) !== null, "Enter a valid date")
-    .refine(isNotFutureDate, "Date of birth cannot be in the future"),
+    .min(1, "Age is required")
+    .regex(/^\d+$/, "Enter the age in whole years")
+    .refine((value) => Number(value) <= MAX_RECIPIENT_AGE_YEARS, {
+      message: `Enter an age between 0 and ${MAX_RECIPIENT_AGE_YEARS}`,
+    }),
   hospitalName: z
     .string()
     .trim()
@@ -56,21 +50,24 @@ export const recipientRequestSchema = z.object({
   address: z
     .string()
     .trim()
-    .max(200, "Address must not exceed 200 characters")
+    .max(200, "Hospital address must not exceed 200 characters")
     .optional()
     .or(z.literal("")),
   district: z
     .string()
     .trim()
-    .min(2, "District is required")
-    .max(100, "District must not exceed 100 characters")
-    .regex(/^[A-Za-z][A-Za-z .'-]*$/, "District must contain letters only"),
+    .min(2, "Hospital district is required")
+    .max(100, "Hospital district must not exceed 100 characters")
+    .regex(
+      /^[A-Za-z][A-Za-z .'-]*$/,
+      "Hospital district must contain letters only",
+    ),
   city: z
     .string()
     .trim()
-    .min(2, "City is required")
-    .max(100, "City must not exceed 100 characters")
-    .regex(/^[A-Za-z][A-Za-z .'-]*$/, "City must contain letters only"),
+    .min(2, "Hospital city is required")
+    .max(100, "Hospital city must not exceed 100 characters")
+    .regex(/^[A-Za-z][A-Za-z .'-]*$/, "Hospital city must contain letters only"),
   pincode: z
     .string()
     .trim()
@@ -87,7 +84,7 @@ export function normalizeRecipientForm(
     bloodGroupId: data.bloodGroupId,
     bloodComponentId: data.bloodComponentId,
     requiredUnits: data.requiredUnits.replace(/\D/g, ""),
-    dob: data.dob.trim(),
+    age: data.age.replace(/\D/g, ""),
     hospitalName: data.hospitalName.trim().replace(/\s+/g, " "),
     address: data.address.trim().replace(/\s+/g, " "),
     district: data.district.trim().replace(/\s+/g, " "),

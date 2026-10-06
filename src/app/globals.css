@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --color-primary: #ff3b3f;
+  --color-primary: #E31E24;
   --color-primary-hover: #e62f33;
   --color-primary-hover-alt: #e93236;
   --color-welcome-cta-hover: #ef3034;
@@ -244,6 +244,68 @@ textarea {
   select,
   textarea {
     font-size: 16px;
+  }
+}
+
+/* A native <select> opens an OS picker that highlights options in system blue.
+   Where the browser supports the customizable select (Chromium 135+), draw the
+   picker in the app's colours instead. Mouse/trackpad only: phones keep their
+   native picker sheet. Every select already renders its own chevron. */
+@supports (appearance: base-select) {
+  @media (hover: hover) and (pointer: fine) {
+    select,
+    select::picker(select) {
+      appearance: base-select;
+    }
+
+    /* Keep the chosen text on one centred line, cut off at the content edge
+       so long labels never run under the chevron (this mode can't ellipsize). */
+    select {
+      align-items: center;
+      white-space: nowrap;
+      overflow: clip;
+      overflow-clip-margin: content-box;
+    }
+
+    select::picker-icon {
+      display: none;
+    }
+
+    select::picker(select) {
+      margin-block: 4px;
+      padding: 4px;
+      border: 1px solid var(--color-border-light);
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    select option {
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: var(--color-text-body);
+    }
+
+    select option::checkmark {
+      display: none;
+    }
+
+    select option:hover,
+    select option:focus-visible {
+      background: var(--color-icon-bg-soft);
+      color: var(--color-primary);
+      outline: none;
+    }
+
+    select option:checked {
+      background: var(--color-primary);
+      color: #fff;
+    }
+
+    select option:disabled {
+      background: transparent;
+      color: var(--color-input-placeholder);
+    }
   }
 }
 

@@ -61,7 +61,7 @@ export async function getSuperAdminBloodBanks(): Promise<
       return {
         id: centre.bloodCentreId,
         bloodBankName: centre.bloodCentreName,
-        category: centre.bloodBankCategory ?? "—",
+        category: centre.bloodBankCategory ?? "",
         address: centre.address ?? "—",
         city: centre.city,
         district: centre.district,

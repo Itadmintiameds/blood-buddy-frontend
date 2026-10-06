@@ -220,15 +220,15 @@ export default function BloodBankManagement() {
     };
   }, []);
 
-  const categoryOptions = useMemo(() => {
-    const fromData = Array.from(
-      new Set(bloodBanks.map((bank) => bank.category).filter(Boolean)),
-    );
-
-    return fromData.length > 0
-      ? fromData.sort((a, b) => a.localeCompare(b))
-      : ["Government", "Private", "Charitable", "Redcross"];
-  }, [bloodBanks]);
+  // Registration no longer asks for a category, so only centres registered
+  // before that have one; the filter is hidden once none do.
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(bloodBanks.map((bank) => bank.category).filter(Boolean)),
+      ).sort((a, b) => a.localeCompare(b)),
+    [bloodBanks],
+  );
 
   const cityOptions = useMemo(
     () =>
@@ -383,6 +383,13 @@ export default function BloodBankManagement() {
 
   const showMobileView = (view: "list" | "detail") => {
     setMobileView(view);
+
+    // From lg the list and detail sit side by side, so the page stays put.
+    // Below lg one replaces the other; bring its top into view.
+    if (window.matchMedia("(min-width: 64rem)").matches) {
+      return;
+    }
+
     window.requestAnimationFrame(() =>
       masterDetailRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -803,6 +810,7 @@ export default function BloodBankManagement() {
             className={`${filtersOpen ? "grid" : "hidden"} w-full grid-cols-2 gap-2 sm:contents [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1`}
           >
           {/* CATEGORY */}
+          {categoryOptions.length > 0 && (
           <div className="relative min-w-0 sm:shrink-0">
             <select
               value={categoryFilter}
@@ -828,6 +836,7 @@ export default function BloodBankManagement() {
               className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
             />
           </div>
+          )}
 
           {/* STATUS */}
           <div className="relative min-w-0 sm:shrink-0">
@@ -1245,7 +1254,7 @@ function BankListRow({
           {bank.bloodBankName}
         </p>
         <p className="mt-0.5 truncate text-[11px] text-[var(--color-text-placeholder-alt)]">
-          {bank.category} · {bank.city} · {bank.pincode}
+          {[bank.category, bank.city, bank.pincode].filter(Boolean).join(" · ")}
         </p>
       </div>
     </button>
@@ -1325,9 +1334,11 @@ function BankDetailPanel({
             </p>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex rounded-full border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">
-                {bank.category}
-              </span>
+              {bank.category && (
+                <span className="inline-flex rounded-full border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-2.5 py-0.5 text-[11px] font-semibold text-[var(--color-text-secondary)]">
+                  {bank.category}
+                </span>
+              )}
 
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
