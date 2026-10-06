@@ -30,6 +30,19 @@ export interface SuperAdminBloodBank {
   availability: BloodAvailability[];
 }
 
+// Aggregate dashboard stats across all centres, from
+// GET /admin/blood-centres/stats.
+export interface SuperAdminBloodCentreStats {
+  totalBloodCentres: number;
+  /**
+   * Active centres needing attention: at least one inventory item at/below the
+   * low-stock threshold (≤3 units, which includes 0/out-of-stock) OR no stock at
+   * all. Inactive centres are excluded.
+   */
+  lowStockCentres: number;
+  totalBloodUnits: number;
+}
+
 export interface UpdateBloodUnitsInput {
   bloodBankId: number;
   availabilityId: number;

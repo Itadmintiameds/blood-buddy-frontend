@@ -1,8 +1,9 @@
 import { api } from "@/services/api/client";
-import type { ApiEnvelope } from "@/types/api.types";
+import type { ApiEnvelope, PagedResponse } from "@/types/api.types";
 import type {
   AdminAddStockInput,
   SuperAdminBloodBank,
+  SuperAdminBloodCentreStats,
   SuperAdminDonor,
   UpdateBloodUnitsInput,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
@@ -40,51 +41,149 @@ interface CentreInventoryResponse {
   inventory: InventoryResponse[];
 }
 
-// GET ALL BLOOD BANKS (+ each centre's stock, SUPERADMIN only).
-export async function getSuperAdminBloodBanks(): Promise<
-  SuperAdminBloodBank[]
-> {
-  const { data: centresEnvelope } = await api.get<
-    ApiEnvelope<BloodCentreResponse[]>
-  >("/admin/blood-centres");
+// Sent as query params to GET /admin/blood-centres/paginated
+// (bloodbuddy.backend.dto.centre.BloodCentreFilterRequest). Every field is
+// optional; an unset field means "don't filter on this".
+export interface BloodCentreFilter {
+  /** Active/inactive status; omit for both. */
+  isActive?: boolean;
+  /** Match centres located in any of these cities (exact, case-insensitive). */
+  cities?: string[];
+  /** Match centres located in any of these districts (exact, case-insensitive). */
+  districts?: string[];
+  /** Match centres stocking any of these blood groups (with units in stock). */
+  bloodGroupIds?: number[];
+  /** Match centres stocking any of these components (with units in stock). */
+  bloodComponentIds?: number[];
+  /** Free-text search across name, email, mobile, address, city, district, pincode, licence. */
+  search?: string;
+}
 
-  const centres = centresEnvelope.data ?? [];
+// Spring Pageable params. `page` is zero-based; `sort` is "field,dir".
+export interface PageRequest {
+  page: number;
+  size: number;
+  sort?: string;
+}
 
-  return Promise.all(
-    centres.map(async (centre) => {
-      const { data: inventoryEnvelope } = await api.get<
-        ApiEnvelope<CentreInventoryResponse>
-      >(`/admin/blood-centres/${centre.bloodCentreId}/inventory`);
+function mapCentreToBank(
+  centre: BloodCentreResponse,
+  availability: SuperAdminBloodBank["availability"],
+): SuperAdminBloodBank {
+  return {
+    id: centre.bloodCentreId,
+    bloodBankName: centre.bloodCentreName,
+    category: centre.bloodBankCategory ?? "",
+    address: centre.address ?? "—",
+    city: centre.city,
+    district: centre.district,
+    pincode: centre.pincode,
+    phoneNumber: centre.mobileNumber,
+    email: centre.email,
+    isActive: centre.isActive,
+    licenceNumber: centre.bloodCentreLicenceNumber ?? undefined,
+    licenceExpiryDate: centre.licenceExpiryDate ?? undefined,
+    latitude: centre.latitude ?? undefined,
+    longitude: centre.longitude ?? undefined,
+    locationUrl: centre.locationUrl ?? undefined,
+    availability,
+  };
+}
 
-      const inventory = inventoryEnvelope.data?.inventory ?? [];
-
-      return {
-        id: centre.bloodCentreId,
-        bloodBankName: centre.bloodCentreName,
-        category: centre.bloodBankCategory ?? "",
-        address: centre.address ?? "—",
-        city: centre.city,
-        district: centre.district,
-        pincode: centre.pincode,
-        phoneNumber: centre.mobileNumber,
-        email: centre.email,
-        isActive: centre.isActive,
-        licenceNumber: centre.bloodCentreLicenceNumber ?? undefined,
-        licenceExpiryDate: centre.licenceExpiryDate ?? undefined,
-        latitude: centre.latitude ?? undefined,
-        longitude: centre.longitude ?? undefined,
-        locationUrl: centre.locationUrl ?? undefined,
-        availability: inventory.map((item) => ({
-          id: item.inventoryId,
-          bloodGroupId: item.bloodGroupId,
-          bloodComponentId: item.bloodComponentId,
-          bloodGroup: item.bloodGroupName,
-          bloodType: item.bloodComponentName,
-          units: item.availableUnits,
-        })),
-      };
-    }),
+// GET ONE PAGE OF BLOOD BANKS (SUPERADMIN only), filtered + sorted server-side.
+// The list rows don't show stock, so centres come back without inventory; the
+// selected centre's stock is loaded on demand via getSuperAdminBloodBankDetail.
+export async function getSuperAdminBloodCentresPage(
+  filter: BloodCentreFilter,
+  page: PageRequest,
+): Promise<PagedResponse<SuperAdminBloodBank>> {
+  // URLSearchParams (not a plain object) so repeated keys serialise as
+  // `cities=a&cities=b` — what Spring's @ModelAttribute List<> binding expects,
+  // rather than axios's default `cities[]=a`.
+  const params = new URLSearchParams();
+  params.set("page", String(page.page));
+  params.set("size", String(page.size));
+  if (page.sort) {
+    params.set("sort", page.sort);
+  }
+  if (filter.isActive !== undefined) {
+    params.set("isActive", String(filter.isActive));
+  }
+  filter.cities?.forEach((city) => params.append("cities", city));
+  filter.districts?.forEach((district) => params.append("districts", district));
+  filter.bloodGroupIds?.forEach((id) =>
+    params.append("bloodGroupIds", String(id)),
   );
+  filter.bloodComponentIds?.forEach((id) =>
+    params.append("bloodComponentIds", String(id)),
+  );
+  if (filter.search?.trim()) {
+    params.set("search", filter.search.trim());
+  }
+
+  const { data } = await api.get<
+    ApiEnvelope<PagedResponse<BloodCentreResponse>>
+  >("/admin/blood-centres/paginated", { params });
+
+  const paged = data.data;
+
+  return {
+    content: (paged.content ?? []).map((centre) => mapCentreToBank(centre, [])),
+    page: paged.page,
+    size: paged.size,
+    totalElements: paged.totalElements,
+    totalPages: paged.totalPages,
+    last: paged.last,
+  };
+}
+
+// GET ONE CENTRE'S FULL DETAILS + STOCK (SUPERADMIN only).
+export async function getSuperAdminBloodBankDetail(
+  bloodCentreId: number,
+): Promise<SuperAdminBloodBank> {
+  const { data } = await api.get<ApiEnvelope<CentreInventoryResponse>>(
+    `/admin/blood-centres/${bloodCentreId}/inventory`,
+  );
+
+  const centre = data.data.bloodCentre;
+  const inventory = data.data.inventory ?? [];
+
+  return mapCentreToBank(
+    centre,
+    inventory.map((item) => ({
+      id: item.inventoryId,
+      bloodGroupId: item.bloodGroupId,
+      bloodComponentId: item.bloodComponentId,
+      bloodGroup: item.bloodGroupName,
+      bloodType: item.bloodComponentName,
+      units: item.availableUnits,
+    })),
+  );
+}
+
+// Distinct cities + districts across all centres, for the filter dropdowns.
+// Matches bloodbuddy.backend.dto...LocationOptionsResponse.
+export interface BloodCentreLocationOptions {
+  cities: string[];
+  districts: string[];
+}
+
+export async function getBloodCentreLocations(): Promise<BloodCentreLocationOptions> {
+  const { data } = await api.get<ApiEnvelope<BloodCentreLocationOptions>>(
+    "/admin/blood-centres/locations",
+  );
+  return {
+    cities: data.data?.cities ?? [],
+    districts: data.data?.districts ?? [],
+  };
+}
+
+// Dashboard aggregate stats across ALL centres (not the current page/filter).
+export async function getSuperAdminBloodCentreStats(): Promise<SuperAdminBloodCentreStats> {
+  const { data } = await api.get<ApiEnvelope<SuperAdminBloodCentreStats>>(
+    "/admin/blood-centres/stats",
+  );
+  return data.data;
 }
 
 // UPDATE BLOOD UNITS

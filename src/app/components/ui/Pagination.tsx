@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { useBilingualText } from "@/app/components/common/Bilingual";
 import { PAGE_SIZE_OPTIONS } from "@/app/hooks/usePagination";
@@ -82,34 +82,80 @@ export function Pagination({
   const canGoForward = page < totalPages;
 
   if (compact) {
+    const prevButton = (
+      <button
+        type="button"
+        onClick={() => onPageChange(page - 1)}
+        disabled={!canGoBack}
+        aria-label={previousLabel}
+        className={navButtonClass}
+      >
+        <ChevronLeft size={15} />
+      </button>
+    );
+
+    const nextButton = (
+      <button
+        type="button"
+        onClick={() => onPageChange(page + 1)}
+        disabled={!canGoForward}
+        aria-label={nextLabel}
+        className={navButtonClass}
+      >
+        <ChevronRight size={15} />
+      </button>
+    );
+
+    const pageLabel = (
+      <span className="min-w-0 truncate text-center text-[11px] font-medium text-[var(--color-text-tertiary)]">
+        {pageOfText}
+      </span>
+    );
+
     return (
       <nav
         aria-label="Pagination"
         className={`flex items-center justify-between gap-2 border-t border-[var(--color-border-lighter)] bg-white px-3 py-2.5 ${className}`}
       >
-        <button
-          type="button"
-          onClick={() => onPageChange(page - 1)}
-          disabled={!canGoBack}
-          aria-label={previousLabel}
-          className={navButtonClass}
-        >
-          <ChevronLeft size={15} />
-        </button>
+        {onPageSizeChange ? (
+          <>
+            <div className="relative shrink-0">
+              <select
+                value={pageSize}
+                onChange={(event) =>
+                  onPageSizeChange(Number(event.target.value))
+                }
+                aria-label={rowsPerPageLabel}
+                title={rowsPerPageLabel}
+                className="h-8 cursor-pointer appearance-none rounded-md border border-[var(--color-border-light)] bg-white pl-2 pr-5 text-[11px] font-medium text-[var(--color-text-tertiary)] outline-none transition-colors duration-150 hover:border-[var(--primary-200)] hover:text-[var(--color-primary)] focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/30"
+              >
+                {pageSizeOptions.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
 
-        <span className="min-w-0 truncate text-center text-[11px] font-medium text-[var(--color-text-tertiary)]">
-          {pageOfText}
-        </span>
+              <ChevronDown
+                size={12}
+                strokeWidth={2}
+                className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
 
-        <button
-          type="button"
-          onClick={() => onPageChange(page + 1)}
-          disabled={!canGoForward}
-          aria-label={nextLabel}
-          className={navButtonClass}
-        >
-          <ChevronRight size={15} />
-        </button>
+            <div className="flex shrink-0 items-center gap-1.5">
+              {prevButton}
+              {pageLabel}
+              {nextButton}
+            </div>
+          </>
+        ) : (
+          <>
+            {prevButton}
+            {pageLabel}
+            {nextButton}
+          </>
+        )}
       </nav>
     );
   }

@@ -30,11 +30,16 @@ import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
 import type {
   BloodAvailability,
   SuperAdminBloodBank,
+  SuperAdminBloodCentreStats,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
   addStockToCentre,
-  getSuperAdminBloodBanks,
+  getBloodCentreLocations,
+  getSuperAdminBloodBankDetail,
+  getSuperAdminBloodCentreStats,
+  getSuperAdminBloodCentresPage,
   updateSuperAdminBloodUnits,
+  type BloodCentreFilter,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
 import {
   getBloodComponents,
@@ -45,7 +50,7 @@ import type {
   MasterBloodGroup,
 } from "@/types/master.types";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
-import { usePagination } from "@/app/hooks/usePagination";
+import { DEFAULT_PAGE_SIZE, usePagination } from "@/app/hooks/usePagination";
 import { Pagination } from "@/app/components/ui/Pagination";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import type { StockLevel } from "@/utils/bloodStock";
@@ -58,30 +63,20 @@ import {
 
 const ALL = "all";
 
-// Both stock filters are optional; a row passes when it satisfies every one
-// that is set. Shared by the bank list and the detail panel's table so the two
-// can never disagree about what "matches".
+// The detail panel narrows its stock table to the rows that made the centre
+// match the toolbar's group/type filters. Those filters carry the master id
+// (as a string) or ALL, so match on the availability row's ids.
 function matchesStockFilters(
   item: BloodAvailability,
   bloodGroupFilter: string,
   bloodTypeFilter: string,
 ): boolean {
   return (
-    (bloodGroupFilter === ALL || item.bloodGroup === bloodGroupFilter) &&
-    (bloodTypeFilter === ALL || item.bloodType === bloodTypeFilter)
+    (bloodGroupFilter === ALL ||
+      String(item.bloodGroupId) === bloodGroupFilter) &&
+    (bloodTypeFilter === ALL ||
+      String(item.bloodComponentId) === bloodTypeFilter)
   );
-}
-
-// De-duplicated option names: master entries keep their order, extras found
-// only in the loaded data follow alphabetically.
-function mergeOptionNames(masterNames: string[], dataNames: string[]): string[] {
-  const masters = Array.from(new Set(masterNames.filter(Boolean)));
-  const known = new Set(masters);
-  const extras = Array.from(new Set(dataNames.filter(Boolean)))
-    .filter((name) => !known.has(name))
-    .sort((a, b) => a.localeCompare(b));
-
-  return [...masters, ...extras];
 }
 
 function formatDate(value: string | null | undefined): string {
@@ -103,21 +98,48 @@ export default function BloodBankManagement() {
   const searchPlaceholder = useBilingualText("superAdmin.searchBloodCentre");
   const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
 
+  // One page of centres (list rows only — no stock). The selected centre's full
+  // details + stock load on demand into the detail cache below.
   const [bloodBanks, setBloodBanks] = useState<SuperAdminBloodBank[]>([]);
   const [activeBankId, setActiveBankId] = useState<number | null>(null);
+  // Already-loaded centre details (keyed by id), so re-selecting a centre is
+  // instant and an edit can update it in place. Held in state (not a ref) so the
+  // derived `activeBank` re-renders when the cache changes, and so the loader
+  // effect re-runs — a cache miss (new selection, or a cleared/invalidated
+  // entry) drives the next fetch.
+  const [detailCache, setDetailCache] = useState<
+    Map<number, SuperAdminBloodBank>
+  >(new Map());
+  // Loading/error are keyed to the centre id so switching centres never shows a
+  // stale spinner or message.
+  const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
+  const [detailErrorInfo, setDetailErrorInfo] = useState<{
+    id: number;
+    message: string;
+  } | null>(null);
   // Phones show either the list or one bank's detail; lg and up show both. This
   // is separate from activeBankId (which auto-selects the first bank for the
   // desktop split view) so a phone still lands on the list.
   const [mobileView, setMobileView] = useState<"list" | "detail">("list");
   const masterDetailRef = useRef<HTMLDivElement>(null);
-  const [priorFilteredBankIdsKey, setPriorFilteredBankIdsKey] = useState("");
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>(ALL);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(ALL);
   const [cityFilter, setCityFilter] = useState<string>(ALL);
+  const [districtFilter, setDistrictFilter] = useState<string>(ALL);
+  // The group/type filters hold the master id (as a string) or ALL — the
+  // paginated API filters on ids, not names.
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
   const [bloodTypeFilter, setBloodTypeFilter] = useState<string>(ALL);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // Server-side pagination state (page is 1-based in the UI, 0-based on the API).
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<string[]>([]);
+  const [stats, setStats] = useState<SuperAdminBloodCentreStats | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -164,42 +186,111 @@ export default function BloodBankManagement() {
   const [newBloodSaving, setNewBloodSaving] = useState(false);
   const [newBloodError, setNewBloodError] = useState("");
 
+  // Debounce the search box so typing fires one request, not one per keystroke.
   useEffect(() => {
-    let mounted = true;
+    const handle = window.setTimeout(() => setDebouncedSearch(search), 350);
+    return () => window.clearTimeout(handle);
+  }, [search]);
 
-    const loadBloodBanks = async () => {
+  // The UI filters mapped to the paginated API's filter shape.
+  const apiFilter = useMemo<BloodCentreFilter>(() => {
+    const filter: BloodCentreFilter = {};
+
+    if (debouncedSearch.trim()) {
+      filter.search = debouncedSearch.trim();
+    }
+    if (statusFilter !== ALL) {
+      filter.isActive = statusFilter === "active";
+    }
+    if (cityFilter !== ALL) {
+      filter.cities = [cityFilter];
+    }
+    if (districtFilter !== ALL) {
+      filter.districts = [districtFilter];
+    }
+    if (bloodGroupFilter !== ALL) {
+      filter.bloodGroupIds = [Number(bloodGroupFilter)];
+    }
+    if (bloodTypeFilter !== ALL) {
+      filter.bloodComponentIds = [Number(bloodTypeFilter)];
+    }
+
+    return filter;
+  }, [
+    debouncedSearch,
+    statusFilter,
+    cityFilter,
+    districtFilter,
+    bloodGroupFilter,
+    bloodTypeFilter,
+  ]);
+
+  // Any filter (or page-size) change sends us back to page 1. Done during
+  // render — not in an effect — so we never fetch a stale page first.
+  const filterKey = `${debouncedSearch.trim()}|${statusFilter}|${cityFilter}|${districtFilter}|${bloodGroupFilter}|${bloodTypeFilter}|${pageSize}`;
+  const [priorFilterKey, setPriorFilterKey] = useState(filterKey);
+
+  if (filterKey !== priorFilterKey) {
+    setPriorFilterKey(filterKey);
+    setPage(1);
+  }
+
+  // Load the current page of centres whenever the filter or page changes.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPage = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const data = await getSuperAdminBloodBanks();
+        const result = await getSuperAdminBloodCentresPage(apiFilter, {
+          page: page - 1,
+          size: pageSize,
+          sort: "bloodCentreName,asc",
+        });
 
-        if (!mounted) {
+        if (cancelled) {
           return;
         }
 
-        setBloodBanks(Array.isArray(data) ? data : []);
+        setBloodBanks(result.content);
+        setTotalElements(result.totalElements);
+        setTotalPages(Math.max(1, result.totalPages));
+
+        // Keep a selection for the desktop split view; a phone stays on the
+        // list (mobileView is untouched). Hold the current centre if it's still
+        // on this page, otherwise fall back to the first row.
+        setActiveBankId((current) =>
+          current != null && result.content.some((bank) => bank.id === current)
+            ? current
+            : (result.content[0]?.id ?? null),
+        );
       } catch (err) {
         console.error("Failed to load blood banks:", err);
 
-        if (mounted) {
+        if (!cancelled) {
           setBloodBanks([]);
+          setTotalElements(0);
+          setTotalPages(1);
+          setActiveBankId(null);
           setError("Unable to load blood bank details.");
         }
       } finally {
-        if (mounted) {
+        if (!cancelled) {
           setLoading(false);
         }
       }
     };
 
-    loadBloodBanks();
+    loadPage();
 
     return () => {
-      mounted = false;
+      cancelled = true;
     };
-  }, [reloadToken]);
+  }, [apiFilter, page, pageSize, reloadToken]);
 
+  // Master lists power the group/type filters (by id) and the Add Blood form.
   useEffect(() => {
     let cancelled = false;
 
@@ -211,8 +302,7 @@ export default function BloodBankManagement() {
         }
       })
       .catch(() => {
-        // Non-critical: the Add Blood form falls back to whatever groups /
-        // components already appear across loaded banks.
+        // Non-critical: the group/type filters and Add Blood form stay empty.
       });
 
     return () => {
@@ -220,166 +310,129 @@ export default function BloodBankManagement() {
     };
   }, []);
 
-  // Registration no longer asks for a category, so only centres registered
-  // before that have one; the filter is hidden once none do.
-  const categoryOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(bloodBanks.map((bank) => bank.category).filter(Boolean)),
-      ).sort((a, b) => a.localeCompare(b)),
-    [bloodBanks],
-  );
+  // City options (from the locations endpoint) + aggregate stats. Both reload on
+  // refresh.
+  useEffect(() => {
+    let cancelled = false;
 
-  const cityOptions = useMemo(
-    () =>
-      Array.from(new Set(bloodBanks.map((bank) => bank.city).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [bloodBanks],
-  );
+    getBloodCentreLocations()
+      .then((locations) => {
+        if (!cancelled) {
+          setCityOptions(locations.cities);
+          setDistrictOptions(locations.districts);
+        }
+      })
+      .catch(() => {
+        // Non-critical: the City/District filters simply won't offer a dropdown.
+      });
 
-  // Master lists first (so options follow the backend's order); anything a
-  // loaded bank holds that the masters lack is appended, which also covers the
-  // case where the masters haven't loaded (or failed to) at all.
-  const bloodGroupOptions = useMemo(
-    () =>
-      mergeOptionNames(
-        masterGroups.map((group) => group.bloodGroupName),
-        bloodBanks.flatMap((bank) =>
-          bank.availability.map((item) => item.bloodGroup),
-        ),
-      ),
-    [masterGroups, bloodBanks],
-  );
+    getSuperAdminBloodCentreStats()
+      .then((value) => {
+        if (!cancelled) {
+          setStats(value);
+        }
+      })
+      .catch(() => {
+        // Non-critical: tiles fall back to the page total / a dash.
+      });
 
-  const bloodTypeOptions = useMemo(
-    () =>
-      mergeOptionNames(
-        masterComponents.map((component) => component.bloodComponentName),
-        bloodBanks.flatMap((bank) =>
-          bank.availability.map((item) => item.bloodType),
-        ),
-      ),
-    [masterComponents, bloodBanks],
-  );
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadToken]);
 
+  // Load the selected centre's full details + stock on a cache miss. Re-runs
+  // when detailCache changes, so clearing/invalidating an entry (refresh, or an
+  // Add Blood that mints a row id the list can't return) drives a refetch.
+  useEffect(() => {
+    if (activeBankId == null || detailCache.has(activeBankId)) {
+      return;
+    }
+
+    let cancelled = false;
+    const id = activeBankId;
+
+    const loadDetail = async () => {
+      try {
+        setDetailLoadingId(id);
+        setDetailErrorInfo((prev) => (prev?.id === id ? null : prev));
+
+        const detail = await getSuperAdminBloodBankDetail(id);
+
+        if (cancelled) {
+          return;
+        }
+
+        setDetailCache((prev) => new Map(prev).set(id, detail));
+      } catch (err) {
+        console.error("Failed to load centre details:", err);
+
+        if (!cancelled) {
+          setDetailErrorInfo({
+            id,
+            message: "Unable to load this centre's details.",
+          });
+        }
+      } finally {
+        if (!cancelled) {
+          setDetailLoadingId((current) => (current === id ? null : current));
+        }
+      }
+    };
+
+    loadDetail();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeBankId, detailCache]);
+
+  // The selected centre's detail, read from the cache.
+  const activeBank =
+    activeBankId != null ? (detailCache.get(activeBankId) ?? null) : null;
+  const detailLoading =
+    detailLoadingId != null && detailLoadingId === activeBankId;
+  const detailError =
+    detailErrorInfo && detailErrorInfo.id === activeBankId
+      ? detailErrorInfo.message
+      : "";
+
+  // Filter dropdowns source their options from the masters (group/type, matched
+  // by id) and the cities list — the one-page result set can't enumerate them.
   const isFiltering =
     search.trim().length > 0 ||
-    categoryFilter !== ALL ||
     statusFilter !== ALL ||
     cityFilter !== ALL ||
+    districtFilter !== ALL ||
     bloodGroupFilter !== ALL ||
     bloodTypeFilter !== ALL;
 
   const activeFilterCount = [
-    categoryFilter,
     statusFilter,
     cityFilter,
+    districtFilter,
     bloodGroupFilter,
     bloodTypeFilter,
   ].filter((value) => value !== ALL).length;
 
   const clearFilters = () => {
     setSearch("");
-    setCategoryFilter(ALL);
     setStatusFilter(ALL);
     setCityFilter(ALL);
+    setDistrictFilter(ALL);
     setBloodGroupFilter(ALL);
     setBloodTypeFilter(ALL);
   };
 
-  // Refresh: reset any active filters, reload the data, and give the icon a
-  // one-shot spin so the click feels responsive even when the fetch is instant.
+  // Refresh: reset any active filters, drop cached details, reload everything,
+  // and give the icon a one-shot spin so the click feels responsive.
   const handleRefresh = () => {
     setSpinning(true);
     clearFilters();
+    setDetailCache(new Map());
     setReloadToken((token) => token + 1);
     window.setTimeout(() => setSpinning(false), 500);
   };
-
-  const filteredBloodBanks = useMemo(() => {
-    const searchValue = search.trim().toLowerCase();
-
-    return bloodBanks.filter((bank) => {
-      const matchesSearch =
-        !searchValue ||
-        bank.bloodBankName.toLowerCase().includes(searchValue) ||
-        bank.category.toLowerCase().includes(searchValue) ||
-        bank.address.toLowerCase().includes(searchValue) ||
-        bank.city.toLowerCase().includes(searchValue) ||
-        bank.district.toLowerCase().includes(searchValue) ||
-        bank.pincode.includes(searchValue) ||
-        bank.email.toLowerCase().includes(searchValue) ||
-        bank.phoneNumber.includes(searchValue);
-
-      const matchesCategory =
-        categoryFilter === ALL || bank.category === categoryFilter;
-
-      const matchesStatus =
-        statusFilter === ALL ||
-        (statusFilter === "active" ? bank.isActive : !bank.isActive);
-
-      const matchesCity = cityFilter === ALL || bank.city === cityFilter;
-
-      // A bank qualifies when a single stock row satisfies every selected
-      // group/type filter (so "O-" + "Platelets" means O- platelets,
-      // not O- somewhere and platelets somewhere else).
-      const matchesStock =
-        (bloodGroupFilter === ALL && bloodTypeFilter === ALL) ||
-        bank.availability.some((item) =>
-          matchesStockFilters(item, bloodGroupFilter, bloodTypeFilter),
-        );
-
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesStatus &&
-        matchesCity &&
-        matchesStock
-      );
-    });
-  }, [
-    bloodBanks,
-    search,
-    categoryFilter,
-    statusFilter,
-    cityFilter,
-    bloodGroupFilter,
-    bloodTypeFilter,
-  ]);
-
-  // Only the rendered list is paged. `filteredBloodBanks` (the full result set)
-  // still drives the counts and the active-bank fallback below, so the detail
-  // panel never loses its bank just because it sits on another page.
-  const bankPagination = usePagination(filteredBloodBanks, {
-    pageSize: 10,
-    resetKey: [
-      search.trim(),
-      categoryFilter,
-      statusFilter,
-      cityFilter,
-      bloodGroupFilter,
-      bloodTypeFilter,
-    ].join("|"),
-  });
-
-  // Keep the detail panel pointed at a bank that's actually in view: fall
-  // back to the first result whenever the visible set changes and the
-  // active one is no longer in it. Adjusted during render (not an effect)
-  // so a deliberate "back to list" (activeBankId set to null) isn't
-  // immediately overridden on the next render.
-  const filteredBankIdsKey = filteredBloodBanks.map((bank) => bank.id).join(",");
-
-  if (filteredBankIdsKey !== priorFilteredBankIdsKey) {
-    setPriorFilteredBankIdsKey(filteredBankIdsKey);
-
-    if (!filteredBloodBanks.some((bank) => bank.id === activeBankId)) {
-      setActiveBankId(filteredBloodBanks[0]?.id ?? null);
-    }
-  }
-
-  const activeBank =
-    bloodBanks.find((bank) => bank.id === activeBankId) ?? null;
 
   const showMobileView = (view: "list" | "detail") => {
     setMobileView(view);
@@ -398,19 +451,42 @@ export default function BloodBankManagement() {
     );
   };
 
-  const totalBloodBanks = bloodBanks.length;
+  // Aggregate stats come from the dedicated stats endpoint (they span every
+  // centre, not just this page). Until it responds, the bank count falls back
+  // to the page's total; the inventory tiles show a dash.
+  const totalBloodBanks = stats?.totalBloodCentres ?? totalElements;
+  const lowStockCentres = stats?.lowStockCentres ?? null;
+  const totalBloodUnits = stats?.totalBloodUnits ?? null;
 
-  const totalBloodTypes = bloodBanks.reduce(
-    (total, bank) => total + bank.availability.length,
-    0,
-  );
+  // Apply a stock change to the selected centre's cached detail so the panel
+  // updates in place without a refetch.
+  const applyAvailabilityChange = (
+    bankId: number,
+    updater: (availability: BloodAvailability[]) => BloodAvailability[],
+  ) => {
+    setDetailCache((prev) => {
+      const current = prev.get(bankId);
 
-  const totalBloodUnits = bloodBanks.reduce(
-    (total, bank) =>
-      total +
-      bank.availability.reduce((bankTotal, item) => bankTotal + item.units, 0),
-    0,
-  );
+      if (!current) {
+        return prev;
+      }
+
+      return new Map(prev).set(bankId, {
+        ...current,
+        availability: updater(current.availability),
+      });
+    });
+  };
+
+  // A stock edit shifts the aggregate tiles; refetch them (cheap) rather than
+  // reloading the whole list.
+  const refreshStats = () => {
+    getSuperAdminBloodCentreStats()
+      .then(setStats)
+      .catch(() => {
+        // Non-critical: tiles just stay at their last values.
+      });
+  };
 
   const openUpdateModal = (
     bank: SuperAdminBloodBank,
@@ -520,27 +596,14 @@ export default function BloodBankManagement() {
         return;
       }
 
-      setBloodBanks((currentBanks) =>
-        currentBanks.map((bank) => {
-          if (bank?.id !== selectedBank?.id) {
-            return bank;
-          }
-
-          return {
-            ...bank,
-            availability: bank.availability.map((item) => {
-              if (item?.id !== selectedAvailabilityId) {
-                return item;
-              }
-
-              return {
-                ...item,
-                units: item.units + changedUnits,
-              };
-            }),
-          };
-        }),
+      applyAvailabilityChange(selectedBank.id, (availability) =>
+        availability.map((item) =>
+          item?.id === selectedAvailabilityId
+            ? { ...item, units: item.units + changedUnits }
+            : item,
+        ),
       );
+      refreshStats();
 
       closeUpdateModal();
     } catch (err) {
@@ -609,24 +672,14 @@ export default function BloodBankManagement() {
         remarks: addStockRemarks.trim() || undefined,
       });
 
-      setBloodBanks((currentBanks) =>
-        currentBanks.map((bank) => {
-          if (bank?.id !== addStockBank.id) {
-            return bank;
-          }
-
-          return {
-            ...bank,
-            availability: bank.availability.map((item) => {
-              if (item?.id !== addStockAvailabilityId) {
-                return item;
-              }
-
-              return { ...item, units: item.units + parsedUnits };
-            }),
-          };
-        }),
+      applyAvailabilityChange(addStockBank.id, (availability) =>
+        availability.map((item) =>
+          item?.id === addStockAvailabilityId
+            ? { ...item, units: item.units + parsedUnits }
+            : item,
+        ),
       );
+      refreshStats();
 
       setAddStockModalOpen(false);
     } catch (err) {
@@ -695,9 +748,16 @@ export default function BloodBankManagement() {
       });
 
       // The backend creates the row if it doesn't exist yet (or tops up a
-      // matching one) but doesn't hand back its inventory id, so reload the
-      // banks list to pick up the new/updated row with a real id.
-      setReloadToken((token) => token + 1);
+      // matching one) but doesn't hand back its inventory id, so refetch this
+      // centre's detail to pick up the new/updated row with a real id.
+      // Drop this centre's cached detail so the loader refetches it with the
+      // new/updated row (and its real inventory id).
+      setDetailCache((prev) => {
+        const next = new Map(prev);
+        next.delete(newBloodBank.id);
+        return next;
+      });
+      refreshStats();
       setNewBloodModalOpen(false);
     } catch (err) {
       console.error("Add blood error:", err);
@@ -725,11 +785,11 @@ export default function BloodBankManagement() {
         />
 
         <StatTile
-          icon={Droplets}
-          value={String(totalBloodTypes)}
+          icon={AlertTriangle}
+          value={lowStockCentres == null ? "—" : String(lowStockCentres)}
           label={
             <Bilingual
-              tKey="superAdmin.bloodTypesStat"
+              tKey="superAdmin.lowStockCentresStat"
               as="span"
               enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
             />
@@ -740,7 +800,7 @@ export default function BloodBankManagement() {
 
         <StatTile
           icon={Droplets}
-          value={String(totalBloodUnits)}
+          value={totalBloodUnits == null ? "—" : String(totalBloodUnits)}
           label={
             <Bilingual
               tKey="superAdmin.availableUnitsStat"
@@ -753,7 +813,7 @@ export default function BloodBankManagement() {
         />
       </StatGrid>
 
-      {/* TOOLBAR: search + category filter + low-stock + refresh + add */}
+      {/* TOOLBAR: search + status/city/group/type filters + refresh + add */}
       <div className="animate-rise mt-5 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.025)] sm:p-4">
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           {/* SEARCH (+ filters toggle on phones) */}
@@ -809,35 +869,6 @@ export default function BloodBankManagement() {
           <div
             className={`${filtersOpen ? "grid" : "hidden"} w-full grid-cols-2 gap-2 sm:contents [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1`}
           >
-          {/* CATEGORY */}
-          {categoryOptions.length > 0 && (
-          <div className="relative min-w-0 sm:shrink-0">
-            <select
-              value={categoryFilter}
-              onChange={(event) => setCategoryFilter(event.target.value)}
-              aria-label="Filter by category"
-              className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
-                categoryFilter !== ALL
-                  ? "border-[var(--primary-200)] font-medium"
-                  : "border-[var(--color-border-light)]"
-              }`}
-            >
-              <option value={ALL}>All categories</option>
-              {categoryOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-
-            <ChevronDown
-              size={15}
-              strokeWidth={1.8}
-              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
-            />
-          </div>
-          )}
-
           {/* STATUS */}
           <div className="relative min-w-0 sm:shrink-0">
             <select
@@ -891,21 +922,21 @@ export default function BloodBankManagement() {
             </div>
           )}
 
-          {/* BLOOD GROUP (A+, O- ...) */}
-          {bloodGroupOptions.length > 0 && (
+          {/* DISTRICT */}
+          {districtOptions.length > 0 && (
             <div className="relative min-w-0 sm:shrink-0">
               <select
-                value={bloodGroupFilter}
-                onChange={(event) => setBloodGroupFilter(event.target.value)}
-                aria-label="Filter by blood group"
+                value={districtFilter}
+                onChange={(event) => setDistrictFilter(event.target.value)}
+                aria-label="Filter by district"
                 className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
-                  bloodGroupFilter !== ALL
+                  districtFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
                 }`}
               >
-                <option value={ALL}>All blood groups</option>
-                {bloodGroupOptions.map((option) => (
+                <option value={ALL}>All districts</option>
+                {districtOptions.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
@@ -920,8 +951,40 @@ export default function BloodBankManagement() {
             </div>
           )}
 
+          {/* BLOOD GROUP (A+, O- ...) */}
+          {masterGroups.length > 0 && (
+            <div className="relative min-w-0 sm:shrink-0">
+              <select
+                value={bloodGroupFilter}
+                onChange={(event) => setBloodGroupFilter(event.target.value)}
+                aria-label="Filter by blood group"
+                className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
+                  bloodGroupFilter !== ALL
+                    ? "border-[var(--primary-200)] font-medium"
+                    : "border-[var(--color-border-light)]"
+                }`}
+              >
+                <option value={ALL}>All blood groups</option>
+                {masterGroups.map((group) => (
+                  <option
+                    key={group.bloodGroupId}
+                    value={String(group.bloodGroupId)}
+                  >
+                    {group.bloodGroupName}
+                  </option>
+                ))}
+              </select>
+
+              <ChevronDown
+                size={15}
+                strokeWidth={1.8}
+                className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]"
+              />
+            </div>
+          )}
+
           {/* BLOOD TYPE (the component: Whole Blood, Platelets ...) */}
-          {bloodTypeOptions.length > 0 && (
+          {masterComponents.length > 0 && (
             <div className="relative min-w-0 sm:shrink-0">
               <select
                 value={bloodTypeFilter}
@@ -934,9 +997,12 @@ export default function BloodBankManagement() {
                 }`}
               >
                 <option value={ALL}>All blood types</option>
-                {bloodTypeOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                {masterComponents.map((component) => (
+                  <option
+                    key={component.bloodComponentId}
+                    value={String(component.bloodComponentId)}
+                  >
+                    {component.bloodComponentName}
                   </option>
                 ))}
               </select>
@@ -1046,8 +1112,7 @@ export default function BloodBankManagement() {
         >
           <div className="flex shrink-0 items-center justify-between border-b border-[var(--color-border-lighter)] px-4 py-3">
             <span className="text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-quaternary)]">
-              {filteredBloodBanks.length}{" "}
-              {filteredBloodBanks.length === 1 ? "Centre" : "Centres"}
+              {totalElements} {totalElements === 1 ? "Centre" : "Centres"}
             </span>
           </div>
 
@@ -1063,7 +1128,7 @@ export default function BloodBankManagement() {
               </div>
             )}
 
-            {!loading && filteredBloodBanks.length === 0 && (
+            {!loading && bloodBanks.length === 0 && (
               <div className="flex h-full flex-col items-center justify-center px-5 py-14 text-center">
                 <Building2 size={26} className="text-[var(--color-border)]" />
 
@@ -1082,7 +1147,7 @@ export default function BloodBankManagement() {
             )}
 
             {!loading &&
-              bankPagination.pageItems.map((bank, index) => (
+              bloodBanks.map((bank, index) => (
                 <BankListRow
                   key={bank.id}
                   bank={bank}
@@ -1099,11 +1164,12 @@ export default function BloodBankManagement() {
           {!loading && (
             <Pagination
               compact
-              page={bankPagination.page}
-              pageSize={bankPagination.pageSize}
-              totalItems={bankPagination.totalItems}
-              totalPages={bankPagination.totalPages}
-              onPageChange={bankPagination.setPage}
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalElements}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
               className="shrink-0"
             />
           )}
@@ -1126,7 +1192,24 @@ export default function BloodBankManagement() {
             ${mobileView === "detail" ? "flex" : "hidden lg:flex"}
           `}
         >
-          {activeBank ? (
+          {detailLoading && !activeBank ? (
+            <div className="flex h-full flex-col items-center justify-center gap-3 px-6 py-14 text-center">
+              <Loader2
+                size={22}
+                className="animate-spin text-[var(--color-primary)]"
+              />
+              <p className="text-[12px] text-[var(--color-text-tertiary)]">
+                Loading centre details…
+              </p>
+            </div>
+          ) : detailError ? (
+            <div className="flex h-full flex-col items-center justify-center px-6 py-14 text-center">
+              <AlertCircle size={22} className="text-red-500" />
+              <p className="mt-3 text-[13px] font-semibold text-[var(--color-text-quaternary)]">
+                {detailError}
+              </p>
+            </div>
+          ) : activeBank ? (
             <BankDetailPanel
               bank={activeBank}
               onBack={() => showMobileView("list")}
