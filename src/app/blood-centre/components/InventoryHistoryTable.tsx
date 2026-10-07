@@ -3,16 +3,15 @@
 import { User } from "lucide-react";
 
 import type { InventoryAuditResponse } from "@/services/bloodCenter/historyService";
-import { Pagination } from "@/app/components/ui/Pagination";
-import { usePagination } from "@/app/hooks/usePagination";
 import { formatTimestamp, movementMeta } from "./InventoryHistoryTimeline";
 
 const COLS =
   "grid-cols-[1.3fr_1fr_0.55fr_0.55fr_1.3fr_1.9fr]";
 
-// Dense, scrollable table view of an inventory item's audit trail. Used on the
-// full History page (the modal keeps the compact timeline). Narrower than lg it
-// renders the same entries as cards instead.
+// Dense, scrollable table view of one page of an inventory item's audit trail.
+// Used on the full History page (the modal keeps the compact timeline). Narrower
+// than lg it renders the same entries as cards instead. Paging is owned by the
+// caller — this just renders the page it's given.
 export function InventoryHistoryTable({
   entries,
 }: {
@@ -21,21 +20,6 @@ export function InventoryHistoryTable({
   // Every row shares the same inventory item, so show the group + component once
   // as a heading rather than repeating them in each row.
   const heading = entries[0];
-
-  // Page over the full (already newest-first) list; a different inventory item
-  // jumps back to page 1.
-  const {
-    page,
-    pageSize,
-    totalItems,
-    totalPages,
-    pageItems,
-    setPage,
-    setPageSize,
-  } = usePagination(entries, {
-    pageSize: 10,
-    resetKey: String(heading?.inventoryId ?? ""),
-  });
 
   return (
     <div>
@@ -52,7 +36,7 @@ export function InventoryHistoryTable({
 
       {/* Below lg the six columns can't fit, so each movement becomes a card. */}
       <ol className="space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 lg:hidden">
-        {pageItems.map((entry, index) => {
+        {entries.map((entry, index) => {
           const meta = movementMeta[entry.stockMovement];
           const Icon = meta.icon;
           const positive = entry.changedUnits > 0;
@@ -128,7 +112,7 @@ export function InventoryHistoryTable({
           </div>
 
           {/* Rows */}
-          {pageItems.map((entry, index) => {
+          {entries.map((entry, index) => {
             const meta = movementMeta[entry.stockMovement];
             const Icon = meta.icon;
             const positive = entry.changedUnits > 0;
@@ -195,16 +179,6 @@ export function InventoryHistoryTable({
           })}
         </div>
       </div>
-
-      <Pagination
-        page={page}
-        pageSize={pageSize}
-        totalItems={totalItems}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-        className="mt-4"
-      />
     </div>
   );
 }

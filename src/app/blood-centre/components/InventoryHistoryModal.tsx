@@ -10,8 +10,10 @@ import {
 } from "@/services/bloodCenter/historyService";
 import { useBilingualText } from "@/app/components/common/Bilingual";
 import { Pagination } from "@/app/components/ui/Pagination";
-import { usePagination } from "@/app/hooks/usePagination";
 import { InventoryHistoryTimeline } from "./InventoryHistoryTimeline";
+
+// The modal is only 460px wide / 85dvh tall, so page the timeline 5 at a time.
+const PAGE_SIZE = 5;
 
 // Shows the movement history for a single inventory item (blood group +
 // component) in a modal, keyed by its inventoryId.
@@ -25,16 +27,24 @@ export function InventoryHistoryModal({
   onClose: () => void;
 }) {
   const [entries, setEntries] = useState<InventoryAuditResponse[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const closeLabel = useBilingualText("common.close");
 
-  // The modal is only 460px wide / 85dvh tall, so page the timeline 5 at a time
-  // and pin a compact pager below the scrolling body.
+  // A compact pager is pinned below the scrolling body.
   const bodyRef = useRef<HTMLDivElement>(null);
-  const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
-    usePagination(entries, { pageSize: 5, resetKey: String(inventoryId) });
+
+  // A different inventory item jumps back to page 1 (done during render so we
+  // never fetch a stale page first).
+  const [priorInventoryId, setPriorInventoryId] = useState(inventoryId);
+  if (inventoryId !== priorInventoryId) {
+    setPriorInventoryId(inventoryId);
+    setPage(1);
+  }
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage);
@@ -49,19 +59,21 @@ export function InventoryHistoryModal({
       setError("");
 
       try {
-        const result = await getInventoryHistory(inventoryId);
+        const result = await getInventoryHistory(inventoryId, {
+          page: page - 1,
+          size: PAGE_SIZE,
+        });
 
         if (!cancelled) {
-          setEntries(
-            [...result].sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime(),
-            ),
-          );
+          setEntries(result.content);
+          setTotalElements(result.totalElements);
+          setTotalPages(Math.max(1, result.totalPages));
         }
       } catch (fetchError) {
         if (!cancelled) {
+          setEntries([]);
+          setTotalElements(0);
+          setTotalPages(1);
           setError(getApiErrorMessage(fetchError, "Unable to load history."));
         }
       } finally {
@@ -76,7 +88,7 @@ export function InventoryHistoryModal({
     return () => {
       cancelled = true;
     };
-  }, [inventoryId]);
+  }, [inventoryId, page]);
 
   return (
     <div
@@ -128,7 +140,7 @@ export function InventoryHistoryModal({
             </p>
           )}
 
-          {!loading && !error && entries.length === 0 && (
+          {!loading && !error && totalElements === 0 && (
             <div className="flex min-h-[180px] flex-col items-center justify-center px-5 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-alt)]">
                 <History size={22} strokeWidth={1.7} className="text-[var(--color-text-tertiary)]" />
@@ -145,15 +157,15 @@ export function InventoryHistoryModal({
           )}
 
           {!loading && !error && entries.length > 0 && (
-            <InventoryHistoryTimeline entries={pageItems} />
+            <InventoryHistoryTimeline entries={entries} />
           )}
         </div>
 
-        {!loading && !error && (
+        {!loading && !error && totalElements > 0 && (
           <Pagination
             page={page}
-            pageSize={pageSize}
-            totalItems={totalItems}
+            pageSize={PAGE_SIZE}
+            totalItems={totalElements}
             totalPages={totalPages}
             onPageChange={handlePageChange}
             compact

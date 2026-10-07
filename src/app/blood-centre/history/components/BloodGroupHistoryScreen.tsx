@@ -14,6 +14,8 @@ import {
   getBloodGroups,
 } from "@/services/master/masterService";
 import { InventoryHistoryTable } from "@/app/blood-centre/components/InventoryHistoryTable";
+import { Pagination } from "@/app/components/ui/Pagination";
+import { DEFAULT_PAGE_SIZE } from "@/app/hooks/usePagination";
 
 interface InventoryOption {
   inventoryId: number;
@@ -33,6 +35,11 @@ export function BloodGroupHistoryScreen() {
   const [entries, setEntries] = useState<InventoryAuditResponse[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState("");
+  // Server-side pagination (page is 1-based in the UI, 0-based on the API).
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Load the centre's inventory items to populate the picker.
   useEffect(() => {
@@ -167,7 +174,18 @@ export function BloodGroupHistoryScreen() {
         option.component === selectedComponent,
     )?.inventoryId ?? null;
 
-  // Load history whenever the selected inventory item changes.
+  // Changing the inventory item (or page size) jumps back to page 1. Done during
+  // render — not in an effect — so we never fetch a stale page first.
+  const pageKey = `${selectedId ?? ""}|${pageSize}`;
+  const [priorPageKey, setPriorPageKey] = useState(pageKey);
+
+  if (pageKey !== priorPageKey) {
+    setPriorPageKey(pageKey);
+    setPage(1);
+  }
+
+  // Load the current page of history whenever the item or page changes. The
+  // backend returns newest-first, so no client-side sort is needed.
   useEffect(() => {
     if (selectedId === null) {
       return;
@@ -180,20 +198,21 @@ export function BloodGroupHistoryScreen() {
       setHistoryError("");
 
       try {
-        const result = await getInventoryHistory(inventoryId);
+        const result = await getInventoryHistory(inventoryId, {
+          page: page - 1,
+          size: pageSize,
+        });
 
         if (!cancelled) {
-          // Newest first.
-          setEntries(
-            [...result].sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime(),
-            ),
-          );
+          setEntries(result.content);
+          setTotalElements(result.totalElements);
+          setTotalPages(Math.max(1, result.totalPages));
         }
       } catch (error) {
         if (!cancelled) {
+          setEntries([]);
+          setTotalElements(0);
+          setTotalPages(1);
           setHistoryError(getApiErrorMessage(error, "Unable to load history."));
         }
       } finally {
@@ -208,7 +227,7 @@ export function BloodGroupHistoryScreen() {
     return () => {
       cancelled = true;
     };
-  }, [selectedId]);
+  }, [selectedId, page, pageSize]);
 
   return (
     <div className="animate-rise overflow-hidden rounded-2xl border border-[var(--color-border-light)] bg-white shadow-[0_5px_22px_rgba(0,0,0,0.045)]">
@@ -274,7 +293,7 @@ export function BloodGroupHistoryScreen() {
           </p>
         )}
 
-        {!historyLoading && !historyError && entries.length === 0 && (
+        {!historyLoading && !historyError && totalElements === 0 && (
           <div className="flex min-h-[200px] flex-col items-center justify-center px-5 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-surface-alt)]">
               <History size={22} strokeWidth={1.7} className="text-[var(--color-text-tertiary)]" />
@@ -294,8 +313,20 @@ export function BloodGroupHistoryScreen() {
           </div>
         )}
 
-        {!historyLoading && !historyError && entries.length > 0 && (
-          <InventoryHistoryTable entries={entries} />
+        {!historyLoading && !historyError && totalElements > 0 && (
+          <>
+            <InventoryHistoryTable entries={entries} />
+
+            <Pagination
+              page={page}
+              pageSize={pageSize}
+              totalItems={totalElements}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              onPageSizeChange={setPageSize}
+              className="mt-4"
+            />
+          </>
         )}
       </div>
     </div>
