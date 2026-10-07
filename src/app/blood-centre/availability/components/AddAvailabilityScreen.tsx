@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 export function AddAvailabilityScreen() {
   const router = useRouter();
   const loadingText = useBilingualText("bloodCentre.loadingOptions");
-  const selectBloodTypeText = useBilingualText("bloodCentre.selectBloodType");
+  const selectBloodComponentText = useBilingualText("bloodCentre.selectBloodComponent");
   const selectBloodGroupText = useBilingualText("bloodCentre.selectBloodGroup");
   const enterUnitsPlaceholder = useBilingualText("bloodCentre.enterUnits");
 
@@ -96,9 +96,9 @@ export function AddAvailabilityScreen() {
       return;
     }
 
-    //  Blood Type validation
+    //  Blood Component validation
     if (!bloodComponentId) {
-      setError("Select a blood type");
+      setError("Select a blood component");
       return;
     }
 
@@ -271,7 +271,7 @@ export function AddAvailabilityScreen() {
 
                 <div className="mt-5 w-full">
                   <label
-                    htmlFor="bloodType"
+                    htmlFor="bloodComponent"
                     className="
                       block
                       text-[13px]
@@ -279,7 +279,7 @@ export function AddAvailabilityScreen() {
                       text-[var(--color-text-body)]
                     "
                   >
-                    <Bilingual tKey="bloodCentre.bloodType" as="span" />
+                    <Bilingual tKey="bloodCentre.bloodComponent" as="span" />
                     <span className="text-red-500"> *</span>
                   </label>
 
@@ -299,7 +299,7 @@ export function AddAvailabilityScreen() {
                     />
 
                     <select
-                      id="bloodType"
+                      id="bloodComponent"
                       value={bloodComponentId}
                       disabled={mastersLoading}
                       onChange={(event) => {
@@ -336,7 +336,7 @@ export function AddAvailabilityScreen() {
                       `}
                     >
                       <option value="">
-                        {mastersLoading ? loadingText : selectBloodTypeText}
+                        {mastersLoading ? loadingText : selectBloodComponentText}
                       </option>
 
                       {bloodComponents.map((component) => (

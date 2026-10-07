@@ -38,7 +38,6 @@ import {
 } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { HELPLINE_NUMBER } from "@/config/support";
-import { dobFromAge } from "@/utils/age";
 import type {
   MasterBloodComponent,
   MasterBloodGroup,
@@ -154,7 +153,7 @@ export function RecipientRegistrationForm() {
         bloodGroupId: Number(data.bloodGroupId),
         bloodComponentId: Number(data.bloodComponentId),
         requiredUnits: Number(data.requiredUnits),
-        dob: dobFromAge(Number(data.age)),
+        age: Number(data.age),
         hospitalName: data.hospitalName || undefined,
         address: data.address || undefined,
         city: data.city,

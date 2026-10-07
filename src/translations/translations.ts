@@ -139,7 +139,7 @@ export const translations = {
 
       welcomeUser: "Welcome{suffix}",
 
-      bloodType: "Blood Type",
+      bloodComponent: "Blood Component",
       bloodUnits: "Blood Units",
       adjust: "Adjust",
       loadingAvailability: "Loading availability...",
@@ -161,7 +161,7 @@ export const translations = {
       bloodAvailabilityDescription: "Add the currently available blood units.",
       unitsAvailableLabel: "Units Available",
       loadingOptions: "Loading...",
-      selectBloodType: "Select Blood Type",
+      selectBloodComponent: "Select Blood Component",
       availabilitySaved: "Availability Saved",
       availabilitySavedMessage:
         "Blood availability has been added successfully.",
@@ -293,7 +293,7 @@ export const translations = {
       recipientNavSub: "Blood requests",
 
       bloodBanksStat: "Blood Banks",
-      bloodTypesStat: "Blood Types",
+      bloodComponentsStat: "Blood Components",
       availableUnitsStat: "Available Units",
       lowStockCentresStat: "Low Stock Centres",
       searchBloodCentre: "Search by name, city, pincode, email...",
@@ -309,7 +309,7 @@ export const translations = {
       location: "Location",
       bloodStockColumn: "Blood Stock",
       phone: "Phone",
-      bloodTypesCount: "{count} blood types",
+      bloodComponentsCount: "{count} blood components",
       actions: "Actions",
       noBloodAvailabilityFound: "No blood availability found.",
 
@@ -566,7 +566,7 @@ export const translations = {
 
       welcomeUser: "ಸ್ವಾಗತ{suffix}",
 
-      bloodType: "ರಕ್ತದ ಪ್ರಕಾರ",
+      bloodComponent: "ರಕ್ತದ ಘಟಕ",
       bloodUnits: "ರಕ್ತದ ಯೂನಿಟ್‌ಗಳು",
       adjust: "ಹೊಂದಿಸಿ",
       loadingAvailability: "ಲಭ್ಯತೆಯನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
@@ -588,7 +588,7 @@ export const translations = {
       bloodAvailabilityDescription: "ಪ್ರಸ್ತುತ ಲಭ್ಯವಿರುವ ರಕ್ತದ ಯೂನಿಟ್‌ಗಳನ್ನು ಸೇರಿಸಿ.",
       unitsAvailableLabel: "ಲಭ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
       loadingOptions: "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
-      selectBloodType: "ರಕ್ತದ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+      selectBloodComponent: "ರಕ್ತದ ಘಟಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
       availabilitySaved: "ಲಭ್ಯತೆಯನ್ನು ಉಳಿಸಲಾಗಿದೆ",
       availabilitySavedMessage:
         "ರಕ್ತ ಲಭ್ಯತೆಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸೇರಿಸಲಾಗಿದೆ.",
@@ -717,7 +717,7 @@ export const translations = {
       bloodBankManagementDescription:
         "ನೋಂದಾಯಿತ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತ ಲಭ್ಯತೆಯನ್ನು ನಿರ್ವಹಿಸಿ.",
       bloodBanksStat: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು",
-      bloodTypesStat: "ರಕ್ತದ ಪ್ರಕಾರಗಳು",
+      bloodComponentsStat: "ರಕ್ತದ ಘಟಕಗಳು",
       availableUnitsStat: "ಲಭ್ಯವಿರುವ ಯೂನಿಟ್‌ಗಳು",
       bloodBankNavSub: "ಕೇಂದ್ರಗಳು ಮತ್ತು ಲಭ್ಯತೆ",
       donorNavSub: "ನೋಂದಾಯಿತ ರಕ್ತದಾನಿಗಳು",
@@ -737,7 +737,7 @@ export const translations = {
       location: "ಸ್ಥಳ",
       bloodStockColumn: "ರಕ್ತ ಸ್ಟಾಕ್",
       phone: "ಫೋನ್",
-      bloodTypesCount: "{count} ರಕ್ತದ ಪ್ರಕಾರಗಳು",
+      bloodComponentsCount: "{count} ರಕ್ತದ ಘಟಕಗಳು",
       actions: "ಕ್ರಮಗಳು",
       noBloodAvailabilityFound: "ಯಾವುದೇ ರಕ್ತ ಲಭ್ಯತೆ ಕಂಡುಬಂದಿಲ್ಲ.",
 

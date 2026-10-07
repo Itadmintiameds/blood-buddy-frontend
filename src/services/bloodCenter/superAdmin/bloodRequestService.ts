@@ -41,7 +41,7 @@ interface BloodCentreResponse {
 interface BloodRequestDetailResponse extends BloodRequestSummaryResponse {
   bloodGroupId: number;
   bloodComponentId: number;
-  dob: string | null;
+  age: number | null;
   hospitalName: string | null;
   address: string | null;
   remarks: string | null;
@@ -58,7 +58,7 @@ function toSummary(
     recipientName: response.recipientName,
     mobileNumber: response.mobileNumber,
     bloodGroup: response.bloodGroupName,
-    bloodType: response.bloodComponentName,
+    bloodComponent: response.bloodComponentName,
     units: response.requiredUnits,
     city: response.city,
     district: response.district,
@@ -104,7 +104,7 @@ function toDetail(
     ...toSummary(response),
     bloodGroupId: response.bloodGroupId,
     bloodComponentId: response.bloodComponentId,
-    dateOfBirth: response.dob,
+    age: response.age,
     hospitalName: response.hospitalName,
     address: response.address,
     remarks: response.remarks,

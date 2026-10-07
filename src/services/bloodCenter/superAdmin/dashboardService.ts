@@ -155,7 +155,7 @@ export async function getSuperAdminBloodBankDetail(
       bloodGroupId: item.bloodGroupId,
       bloodComponentId: item.bloodComponentId,
       bloodGroup: item.bloodGroupName,
-      bloodType: item.bloodComponentName,
+      bloodComponent: item.bloodComponentName,
       units: item.availableUnits,
     })),
   );

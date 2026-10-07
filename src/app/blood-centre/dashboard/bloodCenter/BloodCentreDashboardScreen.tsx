@@ -153,7 +153,7 @@ export function BloodCentreDashboardScreen() {
   const componentOptions =
     masterComponents.length > 0
       ? masterComponents
-      : Array.from(new Set(rows.map((row) => row.bloodType))).sort((a, b) =>
+      : Array.from(new Set(rows.map((row) => row.bloodComponent))).sort((a, b) =>
           a.localeCompare(b),
         );
 
@@ -163,7 +163,7 @@ export function BloodCentreDashboardScreen() {
     const matchesQuery =
       !normalizedQuery ||
       row.bloodGroup.toLowerCase().includes(normalizedQuery) ||
-      row.bloodType.toLowerCase().includes(normalizedQuery);
+      row.bloodComponent.toLowerCase().includes(normalizedQuery);
 
     const matchesLowStock =
       !lowStockOnly || row.unitsAvailable <= LOW_STOCK_THRESHOLD;
@@ -171,7 +171,7 @@ export function BloodCentreDashboardScreen() {
     const matchesGroup = groupFilter === ALL || row.bloodGroup === groupFilter;
 
     const matchesComponent =
-      componentFilter === ALL || row.bloodType === componentFilter;
+      componentFilter === ALL || row.bloodComponent === componentFilter;
 
     return matchesQuery && matchesLowStock && matchesGroup && matchesComponent;
   });
@@ -424,7 +424,7 @@ export function BloodCentreDashboardScreen() {
           {/* Table Header */}
           <div className="hidden grid-cols-[1fr_1.4fr_0.9fr_132px] items-center border-b border-[var(--color-border-light)] bg-[var(--color-surface-alt)] px-6 py-3.5 text-[11px] font-bold uppercase tracking-[0.04em] text-[var(--color-text-quaternary)] sm:grid">
             <Bilingual tKey="bloodCentre.bloodGroup" as="div" className="text-left" />
-            <Bilingual tKey="bloodCentre.bloodType" as="div" className="text-left" />
+            <Bilingual tKey="bloodCentre.bloodComponent" as="div" className="text-left" />
             <Bilingual tKey="bloodCentre.bloodUnits" as="div" className="text-left" />
             <div className="text-center">Actions</div>
           </div>
@@ -500,7 +500,7 @@ export function BloodCentreDashboardScreen() {
                   // Phones: a stacked card (group + units, component, actions).
                   // sm and up: one row of the four-column table.
                   <div
-                    key={`${reloadToken}-${row.bloodGroup}-${row.bloodType}`}
+                    key={`${reloadToken}-${row.bloodGroup}-${row.bloodComponent}`}
                     className={`animate-rise grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-2 rounded-xl border border-[var(--color-border-lighter)] bg-white px-3.5 py-3.5 text-[13px] text-[var(--color-text-body)] transition-colors duration-150 hover:bg-[var(--color-icon-bg-soft)] sm:min-h-[62px] sm:grid-cols-[1fr_1.4fr_0.9fr_132px] sm:gap-x-0 sm:rounded-none sm:border-0 sm:border-b sm:px-6 sm:py-0 sm:last:border-b-0 ${
                       index % 2 === 0
                         ? "sm:bg-[var(--color-white)]"
@@ -525,9 +525,9 @@ export function BloodCentreDashboardScreen() {
                       </span>
                     </div>
 
-                    {/* Blood Type */}
+                    {/* Blood Component */}
                     <div className="col-span-2 col-start-1 row-start-2 min-w-0 pl-12 text-left font-medium text-[var(--color-text-quaternary)] sm:col-span-1 sm:col-start-auto sm:row-start-auto sm:pl-0 sm:pr-2">
-                      <span className="break-words">{row.bloodType}</span>
+                      <span className="break-words">{row.bloodComponent}</span>
                     </div>
 
                     {/* Units */}
@@ -556,7 +556,7 @@ export function BloodCentreDashboardScreen() {
                       <RowActionButton
                         icon={Plus}
                         text="Add"
-                        label={`Add ${row.bloodGroup} ${row.bloodType} stock`}
+                        label={`Add ${row.bloodGroup} ${row.bloodComponent} stock`}
                         onClick={() => setAddingRow(row)}
                         disabled={
                           row.bloodGroupId === undefined ||
@@ -567,7 +567,7 @@ export function BloodCentreDashboardScreen() {
                       <RowActionButton
                         icon={Pencil}
                         text="Edit"
-                        label={`Edit ${row.bloodGroup} ${row.bloodType} stock`}
+                        label={`Edit ${row.bloodGroup} ${row.bloodComponent} stock`}
                         onClick={() => setAdjustingRow(row)}
                         disabled={
                           row.bloodGroupId === undefined ||
@@ -578,7 +578,7 @@ export function BloodCentreDashboardScreen() {
                       <RowActionButton
                         icon={History}
                         text="History"
-                        label={`${row.bloodGroup} ${row.bloodType} history`}
+                        label={`${row.bloodGroup} ${row.bloodComponent} history`}
                         onClick={() => setHistoryRow(row)}
                         disabled={!Number.isFinite(Number(row.id))}
                       />
@@ -632,7 +632,7 @@ export function BloodCentreDashboardScreen() {
       {historyRow && (
         <InventoryHistoryModal
           inventoryId={Number(historyRow.id)}
-          title={`${historyRow.bloodGroup} · ${historyRow.bloodType}`}
+          title={`${historyRow.bloodGroup} · ${historyRow.bloodComponent}`}
           onClose={() => setHistoryRow(null)}
         />
       )}

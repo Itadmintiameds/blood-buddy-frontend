@@ -7,7 +7,7 @@ export interface BloodAvailability {
   bloodGroupId: number;
   bloodComponentId: number;
   bloodGroup: string;
-  bloodType: string;
+  bloodComponent: string;
   units: number;
 }
 
@@ -103,7 +103,7 @@ export interface SuperAdminBloodRequestSummary {
   recipientName: string;
   mobileNumber: string;
   bloodGroup: string;
-  bloodType: string;
+  bloodComponent: string;
   units: number;
   city: string;
   district: string;
@@ -127,7 +127,7 @@ export interface SuperAdminBloodRequestCentre {
 export interface SuperAdminBloodRequestDetail extends SuperAdminBloodRequestSummary {
   bloodGroupId: number;
   bloodComponentId: number;
-  dateOfBirth: string | null;
+  age: number | null;
   hospitalName: string | null;
   address: string | null;
   remarks: string | null;

@@ -68,7 +68,7 @@ export interface BloodAvailabilityItem {
   bloodGroupId?: number;
   bloodComponentId?: number;
   bloodGroup: string;
-  bloodType: string;
+  bloodComponent: string;
   unitsAvailable: number;
 }
 

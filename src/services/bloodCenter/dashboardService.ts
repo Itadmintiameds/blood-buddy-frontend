@@ -39,7 +39,7 @@ export async function getAvailability(): Promise<AvailabilitySnapshot> {
       bloodGroupId: item.bloodGroupId,
       bloodComponentId: item.bloodComponentId,
       bloodGroup: item.bloodGroupName,
-      bloodType: item.bloodComponentName,
+      bloodComponent: item.bloodComponentName,
       unitsAvailable: item.availableUnits,
     })),
   };

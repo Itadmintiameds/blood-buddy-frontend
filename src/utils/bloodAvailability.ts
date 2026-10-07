@@ -2,9 +2,9 @@ import type { BloodAvailabilityItem } from "@/types/bloodCenter/bloodCenterTypes
 
 export function getBloodAvailabilityKey(
   bloodGroup: string,
-  bloodType: string,
+  bloodComponent: string,
 ): string {
-  return `${bloodGroup.trim().toUpperCase()}::${bloodType.trim().toUpperCase()}`;
+  return `${bloodGroup.trim().toUpperCase()}::${bloodComponent.trim().toUpperCase()}`;
 }
 
 export function mergeBloodAvailabilityRows(
@@ -14,14 +14,14 @@ export function mergeBloodAvailabilityRows(
 
   for (const row of rows) {
     const bloodGroup = String(row.bloodGroup ?? "").trim();
-    const bloodType = String(row.bloodType ?? "").trim();
+    const bloodComponent = String(row.bloodComponent ?? "").trim();
     const unitsAvailable = Number(row.unitsAvailable);
 
-    if (!bloodGroup || !bloodType || !Number.isFinite(unitsAvailable)) {
+    if (!bloodGroup || !bloodComponent || !Number.isFinite(unitsAvailable)) {
       continue;
     }
 
-    const key = getBloodAvailabilityKey(bloodGroup, bloodType);
+    const key = getBloodAvailabilityKey(bloodGroup, bloodComponent);
     const existing = merged.get(key);
 
     if (existing) {
@@ -30,7 +30,7 @@ export function mergeBloodAvailabilityRows(
       merged.set(key, {
         ...row,
         bloodGroup,
-        bloodType,
+        bloodComponent,
         unitsAvailable,
       });
     }

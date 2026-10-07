@@ -34,7 +34,7 @@ export async function adjustStock(
     bloodGroupId: item.bloodGroupId,
     bloodComponentId: item.bloodComponentId,
     bloodGroup: item.bloodGroupName,
-    bloodType: item.bloodComponentName,
+    bloodComponent: item.bloodComponentName,
     unitsAvailable: item.availableUnits,
   }));
 }

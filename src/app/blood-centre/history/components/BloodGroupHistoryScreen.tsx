@@ -65,7 +65,7 @@ export function BloodGroupHistoryScreen() {
           list.push({
             inventoryId,
             group: item.bloodGroup,
-            component: item.bloodType,
+            component: item.bloodComponent,
           });
         }
 

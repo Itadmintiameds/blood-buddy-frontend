@@ -54,7 +54,6 @@ import type {
   MasterBloodComponent,
   MasterBloodGroup,
 } from "@/types/master.types";
-import { ageFromDob, dobFromAge } from "@/utils/age";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
@@ -861,7 +860,7 @@ function LogRequestModal({
         bloodGroupId: Number(normalized.bloodGroupId),
         bloodComponentId: Number(normalized.bloodComponentId),
         requiredUnits: Number(normalized.requiredUnits),
-        dob: dobFromAge(Number(normalized.age)),
+        age: Number(normalized.age),
         hospitalName: normalized.hospitalName || undefined,
         address: normalized.address || undefined,
         city: normalized.city,
@@ -1229,8 +1228,7 @@ function BloodRequestDetailModal({
     detail?.status === "CENTRES_FOUND" || detail?.status === "NO_CENTRES_FOUND";
   const isClosed = detail?.status === "CLOSED";
 
-  // The API stores a date of birth; the request form collects an age.
-  const age = ageFromDob(detail?.dateOfBirth);
+  const age = detail?.age ?? null;
   const ageText = useBilingualText("superAdmin.ageYears", { age: age ?? "" });
 
   // A recorded donation is one unit. Units issued by a blood centre are not
@@ -1392,7 +1390,7 @@ function BloodRequestDetailModal({
                   tKey="bloodCentre.bloodGroup"
                   value={detail.bloodGroup}
                 />
-                <InfoTile tKey="superAdmin.bloodComponent" value={detail.bloodType} />
+                <InfoTile tKey="superAdmin.bloodComponent" value={detail.bloodComponent} />
                 <InfoTile tKey="recipient.unitsRequired" value={String(detail.units)} />
                 <InfoTile
                   tKey="superAdmin.age"
@@ -1677,9 +1675,11 @@ function DonatedByList({ donors }: { donors: SuperAdminDonor[] }) {
   return (
     <>
       <div className="space-y-2">
-        {pageItems.map((donor) => (
+        {pageItems.map((donor, index) => (
+          // A donor can donate multiple units to one request, so donor.id is
+          // not unique here — pair it with the row index for a stable key.
           <div
-            key={donor.id}
+            key={`${donor.id}-${index}`}
             className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-success-bg)] bg-[var(--color-success-bg)] px-3.5 py-2.5"
           >
             <div className="min-w-0">

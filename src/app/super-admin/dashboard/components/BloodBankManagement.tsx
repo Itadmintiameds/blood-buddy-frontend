@@ -68,13 +68,13 @@ const ALL = "all";
 function matchesStockFilters(
   item: BloodAvailability,
   bloodGroupFilter: string,
-  bloodTypeFilter: string,
+  bloodComponentFilter: string,
 ): boolean {
   return (
     (bloodGroupFilter === ALL ||
       String(item.bloodGroupId) === bloodGroupFilter) &&
-    (bloodTypeFilter === ALL ||
-      String(item.bloodComponentId) === bloodTypeFilter)
+    (bloodComponentFilter === ALL ||
+      String(item.bloodComponentId) === bloodComponentFilter)
   );
 }
 
@@ -129,7 +129,7 @@ export default function BloodBankManagement() {
   // The group/type filters hold the master id (as a string) or ALL — the
   // paginated API filters on ids, not names.
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
-  const [bloodTypeFilter, setBloodTypeFilter] = useState<string>(ALL);
+  const [bloodComponentFilter, setBloodComponentFilter] = useState<string>(ALL);
   // Server-side pagination state (page is 1-based in the UI, 0-based on the API).
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
@@ -209,8 +209,8 @@ export default function BloodBankManagement() {
     if (bloodGroupFilter !== ALL) {
       filter.bloodGroupIds = [Number(bloodGroupFilter)];
     }
-    if (bloodTypeFilter !== ALL) {
-      filter.bloodComponentIds = [Number(bloodTypeFilter)];
+    if (bloodComponentFilter !== ALL) {
+      filter.bloodComponentIds = [Number(bloodComponentFilter)];
     }
 
     return filter;
@@ -220,12 +220,12 @@ export default function BloodBankManagement() {
     cityFilter,
     districtFilter,
     bloodGroupFilter,
-    bloodTypeFilter,
+    bloodComponentFilter,
   ]);
 
   // Any filter (or page-size) change sends us back to page 1. Done during
   // render — not in an effect — so we never fetch a stale page first.
-  const filterKey = `${debouncedSearch.trim()}|${statusFilter}|${cityFilter}|${districtFilter}|${bloodGroupFilter}|${bloodTypeFilter}|${pageSize}`;
+  const filterKey = `${debouncedSearch.trim()}|${statusFilter}|${cityFilter}|${districtFilter}|${bloodGroupFilter}|${bloodComponentFilter}|${pageSize}`;
   const [priorFilterKey, setPriorFilterKey] = useState(filterKey);
 
   if (filterKey !== priorFilterKey) {
@@ -403,7 +403,7 @@ export default function BloodBankManagement() {
     cityFilter !== ALL ||
     districtFilter !== ALL ||
     bloodGroupFilter !== ALL ||
-    bloodTypeFilter !== ALL;
+    bloodComponentFilter !== ALL;
 
   const clearFilters = () => {
     setSearch("");
@@ -411,7 +411,7 @@ export default function BloodBankManagement() {
     setCityFilter(ALL);
     setDistrictFilter(ALL);
     setBloodGroupFilter(ALL);
-    setBloodTypeFilter(ALL);
+    setBloodComponentFilter(ALL);
   };
 
   // Refresh: reset any active filters, drop cached details, reload everything,
@@ -709,7 +709,7 @@ export default function BloodBankManagement() {
     }
 
     if (!newBloodComponentId) {
-      setNewBloodError("Select a blood type.");
+      setNewBloodError("Select a blood component.");
       return;
     }
 
@@ -985,16 +985,16 @@ export default function BloodBankManagement() {
           {masterComponents.length > 0 && (
             <div className="relative min-w-0 sm:shrink-0">
               <select
-                value={bloodTypeFilter}
-                onChange={(event) => setBloodTypeFilter(event.target.value)}
-                aria-label="Filter by blood type"
+                value={bloodComponentFilter}
+                onChange={(event) => setBloodComponentFilter(event.target.value)}
+                aria-label="Filter by blood component"
                 className={`h-11 w-full cursor-pointer appearance-none truncate rounded-lg border bg-white pl-3 pr-7 sm:pr-8 text-[13px] sm:h-10 sm:w-auto text-[var(--color-text-body)] outline-none transition-all focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/15 ${
-                  bloodTypeFilter !== ALL
+                  bloodComponentFilter !== ALL
                     ? "border-[var(--primary-200)] font-medium"
                     : "border-[var(--color-border-light)]"
                 }`}
               >
-                <option value={ALL}>All blood types</option>
+                <option value={ALL}>All blood components</option>
                 {masterComponents.map((component) => (
                   <option
                     key={component.bloodComponentId}
@@ -1187,7 +1187,7 @@ export default function BloodBankManagement() {
               }
               onAddNewBlood={() => openNewBloodModal(activeBank)}
               bloodGroupFilter={bloodGroupFilter}
-              bloodTypeFilter={bloodTypeFilter}
+              bloodComponentFilter={bloodComponentFilter}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center px-6 py-14 text-center">
@@ -1318,7 +1318,7 @@ function BankDetailPanel({
   onAddStock,
   onAddNewBlood,
   bloodGroupFilter,
-  bloodTypeFilter,
+  bloodComponentFilter,
 }: {
   bank: SuperAdminBloodBank;
   onBack: () => void;
@@ -1326,7 +1326,7 @@ function BankDetailPanel({
   onAddStock: (availabilityId: number) => void;
   onAddNewBlood: () => void;
   bloodGroupFilter: string;
-  bloodTypeFilter: string;
+  bloodComponentFilter: string;
 }) {
   const unitsWordText = useBilingualText("bloodCentre.units");
 
@@ -1336,14 +1336,14 @@ function BankDetailPanel({
   const visibleAvailability = useMemo(
     () =>
       bank.availability.filter((item) =>
-        matchesStockFilters(item, bloodGroupFilter, bloodTypeFilter),
+        matchesStockFilters(item, bloodGroupFilter, bloodComponentFilter),
       ),
-    [bank.availability, bloodGroupFilter, bloodTypeFilter],
+    [bank.availability, bloodGroupFilter, bloodComponentFilter],
   );
 
   const availabilityPagination = usePagination(visibleAvailability, {
     pageSize: 10,
-    resetKey: `${bank.id}|${bloodGroupFilter}|${bloodTypeFilter}`,
+    resetKey: `${bank.id}|${bloodGroupFilter}|${bloodComponentFilter}`,
   });
 
   const bankTotalUnits = bank.availability.reduce(
@@ -1541,7 +1541,7 @@ function BankDetailPanel({
 
                   <div className="min-w-0 flex-1">
                     <p className="break-words text-[12px] font-medium uppercase leading-4 text-[var(--color-text-secondary)]">
-                      {availability.bloodType}
+                      {availability.bloodComponent}
                     </p>
 
                     <span
@@ -1559,7 +1559,7 @@ function BankDetailPanel({
                       type="button"
                       onClick={() => onAddStock(availability.id)}
                       className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition active:bg-[var(--color-success-bg)] active:text-[var(--color-success)]"
-                      aria-label={`Add stock for ${availability.bloodGroup} ${availability.bloodType}`}
+                      aria-label={`Add stock for ${availability.bloodGroup} ${availability.bloodComponent}`}
                     >
                       <PlusCircle size={16} />
                     </button>
@@ -1568,7 +1568,7 @@ function BankDetailPanel({
                       type="button"
                       onClick={() => onUpdate(availability.id)}
                       className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition active:bg-[var(--color-icon-bg-soft)] active:text-[var(--color-primary)]"
-                      aria-label={`Update ${availability.bloodGroup} ${availability.bloodType}`}
+                      aria-label={`Update ${availability.bloodGroup} ${availability.bloodComponent}`}
                     >
                       <Pencil size={16} />
                     </button>
@@ -1592,7 +1592,7 @@ function BankDetailPanel({
                     style={{ width: "32%" }}
                     className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[var(--color-text-secondary)]"
                   >
-                    <Bilingual tKey="bloodCentre.bloodType" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
+                    <Bilingual tKey="bloodCentre.bloodComponent" as="span" enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-70" />
                   </th>
                   <th
                     style={{ width: "18%" }}
@@ -1631,7 +1631,7 @@ function BankDetailPanel({
                       </td>
 
                       <td className="break-words px-4 py-3 text-[13px] font-medium uppercase leading-4 text-[var(--color-text-secondary)]">
-                        {availability.bloodType}
+                        {availability.bloodComponent}
                       </td>
 
                       <td className="px-3 py-3 text-center">
@@ -1651,7 +1651,7 @@ function BankDetailPanel({
                             type="button"
                             onClick={() => onAddStock(availability.id)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--color-success-bg)] hover:bg-[var(--color-success-bg)] hover:text-[var(--color-success)] active:translate-y-0"
-                            aria-label={`Add stock for ${availability.bloodGroup} ${availability.bloodType}`}
+                            aria-label={`Add stock for ${availability.bloodGroup} ${availability.bloodComponent}`}
                           >
                             <PlusCircle size={14} />
                           </button>
@@ -1660,7 +1660,7 @@ function BankDetailPanel({
                             type="button"
                             onClick={() => onUpdate(availability.id)}
                             className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:translate-y-0"
-                            aria-label={`Update ${availability.bloodGroup} ${availability.bloodType}`}
+                            aria-label={`Update ${availability.bloodGroup} ${availability.bloodComponent}`}
                           >
                             <Pencil size={14} />
                           </button>
@@ -1962,7 +1962,7 @@ function UpdateUnitsModal({
               "
             >
               <Bilingual
-                tKey="bloodCentre.bloodType"
+                tKey="bloodCentre.bloodComponent"
                 as="p"
                 className="text-[12px] text-[var(--color-text-placeholder-alt)]"
               />
@@ -1978,7 +1978,7 @@ function UpdateUnitsModal({
                   text-[var(--color-text-secondary)]
                 "
               >
-                {availability?.bloodType}
+                {availability?.bloodComponent}
               </p>
             </div>
           </div>
@@ -2351,13 +2351,13 @@ function AddStockModal({
 
             <div className="min-w-0 rounded-lg border border-[var(--color-border-lighter)] p-3">
               <Bilingual
-                tKey="bloodCentre.bloodType"
+                tKey="bloodCentre.bloodComponent"
                 as="p"
                 className="text-[12px] text-[var(--color-text-placeholder-alt)]"
               />
 
               <p className="mt-1 break-words text-[11px] font-bold uppercase leading-4 text-[var(--color-text-secondary)]">
-                {availability?.bloodType}
+                {availability?.bloodComponent}
               </p>
             </div>
           </div>
@@ -2567,7 +2567,7 @@ function AddBloodModal({
   const { rendered, visible } = useExitTransition(open, 200);
   const closeLabel = useBilingualText("common.close");
   const selectBloodGroupText = useBilingualText("bloodCentre.selectBloodGroup");
-  const selectBloodTypeText = useBilingualText("bloodCentre.selectBloodType");
+  const selectBloodComponentText = useBilingualText("bloodCentre.selectBloodComponent");
   const enterUnitsPlaceholder = useBilingualText("bloodCentre.enterUnits");
 
   if (!rendered) {
@@ -2693,7 +2693,7 @@ function AddBloodModal({
                 htmlFor="newBloodComponent"
                 className="block text-[12px] font-semibold text-[var(--color-text-secondary)]"
               >
-                <Bilingual tKey="bloodCentre.bloodType" as="span" />
+                <Bilingual tKey="bloodCentre.bloodComponent" as="span" />
                 <span className="text-red-500"> *</span>
               </label>
 
@@ -2709,7 +2709,7 @@ function AddBloodModal({
                   }
                   className="h-[44px] w-full appearance-none rounded-lg border border-[var(--color-border)] bg-white px-3 pr-9 text-[13px] text-[var(--color-text-body)] outline-none transition focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/10"
                 >
-                  <option value="">{selectBloodTypeText}</option>
+                  <option value="">{selectBloodComponentText}</option>
                   {bloodComponents.map((component) => (
                     <option
                       key={component.bloodComponentId}

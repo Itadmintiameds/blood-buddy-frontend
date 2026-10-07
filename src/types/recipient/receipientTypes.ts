@@ -4,7 +4,7 @@ export interface RecipientRequestInput {
   bloodGroupId: number | "";
   bloodComponentId: number | "";
   requiredUnits: string;
-  // Whole years, as typed. Sent to the API as a date of birth (see dobFromAge).
+  // Whole years, as typed. Sent to the API as-is.
   age: string;
   hospitalName: string;
   // address / district / city are the hospital's, not the patient's.
@@ -21,7 +21,7 @@ export interface BloodRequestPayload {
   bloodGroupId: number;
   bloodComponentId: number;
   requiredUnits: number;
-  dob?: string;
+  age?: number;
   hospitalName?: string;
   address?: string;
   city: string;

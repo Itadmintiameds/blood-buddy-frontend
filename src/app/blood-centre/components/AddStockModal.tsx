@@ -87,7 +87,7 @@ export function AddStockModal({
             </h2>
 
             <p className="mt-1 text-[11px] text-[var(--color-text-tertiary)]">
-              {row.bloodGroup} · {row.bloodType} ·{" "}
+              {row.bloodGroup} · {row.bloodComponent} ·{" "}
               {row.unitsAvailable}{" "}
               {unitsAvailableSuffix}
             </p>
