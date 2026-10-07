@@ -235,14 +235,20 @@ export async function addStockToCentre(
   return { success: true, message: data.message };
 }
 
-// GET ALL DONORS (SUPERADMIN only).
-export async function getSuperAdminDonors(): Promise<SuperAdminDonor[]> {
-  const { data } =
-    await api.get<ApiEnvelope<DonorRegistrationResponse[]>>("/admin/donors");
+// Distinct cities + districts across all donors, for the filter dropdowns.
+// Same shape as the blood-centre locations response.
+export async function getDonorLocations(): Promise<BloodCentreLocationOptions> {
+  const { data } = await api.get<ApiEnvelope<BloodCentreLocationOptions>>(
+    "/admin/donors/locations",
+  );
+  return {
+    cities: data.data?.cities ?? [],
+    districts: data.data?.districts ?? [],
+  };
+}
 
-  const donors = data.data ?? [];
-
-  return donors.map((donor) => ({
+function mapDonor(donor: DonorRegistrationResponse): SuperAdminDonor {
+  return {
     id: donor.bloodDonorDetailsId,
     donorName: donor.fullName,
     mobileNumber: donor.mobileNumber,
@@ -256,5 +262,80 @@ export async function getSuperAdminDonors(): Promise<SuperAdminDonor[]> {
     pincode: donor.pincode,
     lastBloodDonationDate: donor.lastBloodDonationDate,
     createdAt: donor.createdAt,
-  }));
+  };
+}
+
+// GET ALL DONORS (SUPERADMIN only).
+export async function getSuperAdminDonors(): Promise<SuperAdminDonor[]> {
+  const { data } =
+    await api.get<ApiEnvelope<DonorRegistrationResponse[]>>("/admin/donors");
+
+  return (data.data ?? []).map(mapDonor);
+}
+
+// Sent as query params to GET /admin/donors/paginated
+// (bloodbuddy.backend.dto.donor.DonorFilterRequest). Every field is optional;
+// an unset field means "don't filter on this".
+export interface DonorFilter {
+  /** Match donors with any of these blood groups. */
+  bloodGroupIds?: number[];
+  /** Match donors located in any of these cities (exact, case-insensitive). */
+  cities?: string[];
+  /** Match donors located in any of these districts (exact, case-insensitive). */
+  districts?: string[];
+  /** Free-text search across name, mobile, alternative mobile, address, city, district, pincode. */
+  search?: string;
+}
+
+// Aggregate donor dashboard stats across ALL donors (not the current
+// page/filter). Matches GET /admin/donors/stats.
+export interface SuperAdminDonorStats {
+  totalDonors: number;
+  distinctBloodGroupCount: number;
+  recentDonationCount: number;
+}
+
+export async function getSuperAdminDonorStats(): Promise<SuperAdminDonorStats> {
+  const { data } = await api.get<ApiEnvelope<SuperAdminDonorStats>>(
+    "/admin/donors/stats",
+  );
+  return data.data;
+}
+
+// GET ONE PAGE OF DONORS (SUPERADMIN only), filtered + sorted server-side.
+export async function getSuperAdminDonorsPage(
+  filter: DonorFilter,
+  page: PageRequest,
+): Promise<PagedResponse<SuperAdminDonor>> {
+  // URLSearchParams so repeated keys serialise as `cities=a&cities=b` — what
+  // Spring's @ModelAttribute List<> binding expects.
+  const params = new URLSearchParams();
+  params.set("page", String(page.page));
+  params.set("size", String(page.size));
+  if (page.sort) {
+    params.set("sort", page.sort);
+  }
+  filter.bloodGroupIds?.forEach((id) =>
+    params.append("bloodGroupIds", String(id)),
+  );
+  filter.cities?.forEach((city) => params.append("cities", city));
+  filter.districts?.forEach((district) => params.append("districts", district));
+  if (filter.search?.trim()) {
+    params.set("search", filter.search.trim());
+  }
+
+  const { data } = await api.get<
+    ApiEnvelope<PagedResponse<DonorRegistrationResponse>>
+  >("/admin/donors/paginated", { params });
+
+  const paged = data.data;
+
+  return {
+    content: (paged.content ?? []).map(mapDonor),
+    page: paged.page,
+    size: paged.size,
+    totalElements: paged.totalElements,
+    totalPages: paged.totalPages,
+    last: paged.last,
+  };
 }

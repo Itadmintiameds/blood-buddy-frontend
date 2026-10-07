@@ -19,12 +19,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { SuperAdminDonor } from "@/types/bloodCenter/superAdmin/superAdminTypes";
-import { getSuperAdminDonors } from "@/services/bloodCenter/superAdmin/dashboardService";
+import {
+  getDonorLocations,
+  getSuperAdminDonorsPage,
+  getSuperAdminDonorStats,
+  type DonorFilter,
+  type SuperAdminDonorStats,
+} from "@/services/bloodCenter/superAdmin/dashboardService";
 import { registerDonor } from "@/services/donor/donorRegistrationService";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
-import { usePagination } from "@/app/hooks/usePagination";
+import { DEFAULT_PAGE_SIZE } from "@/app/hooks/usePagination";
 import {
   donorRegistrationSchema,
   getDonorDobBounds,
@@ -42,8 +48,6 @@ import {
 } from "@/app/components/common/Bilingual";
 
 const ALL = "all";
-
-const RECENT_DONATION_WINDOW_DAYS = 30;
 
 const emptyDonorForm: DonorRegistrationInput = {
   fullName: "",
@@ -94,11 +98,24 @@ export function DonorManagement() {
   const searchPlaceholder = useBilingualText("superAdmin.searchDonor");
   const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
 
+  // One page of donors (table rows), filtered + sorted server-side.
   const [donors, setDonors] = useState<SuperAdminDonor[]>([]);
+  // Aggregate stat-tile figures across all donors, from /admin/donors/stats.
+  const [stats, setStats] = useState<SuperAdminDonorStats | null>(null);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Holds the master blood-group id (as a string) or ALL — the paginated API
+  // filters on ids, not names.
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
   const [cityFilter, setCityFilter] = useState<string>(ALL);
   const [districtFilter, setDistrictFilter] = useState<string>(ALL);
+  // Server-side pagination state (page is 1-based in the UI, 0-based on the API).
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -109,39 +126,114 @@ export function DonorManagement() {
     null,
   );
 
+  // Debounce the search box so typing fires one request, not one per keystroke.
   useEffect(() => {
-    let mounted = true;
+    const handle = window.setTimeout(() => setDebouncedSearch(search), 350);
+    return () => window.clearTimeout(handle);
+  }, [search]);
 
-    const loadDonors = async () => {
+  // The UI filters mapped to the paginated API's filter shape.
+  const apiFilter = useMemo<DonorFilter>(() => {
+    const filter: DonorFilter = {};
+
+    if (debouncedSearch.trim()) {
+      filter.search = debouncedSearch.trim();
+    }
+    if (bloodGroupFilter !== ALL) {
+      filter.bloodGroupIds = [Number(bloodGroupFilter)];
+    }
+    if (cityFilter !== ALL) {
+      filter.cities = [cityFilter];
+    }
+    if (districtFilter !== ALL) {
+      filter.districts = [districtFilter];
+    }
+
+    return filter;
+  }, [debouncedSearch, bloodGroupFilter, cityFilter, districtFilter]);
+
+  // Any filter (or page-size) change sends us back to page 1. Done during
+  // render — not in an effect — so we never fetch a stale page first.
+  const filterKey = `${debouncedSearch.trim()}|${bloodGroupFilter}|${cityFilter}|${districtFilter}|${pageSize}`;
+  const [priorFilterKey, setPriorFilterKey] = useState(filterKey);
+
+  if (filterKey !== priorFilterKey) {
+    setPriorFilterKey(filterKey);
+    setPage(1);
+  }
+
+  // Load the current page of donors whenever the filter or page changes.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPage = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const data = await getSuperAdminDonors();
+        const result = await getSuperAdminDonorsPage(apiFilter, {
+          page: page - 1,
+          size: pageSize,
+          sort: "fullName,asc",
+        });
 
-        if (!mounted) {
+        if (cancelled) {
           return;
         }
 
-        setDonors(Array.isArray(data) ? data : []);
+        setDonors(result.content);
+        setTotalElements(result.totalElements);
+        setTotalPages(Math.max(1, result.totalPages));
       } catch (err) {
         console.error("Failed to load donors:", err);
 
-        if (mounted) {
+        if (!cancelled) {
           setDonors([]);
+          setTotalElements(0);
+          setTotalPages(1);
           setError("Unable to load donor details.");
         }
       } finally {
-        if (mounted) {
+        if (!cancelled) {
           setLoading(false);
         }
       }
     };
 
-    loadDonors();
+    loadPage();
 
     return () => {
-      mounted = false;
+      cancelled = true;
+    };
+  }, [apiFilter, page, pageSize, reloadToken]);
+
+  // Location filter options, reloaded on refresh.
+  useEffect(() => {
+    let cancelled = false;
+
+    getDonorLocations()
+      .then((locations) => {
+        if (!cancelled) {
+          setCityOptions(locations.cities);
+          setDistrictOptions(locations.districts);
+        }
+      })
+      .catch(() => {
+        // Non-critical: the City/District filters simply won't offer a dropdown.
+      });
+
+    getSuperAdminDonorStats()
+      .then((value) => {
+        if (!cancelled) {
+          setStats(value);
+        }
+      })
+      .catch(() => {
+        // Non-critical: stat tiles fall back to zero.
+      });
+
+    return () => {
+      cancelled = true;
     };
   }, [reloadToken]);
 
@@ -162,47 +254,19 @@ export function DonorManagement() {
     };
   }, []);
 
-  const bloodGroupOptions = useMemo(() => {
-    if (masterGroups.length > 0) {
-      return masterGroups.map((group) => group.bloodGroupName);
-    }
-
-    return Array.from(new Set(donors.map((donor) => donor.bloodGroup))).sort(
-      (a, b) => a.localeCompare(b),
-    );
-  }, [masterGroups, donors]);
-
-  const cityOptions = useMemo(
+  // {id, name} pairs so the dropdown can show names but filter on ids.
+  const bloodGroupOptions = useMemo(
     () =>
-      Array.from(new Set(donors.map((donor) => donor.city).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [donors],
+      masterGroups.map((group) => ({
+        id: String(group.bloodGroupId),
+        name: group.bloodGroupName,
+      })),
+    [masterGroups],
   );
 
-  const districtOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(donors.map((donor) => donor.district).filter(Boolean)),
-      ).sort((a, b) => a.localeCompare(b)),
-    [donors],
-  );
-
-  const totalDonors = donors.length;
-
-  const distinctBloodGroupCount = useMemo(
-    () => new Set(donors.map((donor) => donor.bloodGroup)).size,
-    [donors],
-  );
-
-  const recentDonationCutoff =
-    new Date().getTime() - RECENT_DONATION_WINDOW_DAYS * 24 * 60 * 60 * 1000;
-
-  const recentDonationCount = donors.filter((donor) => {
-    if (!donor.lastBloodDonationDate) return false;
-    const date = new Date(donor.lastBloodDonationDate).getTime();
-    return !Number.isNaN(date) && date >= recentDonationCutoff;
-  }).length;
+  const totalDonors = stats?.totalDonors ?? 0;
+  const distinctBloodGroupCount = stats?.distinctBloodGroupCount ?? 0;
+  const recentDonationCount = stats?.recentDonationCount ?? 0;
 
   const isFiltering =
     search.trim().length > 0 ||
@@ -224,48 +288,8 @@ export function DonorManagement() {
     window.setTimeout(() => setSpinning(false), 500);
   };
 
-  const filteredDonors = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return donors.filter((donor) => {
-      const matchesQuery =
-        !query ||
-        [
-          donor.donorName,
-          donor.mobileNumber,
-          donor.alternateMobileNumber,
-          donor.bloodGroup,
-          donor.address,
-          donor.city,
-          donor.district,
-          donor.pincode,
-        ].some((field) => field?.toLowerCase().includes(query));
-
-      const matchesGroup =
-        bloodGroupFilter === ALL || donor.bloodGroup === bloodGroupFilter;
-
-      const matchesCity = cityFilter === ALL || donor.city === cityFilter;
-
-      const matchesDistrict =
-        districtFilter === ALL || donor.district === districtFilter;
-
-      return matchesQuery && matchesGroup && matchesCity && matchesDistrict;
-    });
-  }, [donors, search, bloodGroupFilter, cityFilter, districtFilter]);
-
-  const {
-    page,
-    pageSize,
-    totalItems,
-    totalPages,
-    pageItems,
-    startIndex,
-    setPage,
-    setPageSize,
-  } = usePagination(filteredDonors, {
-    pageSize: 10,
-    resetKey: [search, bloodGroupFilter, cityFilter, districtFilter].join("|"),
-  });
+  // Rows before this page — add to the in-page index for continuous S.No.
+  const startIndex = (page - 1) * pageSize;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -367,8 +391,8 @@ export function DonorManagement() {
             >
               <option value={ALL}>All blood groups</option>
               {bloodGroupOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+                <option key={option.id} value={option.id}>
+                  {option.name}
                 </option>
               ))}
             </select>
@@ -473,7 +497,7 @@ export function DonorManagement() {
       {!loading && isFiltering && (
         <Bilingual
           tKey="superAdmin.resultsCount"
-          params={{ shown: filteredDonors.length, total: totalDonors }}
+          params={{ shown: totalElements, total: totalDonors }}
           as="p"
           className="px-1 text-[12px] text-[var(--color-text-placeholder-alt)]"
         />
@@ -528,8 +552,8 @@ export function DonorManagement() {
                     <LoadingState />
                   </td>
                 </tr>
-              ) : pageItems.length > 0 ? (
-                pageItems.map((donor, index) => (
+              ) : donors.length > 0 ? (
+                donors.map((donor, index) => (
                   <tr
                     key={donor.id}
                     onClick={() => setSelectedDonor(donor)}
@@ -624,8 +648,8 @@ export function DonorManagement() {
         <div className="divide-y divide-[var(--color-border-lighter)]">
           {loading ? (
             <LoadingState />
-          ) : pageItems.length > 0 ? (
-            pageItems.map((donor, index) => (
+          ) : donors.length > 0 ? (
+            donors.map((donor, index) => (
               <div
                 key={donor.id}
                 onClick={() => setSelectedDonor(donor)}
@@ -699,8 +723,8 @@ export function DonorManagement() {
       <div className="space-y-3 sm:hidden">
         {loading ? (
           <LoadingState />
-        ) : pageItems.length > 0 ? (
-          pageItems.map((donor, index) => (
+        ) : donors.length > 0 ? (
+          donors.map((donor, index) => (
             <div
               key={donor.id}
               onClick={() => setSelectedDonor(donor)}
@@ -787,7 +811,7 @@ export function DonorManagement() {
         <Pagination
           page={page}
           pageSize={pageSize}
-          totalItems={totalItems}
+          totalItems={totalElements}
           totalPages={totalPages}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}

@@ -24,14 +24,18 @@ import type {
   BloodRequestStatus,
   SuperAdminBloodRequestCentre,
   SuperAdminBloodRequestDetail,
+  SuperAdminBloodRequestStats,
   SuperAdminBloodRequestSummary,
   SuperAdminDonor,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
   closeBloodRequest,
+  getBloodRequestLocations,
   getSuperAdminBloodRequestDetail,
-  getSuperAdminBloodRequests,
+  getSuperAdminBloodRequestsPage,
+  getSuperAdminBloodRequestStats,
   recordBloodRequestDonation,
+  type BloodRequestFilter,
 } from "@/services/bloodCenter/superAdmin/bloodRequestService";
 import { submitBloodRequest } from "@/services/recipient/recipientRequestService";
 import {
@@ -40,7 +44,7 @@ import {
 } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
-import { usePagination } from "@/app/hooks/usePagination";
+import { DEFAULT_PAGE_SIZE, usePagination } from "@/app/hooks/usePagination";
 import {
   recipientRequestSchema,
   normalizeRecipientForm,
@@ -100,33 +104,24 @@ export function RecipientManagement() {
   const searchPlaceholder = useBilingualText("superAdmin.searchRecipient");
   const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
 
-  // So the free-text search box can also match a request's status label
-  // (e.g. typing "closed"), not just the dropdown filter.
-  const statusMatchedLabel = useBilingualText("superAdmin.statusMatched");
-  const statusNoCentresLabel = useBilingualText("superAdmin.statusNoCentres");
-  const statusClosedLabel = useBilingualText("superAdmin.statusClosed");
-  const statusCancelledLabel = useBilingualText("superAdmin.statusCancelled");
-
-  const statusLabels = useMemo<Record<BloodRequestStatus, string>>(
-    () => ({
-      CENTRES_FOUND: statusMatchedLabel,
-      NO_CENTRES_FOUND: statusNoCentresLabel,
-      CLOSED: statusClosedLabel,
-      CANCELLED: statusCancelledLabel,
-    }),
-    [
-      statusMatchedLabel,
-      statusNoCentresLabel,
-      statusClosedLabel,
-      statusCancelledLabel,
-    ],
-  );
-
+  // One page of requests (table rows), filtered + sorted server-side.
   const [requests, setRequests] = useState<SuperAdminBloodRequestSummary[]>([]);
+  // Aggregate stat-tile figures across all requests, from
+  // /admin/blood-requests/stats.
+  const [stats, setStats] = useState<SuperAdminBloodRequestStats | null>(null);
+  const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(ALL);
+  // Holds the master blood-group id (as a string) or ALL — the paginated API
+  // filters on ids, not names.
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
   const [cityFilter, setCityFilter] = useState<string>(ALL);
+  // Server-side pagination state (page is 1-based in the UI, 0-based on the API).
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [reloadToken, setReloadToken] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -138,24 +133,69 @@ export function RecipientManagement() {
     MasterBloodComponent[]
   >([]);
 
+  // Debounce the search box so typing fires one request, not one per keystroke.
+  useEffect(() => {
+    const handle = window.setTimeout(() => setDebouncedSearch(search), 350);
+    return () => window.clearTimeout(handle);
+  }, [search]);
+
+  // The UI filters mapped to the paginated API's filter shape.
+  const apiFilter = useMemo<BloodRequestFilter>(() => {
+    const filter: BloodRequestFilter = {};
+
+    if (debouncedSearch.trim()) {
+      filter.search = debouncedSearch.trim();
+    }
+    if (statusFilter !== ALL) {
+      filter.statuses = [statusFilter as BloodRequestStatus];
+    }
+    if (bloodGroupFilter !== ALL) {
+      filter.bloodGroupIds = [Number(bloodGroupFilter)];
+    }
+    if (cityFilter !== ALL) {
+      filter.cities = [cityFilter];
+    }
+
+    return filter;
+  }, [debouncedSearch, statusFilter, bloodGroupFilter, cityFilter]);
+
+  // Any filter (or page-size) change sends us back to page 1. Done during
+  // render — not in an effect — so we never fetch a stale page first.
+  const filterKey = `${debouncedSearch.trim()}|${statusFilter}|${bloodGroupFilter}|${cityFilter}|${pageSize}`;
+  const [priorFilterKey, setPriorFilterKey] = useState(filterKey);
+
+  if (filterKey !== priorFilterKey) {
+    setPriorFilterKey(filterKey);
+    setPage(1);
+  }
+
+  // Load the current page of requests whenever the filter or page changes.
   useEffect(() => {
     let cancelled = false;
 
-    async function loadRequests() {
+    async function loadPage() {
       try {
         setLoading(true);
         setError("");
 
-        const data = await getSuperAdminBloodRequests();
+        const result = await getSuperAdminBloodRequestsPage(apiFilter, {
+          page: page - 1,
+          size: pageSize,
+          sort: "createdAt,desc",
+        });
 
         if (!cancelled) {
-          setRequests(Array.isArray(data) ? data : []);
+          setRequests(result.content);
+          setTotalElements(result.totalElements);
+          setTotalPages(Math.max(1, result.totalPages));
         }
       } catch (err) {
         console.error("Failed to load blood requests:", err);
 
         if (!cancelled) {
           setRequests([]);
+          setTotalElements(0);
+          setTotalPages(1);
           setError("Unable to load blood requests.");
         }
       } finally {
@@ -165,7 +205,36 @@ export function RecipientManagement() {
       }
     }
 
-    void loadRequests();
+    void loadPage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiFilter, page, pageSize, reloadToken]);
+
+  // City filter options + stats. Both reload on refresh.
+  useEffect(() => {
+    let cancelled = false;
+
+    getBloodRequestLocations()
+      .then((locations) => {
+        if (!cancelled) {
+          setCityOptions(locations.cities);
+        }
+      })
+      .catch(() => {
+        // Non-critical: the City filter simply won't offer a dropdown.
+      });
+
+    getSuperAdminBloodRequestStats()
+      .then((value) => {
+        if (!cancelled) {
+          setStats(value);
+        }
+      })
+      .catch(() => {
+        // Non-critical: stat tiles fall back to zero.
+      });
 
     return () => {
       cancelled = true;
@@ -192,31 +261,18 @@ export function RecipientManagement() {
     };
   }, []);
 
-  const totalRequests = requests.length;
+  const totalRequests = stats?.totalRequests ?? 0;
+  const openRequestCount = stats?.openRequests ?? 0;
+  const closedRequestCount = stats?.closedRequests ?? 0;
 
-  const openRequestCount = requests.filter(
-    (request) =>
-      request.status === "CENTRES_FOUND" || request.status === "NO_CENTRES_FOUND",
-  ).length;
-
-  const closedRequestCount = requests.filter(
-    (request) => request.status === "CLOSED" || request.status === "CANCELLED",
-  ).length;
-
+  // {id, name} pairs so the dropdown can show names but filter on ids.
   const bloodGroupOptions = useMemo(
     () =>
-      Array.from(new Set(requests.map((request) => request.bloodGroup).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [requests],
-  );
-
-  const cityOptions = useMemo(
-    () =>
-      Array.from(new Set(requests.map((request) => request.city).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b),
-      ),
-    [requests],
+      masterGroups.map((group) => ({
+        id: String(group.bloodGroupId),
+        name: group.bloodGroupName,
+      })),
+    [masterGroups],
   );
 
   const isFiltering =
@@ -239,55 +295,8 @@ export function RecipientManagement() {
     window.setTimeout(() => setSpinning(false), 500);
   };
 
-  const filteredRequests = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    return requests.filter((request) => {
-      const matchesQuery =
-        !query ||
-        [
-          request.recipientName,
-          request.mobileNumber,
-          request.bloodGroup,
-          request.bloodType,
-          request.city,
-          request.district,
-          request.pincode,
-          statusLabels[request.status],
-        ].some((field) => field?.toLowerCase().includes(query));
-
-      const matchesStatus =
-        statusFilter === ALL || request.status === statusFilter;
-
-      const matchesBloodGroup =
-        bloodGroupFilter === ALL || request.bloodGroup === bloodGroupFilter;
-
-      const matchesCity = cityFilter === ALL || request.city === cityFilter;
-
-      return matchesQuery && matchesStatus && matchesBloodGroup && matchesCity;
-    });
-  }, [
-    requests,
-    search,
-    statusFilter,
-    bloodGroupFilter,
-    cityFilter,
-    statusLabels,
-  ]);
-
-  const {
-    page,
-    pageSize,
-    totalItems,
-    totalPages,
-    pageItems,
-    startIndex,
-    setPage,
-    setPageSize,
-  } = usePagination(filteredRequests, {
-    pageSize: 10,
-    resetKey: [search, statusFilter, bloodGroupFilter, cityFilter].join("|"),
-  });
+  // Rows before this page — add to the in-page index for continuous S.No.
+  const startIndex = (page - 1) * pageSize;
 
   // Rendered twice: beside "Log Request" on phones, and in the filter row from
   // `sm` up (display is controlled by the caller so only one is ever visible).
@@ -445,8 +454,8 @@ export function RecipientManagement() {
               >
                 <option value={ALL}>All blood groups</option>
                 {bloodGroupOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                  <option key={option.id} value={option.id}>
+                    {option.name}
                   </option>
                 ))}
               </select>
@@ -507,7 +516,7 @@ export function RecipientManagement() {
       {!loading && isFiltering && (
         <Bilingual
           tKey="superAdmin.resultsCount"
-          params={{ shown: filteredRequests.length, total: totalRequests }}
+          params={{ shown: totalElements, total: totalRequests }}
           as="p"
           className="px-1 text-[12px] text-[var(--color-text-placeholder-alt)]"
         />
@@ -559,8 +568,8 @@ export function RecipientManagement() {
                   <LoadingState />
                 </td>
               </tr>
-            ) : filteredRequests.length > 0 ? (
-              pageItems.map((request, index) => (
+            ) : requests.length > 0 ? (
+              requests.map((request, index) => (
                 <tr
                   key={request.id}
                   onClick={() => setOpenRequestId(request.id)}
@@ -655,8 +664,8 @@ export function RecipientManagement() {
           <div className="rounded-2xl border border-[var(--color-border-lighter)] bg-white">
             <LoadingState />
           </div>
-        ) : filteredRequests.length > 0 ? (
-          pageItems.map((request, index) => (
+        ) : requests.length > 0 ? (
+          requests.map((request, index) => (
             <div
               key={request.id}
               onClick={() => setOpenRequestId(request.id)}
@@ -755,7 +764,7 @@ export function RecipientManagement() {
         <Pagination
           page={page}
           pageSize={pageSize}
-          totalItems={totalItems}
+          totalItems={totalElements}
           totalPages={totalPages}
           onPageChange={setPage}
           onPageSizeChange={setPageSize}

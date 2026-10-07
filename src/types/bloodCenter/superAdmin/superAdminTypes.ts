@@ -89,6 +89,14 @@ export type BloodRequestStatus =
   | "CLOSED"
   | "CANCELLED";
 
+// Aggregate blood-request dashboard stats across all requests, from
+// GET /admin/blood-requests/stats.
+export interface SuperAdminBloodRequestStats {
+  totalRequests: number;
+  openRequests: number;
+  closedRequests: number;
+}
+
 // bloodbuddy.backend.dto.bloodrequest.BloodRequestSummaryResponse
 export interface SuperAdminBloodRequestSummary {
   id: number;

@@ -22,7 +22,6 @@ import {
   PlusCircle,
   RefreshCw,
   Search,
-  SlidersHorizontal,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -131,7 +130,6 @@ export default function BloodBankManagement() {
   // paginated API filters on ids, not names.
   const [bloodGroupFilter, setBloodGroupFilter] = useState<string>(ALL);
   const [bloodTypeFilter, setBloodTypeFilter] = useState<string>(ALL);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   // Server-side pagination state (page is 1-based in the UI, 0-based on the API).
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
@@ -406,14 +404,6 @@ export default function BloodBankManagement() {
     districtFilter !== ALL ||
     bloodGroupFilter !== ALL ||
     bloodTypeFilter !== ALL;
-
-  const activeFilterCount = [
-    statusFilter,
-    cityFilter,
-    districtFilter,
-    bloodGroupFilter,
-    bloodTypeFilter,
-  ].filter((value) => value !== ALL).length;
 
   const clearFilters = () => {
     setSearch("");
@@ -813,12 +803,12 @@ export default function BloodBankManagement() {
         />
       </StatGrid>
 
-      {/* TOOLBAR: search + status/city/group/type filters + refresh + add */}
-      <div className="animate-rise mt-5 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.025)] sm:p-4">
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-          {/* SEARCH (+ filters toggle on phones) */}
-          <div className="flex w-full items-center gap-2 sm:contents">
-          <div className="relative min-w-0 flex-1 sm:w-auto sm:min-w-[240px] lg:max-w-[360px]">
+      {/* TOOLBAR: search + add on top, filters (status/city/district/group/type) below */}
+      <div className="animate-rise mt-5 space-y-2.5 rounded-2xl border border-[var(--color-border-lighter)] bg-white p-3 shadow-[0_2px_12px_rgba(0,0,0,0.025)] sm:space-y-3 sm:p-4">
+        {/* ROW 1: search + refresh + add */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex items-center gap-2 sm:contents">
+          <div className="relative min-w-0 flex-1 sm:max-w-[480px] sm:flex-1">
             <Search
               size={16}
               className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-placeholder-alt)]"
@@ -846,29 +836,37 @@ export default function BloodBankManagement() {
 
           <button
             type="button"
-            onClick={() => setFiltersOpen((open) => !open)}
-            aria-expanded={filtersOpen}
-            aria-label="Show filters"
-            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors sm:hidden ${
-              filtersOpen || activeFilterCount > 0
-                ? "border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
-                : "border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)]"
-            }`}
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 sm:h-10 sm:w-10 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label="Refresh and clear filters"
+            title="Refresh &amp; clear filters"
           >
-            <SlidersHorizontal size={17} />
-
-            {activeFilterCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-primary)] px-1 text-[10px] font-bold leading-none text-white">
-                {activeFilterCount}
-              </span>
-            )}
+            <RefreshCw
+              size={15}
+              className={
+                spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
+              }
+            />
           </button>
           </div>
 
-          {/* FILTERS — 2-up grid on phones; flattened into the toolbar row from sm */}
-          <div
-            className={`${filtersOpen ? "grid" : "hidden"} w-full grid-cols-2 gap-2 sm:contents [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1`}
+          <button
+            type="button"
+            onClick={() => router.push("/blood-centre/register")}
+            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:h-10 sm:w-auto"
           >
+            <Plus size={16} className="shrink-0" />
+            <BilingualInline
+              tKey="superAdmin.addBloodCentre"
+              enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
+            />
+          </button>
+        </div>
+
+        {/* ROW 2: filters + refresh/clear */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:contents [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1">
           {/* STATUS */}
           <div className="relative min-w-0 sm:shrink-0">
             <select
@@ -1017,48 +1015,16 @@ export default function BloodBankManagement() {
 
           </div>
 
-          {/* ACTIONS — refresh / clear / add share one row on phones */}
-          <div className="flex w-full items-center gap-2 sm:contents">
-          {/* REFRESH */}
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={loading}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] transition-all duration-150 sm:h-10 sm:w-10 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
-            aria-label="Refresh and clear filters"
-            title="Refresh &amp; clear filters"
-          >
-            <RefreshCw
-              size={15}
-              className={
-                spinning ? "animate-spin-once" : loading ? "animate-spin" : ""
-              }
-            />
-          </button>
-
+          {/* CLEAR */}
           {isFiltering && (
             <button
               type="button"
               onClick={clearFilters}
-              className="shrink-0 px-2 py-2.5 text-[12px] font-medium text-[var(--color-primary)] transition hover:underline"
+              className="shrink-0 px-2 py-2.5 text-[12px] font-medium text-[var(--color-primary)] transition hover:underline sm:ml-auto"
             >
               Clear
             </button>
           )}
-
-          {/* ADD — pushes to the far right of the row when there's room */}
-          <button
-            type="button"
-            onClick={() => router.push("/blood-centre/register")}
-            className="flex h-11 min-w-0 flex-1 shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:h-10 sm:flex-none"
-          >
-            <Plus size={16} className="shrink-0" />
-            <BilingualInline
-              tKey="superAdmin.addBloodCentre"
-              enClassName="mt-0.5 text-[0.68em] font-normal leading-tight text-white/80"
-            />
-          </button>
-          </div>
         </div>
       </div>
 
