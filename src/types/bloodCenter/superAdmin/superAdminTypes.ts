@@ -110,6 +110,9 @@ export interface SuperAdminBloodRequestSummary {
   pincode: string;
   status: BloodRequestStatus;
   createdAt: string;
+  // Approximate units fulfilled, recorded when the request was closed. Null for
+  // requests that are still open or were closed before this field existed.
+  closedUnits: number | null;
 }
 
 // Lightweight centre reference used inside a blood request's matched

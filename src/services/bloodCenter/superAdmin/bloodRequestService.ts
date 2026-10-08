@@ -23,6 +23,7 @@ interface BloodRequestSummaryResponse {
   pincode: string;
   status: BloodRequestStatus;
   createdAt: string;
+  closedUnits: number | null;
 }
 
 interface BloodCentreResponse {
@@ -65,6 +66,7 @@ function toSummary(
     pincode: response.pincode,
     status: response.status,
     createdAt: response.createdAt,
+    closedUnits: response.closedUnits ?? null,
   };
 }
 
@@ -236,14 +238,19 @@ export async function recordBloodRequestDonation(
   return toDetail(data.data);
 }
 
-// CLOSE A BLOOD REQUEST, with optional remarks.
+// CLOSE A BLOOD REQUEST, with optional remarks and approximate units fulfilled.
 export async function closeBloodRequest(
   bloodRequestId: number,
   remarks?: string,
+  closedUnits?: number,
 ): Promise<SuperAdminBloodRequestDetail> {
+  const body: { remarks?: string; closedUnits?: number } = {};
+  if (remarks) body.remarks = remarks;
+  if (closedUnits !== undefined) body.closedUnits = closedUnits;
+
   const { data } = await api.patch<ApiEnvelope<BloodRequestDetailResponse>>(
     `/admin/blood-requests/${bloodRequestId}/close`,
-    remarks ? { remarks } : undefined,
+    Object.keys(body).length > 0 ? body : undefined,
   );
 
   return toDetail(data.data);

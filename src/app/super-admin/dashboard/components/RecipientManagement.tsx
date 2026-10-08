@@ -536,14 +536,15 @@ export function RecipientManagement() {
         <table className="w-full table-fixed border-collapse">
           <colgroup>
             <col className="w-[5%]" />
-            <col className="w-[19%]" />
+            <col className="w-[17%]" />
+            <col className="w-[11%]" />
+            <col className="w-[8%]" />
+            <col className="w-[7%]" />
+            <col className="w-[8%]" />
+            <col className="w-[11%]" />
+            <col className="w-[12%]" />
             <col className="w-[12%]" />
             <col className="w-[9%]" />
-            <col className="w-[7%]" />
-            <col className="w-[12%]" />
-            <col className="w-[12%]" />
-            <col className="w-[14%]" />
-            <col className="w-[10%]" />
           </colgroup>
 
           <thead>
@@ -553,6 +554,7 @@ export function RecipientManagement() {
               <TableHeader tKey="superAdmin.phoneNumber" />
               <TableHeader tKey="bloodCentre.bloodGroup" />
               <TableHeader tKey="bloodCentre.units" />
+              <TableHeader tKey="superAdmin.unitsFulfilled" />
               <TableHeader tKey="common.city" />
               <TableHeader tKey="superAdmin.requestedOn" />
               <TableHeader tKey="superAdmin.status" />
@@ -563,7 +565,7 @@ export function RecipientManagement() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={9}>
+                <td colSpan={10}>
                   <LoadingState />
                 </td>
               </tr>
@@ -604,6 +606,18 @@ export function RecipientManagement() {
                     <span className="font-bold text-[var(--color-text-body)]">
                       {request.units}
                     </span>
+                  </TableCell>
+
+                  <TableCell>
+                    {request.closedUnits !== null ? (
+                      <span className="font-bold text-emerald-600">
+                        {request.closedUnits}
+                      </span>
+                    ) : (
+                      <span className="text-[var(--color-text-placeholder)]">
+                        —
+                      </span>
+                    )}
                   </TableCell>
 
                   <TableCell>
@@ -648,7 +662,7 @@ export function RecipientManagement() {
               ))
             ) : (
               <tr>
-                <td colSpan={9}>
+                <td colSpan={10}>
                   <EmptyState tKey="superAdmin.noBloodRequestsFound" />
                 </td>
               </tr>
@@ -707,6 +721,13 @@ export function RecipientManagement() {
                   tKey="bloodCentre.units"
                   value={String(request.units)}
                 />
+                {request.closedUnits !== null && (
+                  <MobileInfoRow
+                    icon={Droplets}
+                    tKey="superAdmin.unitsFulfilled"
+                    value={String(request.closedUnits)}
+                  />
+                )}
                 <MobileInfoRow
                   icon={MapPin}
                   tKey="common.city"
@@ -1184,10 +1205,23 @@ function BloodRequestDetailModal({
   const [confirmDonorId, setConfirmDonorId] = useState<number | null>(null);
   const [closing, setClosing] = useState(false);
   const [closeRemarks, setCloseRemarks] = useState("");
+  const [closeUnits, setCloseUnits] = useState("");
   const [showCloseForm, setShowCloseForm] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const closeLabel = useBilingualText("common.close");
   const remarksPlaceholder = useBilingualText("bloodCentre.remarksOptional");
+  const unitsFulfilledPlaceholder = useBilingualText(
+    "superAdmin.unitsFulfilledPlaceholder",
+  );
+  const unitsExceedError = useBilingualText("superAdmin.unitsFulfilledExceeds", {
+    required: detail?.units ?? 0,
+  });
+  // Live check so the error shows at the field as the user types, not only on
+  // submit. Floored to match what handleClose actually sends.
+  const closeUnitsExceeds =
+    closeUnits.trim() !== "" &&
+    Number.isFinite(Number(closeUnits)) &&
+    Math.floor(Number(closeUnits)) > (detail?.units ?? 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -1234,8 +1268,12 @@ function BloodRequestDetailModal({
   // A recorded donation is one unit. Units issued by a blood centre are not
   // recorded anywhere, so this only counts donations made through Blood Buddy.
   const donatedUnits = detail?.donatedBy.length ?? 0;
+
+  // Approximate units fulfilled, captured when the request was closed. Null for
+  // requests closed before this field existed.
+  const closedUnits = detail?.closedUnits ?? null;
   const unitsClosedText = useBilingualText("superAdmin.unitsClosedValue", {
-    closed: donatedUnits,
+    closed: closedUnits ?? 0,
     required: detail?.units ?? 0,
   });
 
@@ -1273,10 +1311,26 @@ function BloodRequestDetailModal({
     setClosing(true);
     setActionError("");
 
+    // Optional, approximate — send only a valid non-negative whole number.
+    const trimmedUnits = closeUnits.trim();
+    const parsedUnits = Number(trimmedUnits);
+    const unitsToSend =
+      trimmedUnits !== "" && Number.isFinite(parsedUnits) && parsedUnits >= 0
+        ? Math.floor(parsedUnits)
+        : undefined;
+
+    // Fulfilled units can't exceed what was requested.
+    if (unitsToSend !== undefined && unitsToSend > (detail?.units ?? 0)) {
+      setActionError(unitsExceedError);
+      setClosing(false);
+      return;
+    }
+
     try {
       const updated = await closeBloodRequest(
         bloodRequestId,
         closeRemarks.trim() || undefined,
+        unitsToSend,
       );
 
       setDetail(updated);
@@ -1416,7 +1470,10 @@ function BloodRequestDetailModal({
               {(isClosed || detail.remarks) && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {isClosed && (
-                    <InfoTile tKey="superAdmin.unitsClosed" value={unitsClosedText} />
+                    <InfoTile
+                      tKey="superAdmin.unitsClosed"
+                      value={closedUnits !== null ? unitsClosedText : "—"}
+                    />
                   )}
                   {detail.remarks && (
                     <div className={isClosed ? "min-w-0" : "min-w-0 sm:col-span-2"}>
@@ -1503,6 +1560,53 @@ function BloodRequestDetailModal({
                     </button>
                   ) : (
                     <div className="space-y-3">
+                      <label className="block space-y-1.5">
+                        <Bilingual
+                          tKey="superAdmin.unitsFulfilled"
+                          as="span"
+                          className="block text-[12px] font-semibold text-[var(--color-text-quaternary)]"
+                        />
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          max={detail.units}
+                          step={1}
+                          value={closeUnits}
+                          onChange={(event) =>
+                            setCloseUnits(event.target.value)
+                          }
+                          placeholder={unitsFulfilledPlaceholder}
+                          disabled={closing}
+                          onWheel={(event) => event.currentTarget.blur()}
+                          aria-invalid={closeUnitsExceeds ? true : undefined}
+                          className={`
+                            w-full
+                            rounded-lg
+                            border
+                            bg-white
+                            px-3
+                            py-2.5
+                            text-[13px]
+                            text-[var(--color-text-body)]
+                            outline-none
+                            transition
+                            placeholder:text-[var(--color-text-placeholder)]
+                            focus:ring-2
+                            ${
+                              closeUnitsExceeds
+                                ? "border-red-300 focus:border-red-400 focus:ring-red-400/10"
+                                : "border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]/10"
+                            }
+                          `}
+                        />
+                        {closeUnitsExceeds && (
+                          <span className="block text-[12px] font-medium text-red-600">
+                            {unitsExceedError}
+                          </span>
+                        )}
+                      </label>
+
                       <textarea
                         value={closeRemarks}
                         onChange={(event) =>
@@ -1544,7 +1648,7 @@ function BloodRequestDetailModal({
                         <button
                           type="button"
                           onClick={() => setConfirmCloseOpen(true)}
-                          disabled={closing}
+                          disabled={closing || closeUnitsExceeds}
                           className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-red-500 px-3 py-1.5 sm:min-h-[38px] text-[12px] font-semibold text-white shadow-[0_4px_12px_rgba(239,68,68,0.22)] transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           {closing && (
