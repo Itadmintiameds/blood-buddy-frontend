@@ -263,6 +263,7 @@ export function RecipientManagement() {
   const totalRequests = stats?.totalRequests ?? 0;
   const openRequestCount = stats?.openRequests ?? 0;
   const closedRequestCount = stats?.closedRequests ?? 0;
+  const closedUnitsCount = stats?.closedUnits ?? 0;
 
   // {id, name} pairs so the dropdown can show names but filter on ids.
   const bloodGroupOptions = useMemo(
@@ -319,7 +320,7 @@ export function RecipientManagement() {
 
   return (
     <div className="w-full min-w-0 space-y-5 sm:space-y-6">
-      <StatGrid>
+      <StatGrid cols={4}>
         <StatTile
           icon={Users}
           value={String(totalRequests)}
@@ -360,6 +361,20 @@ export function RecipientManagement() {
           }
           color="var(--color-stat-green)"
           index={2}
+        />
+
+        <StatTile
+          icon={Droplets}
+          value={String(closedUnitsCount)}
+          label={
+            <Bilingual
+              tKey="superAdmin.closedUnitsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-blue)"
+          index={3}
         />
       </StatGrid>
 

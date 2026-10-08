@@ -95,6 +95,8 @@ export interface SuperAdminBloodRequestStats {
   totalRequests: number;
   openRequests: number;
   closedRequests: number;
+  // Total units fulfilled across all closed requests.
+  closedUnits: number;
 }
 
 // bloodbuddy.backend.dto.bloodrequest.BloodRequestSummaryResponse

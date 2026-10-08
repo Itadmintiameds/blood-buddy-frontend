@@ -161,8 +161,17 @@ export function StatTile({
   );
 }
 
-// The KPI row both dashboards render: three tiles across on every screen size
-// (compact on phones), so the Super Admin and Blood Centre dashboards match.
-export function StatGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-3 gap-2.5 sm:gap-4">{children}</div>;
+// The KPI row the dashboards render. Three tiles across on every screen size by
+// default (compact on phones), so the Super Admin and Blood Centre dashboards
+// match. Pass cols={4} for a four-tile row that stacks two-per-row on phones.
+export function StatGrid({
+  children,
+  cols = 3,
+}: {
+  children: ReactNode;
+  cols?: 3 | 4;
+}) {
+  const colsClass =
+    cols === 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3";
+  return <div className={`grid ${colsClass} gap-2.5 sm:gap-4`}>{children}</div>;
 }
