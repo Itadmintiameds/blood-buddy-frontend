@@ -377,6 +377,9 @@ export const translations = {
       noCentresMatched: "No centres matched this request.",
       donatedBy: "Donated By ({count})",
       donorCandidates: "Donor Candidates ({count})",
+      donorCandidatesTitle: "Donor Candidates",
+      donorsNotRecruitedForComponent:
+        "Donors are shown only for PRBC and Whole Blood requests — not for {component}.",
       noMatchingDonorCandidates: "No matching donor candidates found.",
       candidatesForUnits:
         "Showing {shown} of {total} donors for the {units} units still needed.",
@@ -859,6 +862,9 @@ export const translations = {
       noCentresMatched: "ಈ ಮನವಿಗೆ ಯಾವುದೇ ಕೇಂದ್ರ ಹೊಂದಾಣಿಕೆಯಾಗಿಲ್ಲ.",
       donatedBy: "ದಾನ ಮಾಡಿದವರು ({count})",
       donorCandidates: "ರಕ್ತದಾನಿ ಅಭ್ಯರ್ಥಿಗಳು ({count})",
+      donorCandidatesTitle: "ರಕ್ತದಾನಿ ಅಭ್ಯರ್ಥಿಗಳು",
+      donorsNotRecruitedForComponent:
+        "ರಕ್ತದಾನಿಗಳನ್ನು PRBC ಮತ್ತು ಸಂಪೂರ್ಣ ರಕ್ತ (Whole Blood) ಮನವಿಗಳಿಗೆ ಮಾತ್ರ ತೋರಿಸಲಾಗುತ್ತದೆ — {component} ಗೆ ಅಲ್ಲ.",
       noMatchingDonorCandidates: "ಹೊಂದಾಣಿಕೆಯಾಗುವ ರಕ್ತದಾನಿ ಅಭ್ಯರ್ಥಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
       candidatesForUnits:
         "ಇನ್ನೂ ಬೇಕಾದ {units} ಯೂನಿಟ್‌ಗಳಿಗಾಗಿ {total} ರಲ್ಲಿ {shown} ರಕ್ತದಾನಿಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.",

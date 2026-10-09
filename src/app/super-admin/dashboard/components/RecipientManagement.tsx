@@ -46,7 +46,8 @@ import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { DEFAULT_PAGE_SIZE, usePagination } from "@/app/hooks/usePagination";
 import {
-  recipientRequestSchema,
+  buildComponentLimits,
+  makeRecipientRequestSchema,
   normalizeRecipientForm,
 } from "@/schema/recipient/recipientRequestSchema";
 import type { RecipientRequestInput } from "@/types/recipient/receipientTypes";
@@ -131,6 +132,22 @@ function getNextEligibleDate(
   next.setDate(next.getDate() + DONATION_GAP_DAYS);
 
   return next > new Date() ? next : null;
+}
+
+// Donors are recruited only for PRBC and Whole Blood requests. The backend
+// omits donor candidates for every other component (Platelets, Frozen Plasma,
+// SDP), so matching the component name lets the UI explain the empty list
+// rather than show a bare "none found".
+function componentRecruitsDonors(
+  componentName: string | null | undefined,
+): boolean {
+  if (!componentName) {
+    return false;
+  }
+
+  const normalized = componentName.toLowerCase();
+
+  return normalized.includes("prbc") || normalized.includes("whole blood");
 }
 
 export function RecipientManagement() {
@@ -906,14 +923,26 @@ function LogRequestModal({
 
   const [submitError, setSubmitError] = useState("");
 
+  // Per-component unit ceilings (PRBC 6, Whole Blood 3, Platelets/Frozen Plasma
+  // 12, SDP none) — same rule the recipient self-service form enforces.
+  const componentLimits = useMemo(
+    () => buildComponentLimits(bloodComponents),
+    [bloodComponents],
+  );
+
+  const schema = useMemo(
+    () => makeRecipientRequestSchema(componentLimits),
+    [componentLimits],
+  );
+
   const {
     register,
     handleSubmit,
+    trigger,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<RecipientRequestInput>({
-    resolver: zodResolver(
-      recipientRequestSchema,
-    ) as Resolver<RecipientRequestInput>,
+    resolver: zodResolver(schema) as Resolver<RecipientRequestInput>,
     mode: "onBlur",
     reValidateMode: "onChange",
     defaultValues: emptyRecipientForm,
@@ -1099,7 +1128,16 @@ function LogRequestModal({
                       ? "log-request-blood-type-error"
                       : undefined
                   }
-                  {...register("bloodComponentId", { valueAsNumber: true })}
+                  {...register("bloodComponentId", {
+                    valueAsNumber: true,
+                    onChange: () => {
+                      // Re-check the units ceiling against the new component,
+                      // but only once units have been entered.
+                      if (getValues("requiredUnits")) {
+                        void trigger("requiredUnits");
+                      }
+                    },
+                  })}
                   className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
                     errors.bloodComponentId
                       ? "border-red-400"
@@ -1333,9 +1371,8 @@ function BloodRequestDetailModal({
   const age = detail?.age ?? null;
   const ageText = useBilingualText("superAdmin.ageYears", { age: age ?? "" });
 
-  // A recorded donation is one unit. Units issued by a blood centre are not
-  // recorded anywhere, so this only counts donations made through Blood Buddy.
-  const donatedUnits = detail?.donatedBy.length ?? 0;
+  // Donor candidates are only sent for PRBC and Whole Blood requests.
+  const recruitsDonors = componentRecruitsDonors(detail?.bloodComponent);
 
   // Approximate units fulfilled, captured when the request was closed. Null for
   // requests closed before this field existed.
@@ -1345,16 +1382,15 @@ function BloodRequestDetailModal({
     required: detail?.units ?? 0,
   });
 
-  // Candidates who already donated for this request are left out, and the
-  // list is sized to the units still needed (see DonorCandidatesList).
+  // Candidates who already donated for this request are left out; the backend
+  // already right-sizes the list (6 for PRBC, 3 for Whole Blood) so the rest
+  // are shown as sent.
   const pendingCandidates = useMemo(() => {
     if (!detail) return [];
 
     const donatedIds = new Set(detail.donatedBy.map((donor) => donor.id));
     return detail.donorCandidates.filter((donor) => !donatedIds.has(donor.id));
   }, [detail]);
-
-  const unitsStillNeeded = Math.max((detail?.units ?? 0) - donatedUnits, 0);
 
   const handleRecordDonation = async (donorId: number) => {
     setConfirmDonorId(null);
@@ -1622,22 +1658,32 @@ function BloodRequestDetailModal({
                 </Section>
               )}
 
-              {/* DONOR CANDIDATES */}
-              <Section
-                tKey="superAdmin.donorCandidates"
-                params={{ count: pendingCandidates.length }}
-              >
-                <DonorCandidatesList
-                  donors={pendingCandidates}
-                  unitsNeeded={unitsStillNeeded}
-                  isOpen={isOpen}
-                  recordingDonorId={recordingDonorId}
-                  onRecord={setConfirmDonorId}
-                  onLock={setDonorToLock}
-                  onDeactivate={setDonorToDeactivate}
-                  onReactivate={setDonorToReactivate}
-                />
-              </Section>
+              {/* DONOR CANDIDATES — only recruited for PRBC and Whole Blood */}
+              {recruitsDonors ? (
+                <Section
+                  tKey="superAdmin.donorCandidates"
+                  params={{ count: pendingCandidates.length }}
+                >
+                  <DonorCandidatesList
+                    donors={pendingCandidates}
+                    isOpen={isOpen}
+                    recordingDonorId={recordingDonorId}
+                    onRecord={setConfirmDonorId}
+                    onLock={setDonorToLock}
+                    onDeactivate={setDonorToDeactivate}
+                    onReactivate={setDonorToReactivate}
+                  />
+                </Section>
+              ) : (
+                <Section tKey="superAdmin.donorCandidatesTitle">
+                  <Bilingual
+                    tKey="superAdmin.donorsNotRecruitedForComponent"
+                    params={{ component: detail.bloodComponent }}
+                    as="p"
+                    className="text-[12px] text-[var(--color-text-placeholder-alt)]"
+                  />
+                </Section>
+              )}
 
               {/* CLOSE REQUEST */}
               {isOpen && (
@@ -2068,11 +2114,11 @@ function DonorEligibilityNote({ donor }: { donor: SuperAdminDonor }) {
   );
 }
 
-// One donor per unit: a request for 5 units lists 5 donors to call. The rest
-// stay one tap away for when a listed donor can't donate.
+// Lists every donor the backend sent for this request. The backend already
+// caps the list to the request's component (6 for PRBC, 3 for Whole Blood), so
+// the frontend shows all of them — paginated for tidiness, nothing hidden.
 function DonorCandidatesList({
   donors,
-  unitsNeeded,
   isOpen,
   recordingDonorId,
   onRecord,
@@ -2081,7 +2127,6 @@ function DonorCandidatesList({
   onReactivate,
 }: {
   donors: SuperAdminDonor[];
-  unitsNeeded: number;
   isOpen: boolean;
   recordingDonorId: number | null;
   onRecord: (donorId: number) => void;
@@ -2089,18 +2134,8 @@ function DonorCandidatesList({
   onDeactivate: (donor: SuperAdminDonor) => void;
   onReactivate: (donor: SuperAdminDonor) => void;
 }) {
-  const [showAll, setShowAll] = useState(false);
-  const hasMore = donors.length > unitsNeeded;
-  const visibleDonors = useMemo(
-    () => (hasMore && !showAll ? donors.slice(0, unitsNeeded) : donors),
-    [donors, hasMore, showAll, unitsNeeded],
-  );
-
   const { page, pageSize, totalItems, totalPages, pageItems, setPage } =
-    usePagination(visibleDonors, {
-      pageSize: MODAL_LIST_PAGE_SIZE,
-      resetKey: String(showAll),
-    });
+    usePagination(donors, { pageSize: MODAL_LIST_PAGE_SIZE });
 
   if (donors.length === 0) {
     return (
@@ -2114,44 +2149,6 @@ function DonorCandidatesList({
 
   return (
     <>
-      {hasMore && (
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-          {!showAll && (
-            <Bilingual
-              tKey={
-                unitsNeeded > 1
-                  ? "superAdmin.candidatesForUnits"
-                  : unitsNeeded === 1
-                    ? "superAdmin.candidatesForOneUnit"
-                    : "superAdmin.allUnitsDonated"
-              }
-              params={{
-                shown: visibleDonors.length,
-                total: donors.length,
-                units: unitsNeeded,
-              }}
-              as="p"
-              className="min-w-0 text-[12px] text-[var(--color-text-placeholder-alt)]"
-            />
-          )}
-
-          <button
-            type="button"
-            onClick={() => setShowAll((value) => !value)}
-            className="ml-auto min-h-10 shrink-0 px-1 text-[12px] font-semibold text-[var(--color-primary)] transition hover:underline sm:min-h-0"
-          >
-            <BilingualInline
-              tKey={
-                showAll
-                  ? "superAdmin.showFewerCandidates"
-                  : "superAdmin.showAllCandidates"
-              }
-              params={{ count: donors.length }}
-            />
-          </button>
-        </div>
-      )}
-
       <div className="space-y-2">
         {pageItems.map((donor) => (
           <div

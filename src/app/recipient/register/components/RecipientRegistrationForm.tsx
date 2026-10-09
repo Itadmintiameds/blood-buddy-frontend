@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   ChevronDown,
@@ -23,8 +23,9 @@ import {
 import { FormInput } from "@/app/components/ui/FormInput";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import {
+  buildComponentLimits,
+  makeRecipientRequestSchema,
   normalizeRecipientForm,
-  recipientRequestSchema,
 } from "@/schema/recipient/recipientRequestSchema";
 import type {
   BloodRequestResponse,
@@ -99,14 +100,26 @@ export function RecipientRegistrationForm() {
     number | ""
   >("");
 
+  // Per-component unit ceilings (PRBC 6, Whole Blood 3, Platelets/Frozen Plasma
+  // 12, SDP none), rebuilt once the master component list arrives.
+  const componentLimits = useMemo(
+    () => buildComponentLimits(bloodComponents),
+    [bloodComponents],
+  );
+
+  const schema = useMemo(
+    () => makeRecipientRequestSchema(componentLimits),
+    [componentLimits],
+  );
+
   const {
     register,
     handleSubmit,
+    trigger,
+    getValues,
     formState: { errors, isSubmitting, isValid },
   } = useForm<RecipientRequestInput>({
-    resolver: zodResolver(
-      recipientRequestSchema,
-    ) as Resolver<RecipientRequestInput>,
+    resolver: zodResolver(schema) as Resolver<RecipientRequestInput>,
     mode: "onBlur",
     reValidateMode: "onChange",
     defaultValues,
@@ -317,6 +330,12 @@ export function RecipientRegistrationForm() {
                     setSelectedBloodComponentId(
                       event.target.value ? Number(event.target.value) : "",
                     );
+                    // Re-check the units ceiling against the new component, but
+                    // only once units have been entered so we don't flash a
+                    // premature "required" error.
+                    if (getValues("requiredUnits")) {
+                      void trigger("requiredUnits");
+                    }
                   },
                 })}
                 className={`
