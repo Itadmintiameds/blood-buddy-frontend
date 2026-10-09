@@ -107,6 +107,32 @@ function formatDate(value: string | null | undefined): string {
   return date.toLocaleDateString("en-GB");
 }
 
+// Donors must wait this many days between donations. The backend is the source
+// of truth (it rejects ineligible records with a 400); this is only used to
+// disable the button up-front for instant feedback.
+const DONATION_GAP_DAYS = 90;
+
+// The date a donor becomes eligible again, or null if they've never donated or
+// are already eligible. `lastBloodDonationDate` is a YYYY-MM-DD string.
+function getNextEligibleDate(
+  lastBloodDonationDate: string | null | undefined,
+): Date | null {
+  if (!lastBloodDonationDate) {
+    return null;
+  }
+
+  const last = new Date(lastBloodDonationDate);
+
+  if (Number.isNaN(last.getTime())) {
+    return null;
+  }
+
+  const next = new Date(last);
+  next.setDate(next.getDate() + DONATION_GAP_DAYS);
+
+  return next > new Date() ? next : null;
+}
+
 export function RecipientManagement() {
   const searchPlaceholder = useBilingualText("superAdmin.searchRecipient");
   const clearSearchLabel = useBilingualText("superAdmin.clearSearch");
@@ -1340,6 +1366,7 @@ function BloodRequestDetailModal({
 
       setDetail(updated);
       onChanged(updated);
+      setSuccessMessageKey("superAdmin.donationRecordedSuccess");
     } catch (err) {
       setActionError(
         getApiErrorMessage(err, "Unable to record this donation."),
@@ -1967,6 +1994,80 @@ function DonatedByList({ donors }: { donors: SuperAdminDonor[] }) {
   );
 }
 
+// The "Record Donation" action for a single candidate. Disabled while another
+// record is in flight, or when the donor is still inside the 90-day gap — the
+// backend enforces the gap too (a 400), this is just instant feedback.
+function RecordDonationButton({
+  donor,
+  recording,
+  disabled,
+  onRecord,
+}: {
+  donor: SuperAdminDonor;
+  recording: boolean;
+  disabled: boolean;
+  onRecord: (donorId: number) => void;
+}) {
+  const notEligible = getNextEligibleDate(donor.lastBloodDonationDate) !== null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onRecord(donor.id)}
+      disabled={disabled || notEligible}
+      className="
+        flex
+        min-h-10
+        flex-1
+        shrink-0
+        items-center
+        justify-center
+        gap-1.5
+        rounded-lg
+        bg-[var(--color-primary)]
+        px-3
+        py-1.5
+        sm:min-h-0
+        sm:flex-none
+        text-[11px]
+        font-semibold
+        text-white
+        shadow-[0_4px_12px_rgba(255,59,63,0.18)]
+        transition-all
+        hover:bg-[var(--color-dashboard-cta-hover)]
+        disabled:cursor-not-allowed
+        disabled:opacity-60
+      "
+    >
+      {recording && <Loader2 size={12} className="animate-spin shrink-0" />}
+      <BilingualInline
+        tKey="superAdmin.recordDonation"
+        enClassName={ON_SOLID_EN_CLASS}
+      />
+    </button>
+  );
+}
+
+// Full-width note under a candidate card explaining why "Record Donation" is
+// disabled — the donor donated within the 90-day gap. A disabled button
+// swallows hover, so a title tooltip would never show; this states it plainly.
+function DonorEligibilityNote({ donor }: { donor: SuperAdminDonor }) {
+  const nextEligible = getNextEligibleDate(donor.lastBloodDonationDate);
+  const label = useBilingualText("superAdmin.notEligibleUntil", {
+    date: nextEligible ? formatDate(nextEligible.toISOString()) : "",
+  });
+
+  if (!nextEligible) {
+    return null;
+  }
+
+  return (
+    <p className="mt-2 text-[11px] font-medium leading-tight text-amber-600">
+      {label}
+    </p>
+  );
+}
+
 // One donor per unit: a request for 5 units lists 5 donors to call. The rest
 // stay one tap away for when a listed donor can't donate.
 function DonorCandidatesList({
@@ -2055,8 +2156,9 @@ function DonorCandidatesList({
         {pageItems.map((donor) => (
           <div
             key={donor.id}
-            className="flex flex-col gap-2.5 rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+            className="rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5"
           >
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <p className="break-words text-[13px] font-bold text-[var(--color-text-body)] sm:truncate sm:text-[12px]">
@@ -2076,42 +2178,12 @@ function DonorCandidatesList({
 
             <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
               {isOpen && (
-                <button
-                  type="button"
-                  onClick={() => onRecord(donor.id)}
+                <RecordDonationButton
+                  donor={donor}
+                  recording={recordingDonorId === donor.id}
                   disabled={recordingDonorId !== null}
-                  className="
-                    flex
-                    min-h-10
-                    flex-1
-                    shrink-0
-                    items-center
-                    justify-center
-                    gap-1.5
-                    rounded-lg
-                    bg-[var(--color-primary)]
-                    px-3
-                    py-1.5
-                    sm:min-h-0
-                    sm:flex-none
-                    text-[11px]
-                    font-semibold
-                    text-white
-                    shadow-[0_4px_12px_rgba(255,59,63,0.18)]
-                    transition-all
-                    hover:bg-[var(--color-dashboard-cta-hover)]
-                    disabled:cursor-not-allowed
-                    disabled:opacity-60
-                  "
-                >
-                  {recordingDonorId === donor.id && (
-                    <Loader2 size={12} className="animate-spin shrink-0" />
-                  )}
-                  <BilingualInline
-                    tKey="superAdmin.recordDonation"
-                    enClassName={ON_SOLID_EN_CLASS}
-                  />
-                </button>
+                  onRecord={onRecord}
+                />
               )}
 
               <DonorActionButtons
@@ -2122,6 +2194,9 @@ function DonorCandidatesList({
                 onReactivate={() => onReactivate(donor)}
               />
             </div>
+            </div>
+
+            {isOpen && <DonorEligibilityNote donor={donor} />}
           </div>
         ))}
       </div>
