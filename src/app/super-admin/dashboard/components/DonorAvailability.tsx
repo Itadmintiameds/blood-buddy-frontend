@@ -436,12 +436,13 @@ export function LockDonorModal({
           />
 
           <div>
-            <Bilingual
-              tKey="superAdmin.reason"
-              as="label"
+            <label
               htmlFor="lock-reason"
               className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-            />
+            >
+              <BilingualInline tKey="superAdmin.reason" />
+              <span className="text-red-500"> *</span>
+            </label>
 
             <div className="relative">
               <select
@@ -693,12 +694,13 @@ export function DeactivateDonorModal({
             />
 
             <div>
-              <Bilingual
-                tKey="superAdmin.reason"
-                as="label"
+              <label
                 htmlFor="deactivate-reason"
                 className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
-              />
+              >
+                <BilingualInline tKey="superAdmin.reason" />
+                <span className="text-red-500"> *</span>
+              </label>
 
               <div className="relative">
                 <select
