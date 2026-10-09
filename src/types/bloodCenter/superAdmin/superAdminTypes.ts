@@ -117,6 +117,8 @@ export type BloodRequestStatus =
   | "CENTRES_FOUND"
   | "NO_CENTRES_FOUND"
   | "CLOSED"
+  // Closed with fewer units fulfilled than required (set by the backend).
+  | "PARTIALLY_CLOSED"
   | "CANCELLED";
 
 // Aggregate blood-request dashboard stats across all requests, from

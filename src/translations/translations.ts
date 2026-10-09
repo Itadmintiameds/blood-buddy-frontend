@@ -394,7 +394,10 @@ export const translations = {
       statusMatched: "Matched",
       statusNoCentres: "No Centres",
       statusClosed: "Closed",
+      statusPartiallyClosed: "Partially Closed",
       statusCancelled: "Cancelled",
+      partiallyClosedHint:
+        "This request will be marked as Partially Closed.",
 
       // Donor availability management
       lockedDonorsStat: "Locked Donors",
@@ -871,7 +874,10 @@ export const translations = {
       statusMatched: "ಹೊಂದಾಣಿಕೆಯಾಗಿದೆ",
       statusNoCentres: "ಕೇಂದ್ರಗಳಿಲ್ಲ",
       statusClosed: "ಮುಚ್ಚಲಾಗಿದೆ",
+      statusPartiallyClosed: "ಭಾಗಶಃ ಮುಚ್ಚಲಾಗಿದೆ",
       statusCancelled: "ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ",
+      partiallyClosedHint:
+        "ಈ ವಿನಂತಿಯನ್ನು ಭಾಗಶಃ ಮುಚ್ಚಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಲಾಗುತ್ತದೆ.",
 
       // Donor availability management
       lockedDonorsStat: "ಲಾಕ್ ಮಾಡಿದ ದಾನಿಗಳು",

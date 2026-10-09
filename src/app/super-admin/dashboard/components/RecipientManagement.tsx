@@ -452,6 +452,7 @@ export function RecipientManagement() {
               <option value="CENTRES_FOUND">Matched</option>
               <option value="NO_CENTRES_FOUND">No Centres</option>
               <option value="CLOSED">Closed</option>
+              <option value="PARTIALLY_CLOSED">Partially Closed</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
 
@@ -1255,6 +1256,12 @@ function BloodRequestDetailModal({
     closeUnits.trim() !== "" &&
     Number.isFinite(Number(closeUnits)) &&
     Math.floor(Number(closeUnits)) > (detail?.units ?? 0);
+  // Fewer units fulfilled than required — the backend will mark the request
+  // Partially Closed. We don't send a status; this is just an advance hint.
+  const closeUnitsPartial =
+    closeUnits.trim() !== "" &&
+    Number.isFinite(Number(closeUnits)) &&
+    Math.floor(Number(closeUnits)) < (detail?.units ?? 0);
 
   useEffect(() => {
     let cancelled = false;
@@ -1293,7 +1300,9 @@ function BloodRequestDetailModal({
 
   const isOpen =
     detail?.status === "CENTRES_FOUND" || detail?.status === "NO_CENTRES_FOUND";
-  const isClosed = detail?.status === "CLOSED";
+  // Both fully and partially closed requests carry fulfilled units to show.
+  const isClosed =
+    detail?.status === "CLOSED" || detail?.status === "PARTIALLY_CLOSED";
 
   const age = detail?.age ?? null;
   const ageText = useBilingualText("superAdmin.ageYears", { age: age ?? "" });
@@ -1682,6 +1691,13 @@ function BloodRequestDetailModal({
                           <span className="block text-[12px] font-medium text-red-600">
                             {unitsExceedError}
                           </span>
+                        )}
+                        {!closeUnitsExceeds && closeUnitsPartial && (
+                          <Bilingual
+                            tKey="superAdmin.partiallyClosedHint"
+                            as="span"
+                            className="block text-[12px] font-medium text-amber-600"
+                          />
                         )}
                       </label>
 
@@ -2169,6 +2185,7 @@ function StatusBadge({ status }: { status: BloodRequestStatus }) {
     NO_CENTRES_FOUND: "border-[var(--danger-100)] bg-[var(--danger-50)] text-[var(--danger-700)]",
     CLOSED:
       "border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)]",
+    PARTIALLY_CLOSED: "border-amber-200 bg-amber-50 text-amber-700",
     CANCELLED: "border-[var(--primary-200)] bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]",
   };
 
@@ -2176,6 +2193,7 @@ function StatusBadge({ status }: { status: BloodRequestStatus }) {
     CENTRES_FOUND: "superAdmin.statusMatched",
     NO_CENTRES_FOUND: "superAdmin.statusNoCentres",
     CLOSED: "superAdmin.statusClosed",
+    PARTIALLY_CLOSED: "superAdmin.statusPartiallyClosed",
     CANCELLED: "superAdmin.statusCancelled",
   };
 
