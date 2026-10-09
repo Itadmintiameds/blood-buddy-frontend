@@ -2308,7 +2308,7 @@ function TableHeader({ tKey }: { tKey: string }) {
 
 function TableCell({ children }: { children: React.ReactNode }) {
   return (
-    <td className="px-3 py-4 text-left text-[11px] font-medium leading-5 text-[var(--color-text-quaternary)]">
+    <td className="px-3 py-4 text-left text-[13px] font-medium leading-5 text-[var(--color-text-quaternary)]">
       {children}
     </td>
   );
