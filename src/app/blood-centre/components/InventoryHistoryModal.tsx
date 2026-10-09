@@ -8,6 +8,7 @@ import {
   getInventoryHistory,
   type InventoryAuditResponse,
 } from "@/services/bloodCenter/historyService";
+import type { PagedResponse } from "@/types/api.types";
 import { useBilingualText } from "@/app/components/common/Bilingual";
 import { Pagination } from "@/app/components/ui/Pagination";
 import { InventoryHistoryTimeline } from "./InventoryHistoryTimeline";
@@ -16,15 +17,22 @@ import { InventoryHistoryTimeline } from "./InventoryHistoryTimeline";
 const PAGE_SIZE = 5;
 
 // Shows the movement history for a single inventory item (blood group +
-// component) in a modal, keyed by its inventoryId.
+// component) in a modal, keyed by its inventoryId. `fetchPage` defaults to the
+// blood-centre's own history endpoint; the super-admin passes a fetcher bound to
+// the centre id so the same modal can read the admin route.
 export function InventoryHistoryModal({
   inventoryId,
   title,
   onClose,
+  fetchPage = getInventoryHistory,
 }: {
   inventoryId: number;
   title: string;
   onClose: () => void;
+  fetchPage?: (
+    inventoryId: number,
+    page: { page: number; size: number },
+  ) => Promise<PagedResponse<InventoryAuditResponse>>;
 }) {
   const [entries, setEntries] = useState<InventoryAuditResponse[]>([]);
   const [page, setPage] = useState(1);
@@ -59,7 +67,7 @@ export function InventoryHistoryModal({
       setError("");
 
       try {
-        const result = await getInventoryHistory(inventoryId, {
+        const result = await fetchPage(inventoryId, {
           page: page - 1,
           size: PAGE_SIZE,
         });
@@ -88,7 +96,7 @@ export function InventoryHistoryModal({
     return () => {
       cancelled = true;
     };
-  }, [inventoryId, page]);
+  }, [inventoryId, page, fetchPage]);
 
   return (
     <div

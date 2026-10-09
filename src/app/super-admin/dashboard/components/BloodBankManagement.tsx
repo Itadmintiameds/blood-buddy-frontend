@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   AlertTriangle,
@@ -11,6 +11,7 @@ import {
   Droplets,
   FileCheck2,
   Hash,
+  History,
   Link2,
   LocateFixed,
   Loader2,
@@ -33,6 +34,7 @@ import type {
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import {
   addStockToCentre,
+  getAdminInventoryHistory,
   getBloodCentreLocations,
   getSuperAdminBloodBankDetail,
   getSuperAdminBloodCentreStats,
@@ -40,6 +42,7 @@ import {
   updateSuperAdminBloodUnits,
   type BloodCentreFilter,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
+import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
 import {
   getBloodComponents,
   getBloodGroups,
@@ -183,6 +186,13 @@ export default function BloodBankManagement() {
   const [newBloodRemarks, setNewBloodRemarks] = useState("");
   const [newBloodSaving, setNewBloodSaving] = useState(false);
   const [newBloodError, setNewBloodError] = useState("");
+
+  // The inventory item whose movement history is open (read-only), or null.
+  const [historyInfo, setHistoryInfo] = useState<{
+    bloodCentreId: number;
+    inventoryId: number;
+    title: string;
+  } | null>(null);
 
   // Debounce the search box so typing fires one request, not one per keystroke.
   useEffect(() => {
@@ -603,6 +613,35 @@ export default function BloodBankManagement() {
       setSaving(false);
     }
   };
+
+  const openHistoryModal = (
+    bank: SuperAdminBloodBank,
+    availabilityId: number,
+  ) => {
+    const availability = bank.availability.find(
+      (item) => item?.id === availabilityId,
+    );
+
+    if (!availability) {
+      return;
+    }
+
+    setHistoryInfo({
+      bloodCentreId: bank.id,
+      inventoryId: availability.id,
+      title: `${availability.bloodGroup} · ${availability.bloodComponent}`,
+    });
+  };
+
+  // Bound to the open item's centre id so the shared modal reads the admin
+  // route. Memoised (and keyed on the centre id) so the modal's fetch effect
+  // doesn't re-run every render.
+  const historyCentreId = historyInfo?.bloodCentreId;
+  const fetchHistoryPage = useCallback(
+    (inventoryId: number, page: { page: number; size: number }) =>
+      getAdminInventoryHistory(historyCentreId as number, inventoryId, page),
+    [historyCentreId],
+  );
 
   const openAddStockModal = (
     bank: SuperAdminBloodBank,
@@ -1185,6 +1224,9 @@ export default function BloodBankManagement() {
               onAddStock={(availabilityId) =>
                 openAddStockModal(activeBank, availabilityId)
               }
+              onHistory={(availabilityId) =>
+                openHistoryModal(activeBank, availabilityId)
+              }
               onAddNewBlood={() => openNewBloodModal(activeBank)}
               bloodGroupFilter={bloodGroupFilter}
               bloodComponentFilter={bloodComponentFilter}
@@ -1262,6 +1304,16 @@ export default function BloodBankManagement() {
           onSave={submitNewBlood}
         />
       )}
+
+      {/* INVENTORY HISTORY MODAL (read-only) */}
+      {historyInfo && (
+        <InventoryHistoryModal
+          inventoryId={historyInfo.inventoryId}
+          title={historyInfo.title}
+          fetchPage={fetchHistoryPage}
+          onClose={() => setHistoryInfo(null)}
+        />
+      )}
     </section>
   );
 }
@@ -1316,6 +1368,7 @@ function BankDetailPanel({
   onBack,
   onUpdate,
   onAddStock,
+  onHistory,
   onAddNewBlood,
   bloodGroupFilter,
   bloodComponentFilter,
@@ -1324,6 +1377,7 @@ function BankDetailPanel({
   onBack: () => void;
   onUpdate: (availabilityId: number) => void;
   onAddStock: (availabilityId: number) => void;
+  onHistory: (availabilityId: number) => void;
   onAddNewBlood: () => void;
   bloodGroupFilter: string;
   bloodComponentFilter: string;
@@ -1572,6 +1626,15 @@ function BankDetailPanel({
                     >
                       <Pencil size={16} />
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => onHistory(availability.id)}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition active:bg-[var(--color-icon-bg-soft)] active:text-[var(--color-primary)]"
+                      aria-label={`View history for ${availability.bloodGroup} ${availability.bloodComponent}`}
+                    >
+                      <History size={16} />
+                    </button>
                   </div>
                 </li>
               );
@@ -1663,6 +1726,15 @@ function BankDetailPanel({
                             aria-label={`Update ${availability.bloodGroup} ${availability.bloodComponent}`}
                           >
                             <Pencil size={14} />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => onHistory(availability.id)}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white text-[var(--color-text-muted)] shadow-sm transition-all duration-200 hover:-translate-y-px hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)] active:translate-y-0"
+                            aria-label={`View history for ${availability.bloodGroup} ${availability.bloodComponent}`}
+                          >
+                            <History size={14} />
                           </button>
                         </div>
                       </td>

@@ -13,6 +13,7 @@ import type {
   DonorAvailabilityStatus,
   DonorRegistrationResponse,
 } from "@/types/donor/donorTypes";
+import type { InventoryAuditResponse } from "@/services/bloodCenter/historyService";
 
 interface BloodCentreResponse {
   bloodCentreId: number;
@@ -238,6 +239,37 @@ export async function addStockToCentre(
   );
 
   return { success: true, message: data.message };
+}
+
+// GET ONE PAGE OF AN INVENTORY ITEM'S MOVEMENT HISTORY (SUPERADMIN only).
+// Same audit trail a centre sees for its own stock, but reached via the admin
+// route that also carries the centre id. Newest-first; `page` is zero-based.
+export async function getAdminInventoryHistory(
+  bloodCentreId: number,
+  inventoryId: number,
+  page: { page: number; size: number },
+): Promise<PagedResponse<InventoryAuditResponse>> {
+  const params = new URLSearchParams();
+  params.set("page", String(page.page));
+  params.set("size", String(page.size));
+  params.set("sort", "createdAt,desc");
+
+  const { data } = await api.get<
+    ApiEnvelope<PagedResponse<InventoryAuditResponse>>
+  >(`/admin/blood-centres/${bloodCentreId}/inventory/${inventoryId}/history`, {
+    params,
+  });
+
+  const paged = data.data;
+
+  return {
+    content: paged.content ?? [],
+    page: paged.page,
+    size: paged.size,
+    totalElements: paged.totalElements,
+    totalPages: paged.totalPages,
+    last: paged.last,
+  };
 }
 
 // Distinct cities + districts across all donors, for the filter dropdowns.
