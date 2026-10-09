@@ -54,15 +54,23 @@ import type {
   MasterBloodComponent,
   MasterBloodGroup,
 } from "@/types/master.types";
+import { reactivateDonor } from "@/services/bloodCenter/superAdmin/dashboardService";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
+import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import { Pagination } from "@/app/components/ui/Pagination";
 import {
   Bilingual,
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+import {
+  DeactivateDonorModal,
+  DonorActionButtons,
+  DonorStatusBadge,
+  LockDonorModal,
+} from "./DonorAvailability";
 
 const ALL = "all";
 
@@ -1223,6 +1231,16 @@ function BloodRequestDetailModal({
   const [closeUnits, setCloseUnits] = useState("");
   const [showCloseForm, setShowCloseForm] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  // Donor availability actions, invoked from the candidate list.
+  const [donorToLock, setDonorToLock] = useState<SuperAdminDonor | null>(null);
+  const [donorToDeactivate, setDonorToDeactivate] =
+    useState<SuperAdminDonor | null>(null);
+  const [donorToReactivate, setDonorToReactivate] =
+    useState<SuperAdminDonor | null>(null);
+  const [reactivatingDonor, setReactivatingDonor] = useState(false);
+  const [successMessageKey, setSuccessMessageKey] = useState<string | null>(
+    null,
+  );
   const closeLabel = useBilingualText("common.close");
   const remarksPlaceholder = useBilingualText("bloodCentre.remarksOptional");
   const unitsFulfilledPlaceholder = useBilingualText(
@@ -1319,6 +1337,48 @@ function BloodRequestDetailModal({
       );
     } finally {
       setRecordingDonorId(null);
+    }
+  };
+
+  // Replace a donor (by id) wherever they appear in the loaded detail, so a
+  // lock/deactivate/reactivate reflects immediately without a refetch.
+  const applyDonorUpdate = (updated: SuperAdminDonor) => {
+    setDetail((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const replace = (list: SuperAdminDonor[]) =>
+        list.map((donor) => (donor.id === updated.id ? updated : donor));
+
+      return {
+        ...current,
+        donatedBy: replace(current.donatedBy),
+        donorCandidates: replace(current.donorCandidates),
+      };
+    });
+  };
+
+  const handleDonorReactivate = async () => {
+    if (!donorToReactivate) {
+      return;
+    }
+
+    setReactivatingDonor(true);
+    setActionError("");
+
+    try {
+      const updated = await reactivateDonor(donorToReactivate.id);
+      applyDonorUpdate(updated);
+      setDonorToReactivate(null);
+      setSuccessMessageKey("superAdmin.donorReactivatedSuccess");
+    } catch (err) {
+      setActionError(
+        getApiErrorMessage(err, "Unable to reactivate this donor."),
+      );
+      setDonorToReactivate(null);
+    } finally {
+      setReactivatingDonor(false);
     }
   };
 
@@ -1537,6 +1597,9 @@ function BloodRequestDetailModal({
                   isOpen={isOpen}
                   recordingDonorId={recordingDonorId}
                   onRecord={setConfirmDonorId}
+                  onLock={setDonorToLock}
+                  onDeactivate={setDonorToDeactivate}
+                  onReactivate={setDonorToReactivate}
                 />
               </Section>
 
@@ -1730,6 +1793,57 @@ function BloodRequestDetailModal({
         }}
         onCancel={() => setConfirmDonorId(null)}
       />
+
+      {donorToLock && (
+        <LockDonorModal
+          donor={donorToLock}
+          onClose={() => setDonorToLock(null)}
+          onSaved={(updated) => {
+            applyDonorUpdate(updated);
+            setDonorToLock(null);
+            setSuccessMessageKey("superAdmin.donorLockedSuccess");
+          }}
+        />
+      )}
+
+      {donorToDeactivate && (
+        <DeactivateDonorModal
+          donor={donorToDeactivate}
+          onClose={() => setDonorToDeactivate(null)}
+          onSaved={(updated) => {
+            applyDonorUpdate(updated);
+            setDonorToDeactivate(null);
+            setSuccessMessageKey("superAdmin.donorDeactivatedSuccess");
+          }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={donorToReactivate !== null}
+        title={<BilingualInline tKey="superAdmin.confirmReactivateTitle" />}
+        description={<BilingualInline tKey="superAdmin.confirmReactivateDesc" />}
+        confirmLabel={
+          <BilingualInline
+            tKey="superAdmin.reactivateDonor"
+            enClassName={ON_SOLID_EN_CLASS}
+          />
+        }
+        loading={reactivatingDonor}
+        onConfirm={handleDonorReactivate}
+        onCancel={() => setDonorToReactivate(null)}
+      />
+
+      <SuccessModal
+        open={successMessageKey !== null}
+        title={
+          successMessageKey ? (
+            <BilingualInline tKey={successMessageKey} />
+          ) : (
+            ""
+          )
+        }
+        onConfirm={() => setSuccessMessageKey(null)}
+      />
     </>
   );
 }
@@ -1845,12 +1959,18 @@ function DonorCandidatesList({
   isOpen,
   recordingDonorId,
   onRecord,
+  onLock,
+  onDeactivate,
+  onReactivate,
 }: {
   donors: SuperAdminDonor[];
   unitsNeeded: number;
   isOpen: boolean;
   recordingDonorId: number | null;
   onRecord: (donorId: number) => void;
+  onLock: (donor: SuperAdminDonor) => void;
+  onDeactivate: (donor: SuperAdminDonor) => void;
+  onReactivate: (donor: SuperAdminDonor) => void;
 }) {
   const [showAll, setShowAll] = useState(false);
   const hasMore = donors.length > unitsNeeded;
@@ -1922,9 +2042,12 @@ function DonorCandidatesList({
             className="flex flex-col gap-2.5 rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
           >
             <div className="min-w-0">
-              <p className="break-words text-[13px] font-bold text-[var(--color-text-body)] sm:truncate sm:text-[12px]">
-                {donor.donorName}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="break-words text-[13px] font-bold text-[var(--color-text-body)] sm:truncate sm:text-[12px]">
+                  {donor.donorName}
+                </p>
+                {!donor.available && <DonorStatusBadge donor={donor} />}
+              </div>
               <p className="break-words text-[12px] text-[var(--color-text-placeholder-alt)] sm:text-[11px]">
                 {donor.mobileNumber} · {donor.bloodGroup} ·{" "}
                 {donor.city}
@@ -1935,44 +2058,54 @@ function DonorCandidatesList({
               </p>
             </div>
 
-            {isOpen && (
-              <button
-                type="button"
-                onClick={() => onRecord(donor.id)}
-                disabled={recordingDonorId !== null}
-                className="
-                  flex
-                  min-h-10
-                  w-full
-                  shrink-0
-                  items-center
-                  justify-center
-                  gap-1.5
-                  rounded-lg
-                  bg-[var(--color-primary)]
-                  px-3
-                  py-1.5
-                  sm:min-h-0
-                  sm:w-auto
-                  text-[11px]
-                  font-semibold
-                  text-white
-                  shadow-[0_4px_12px_rgba(255,59,63,0.18)]
-                  transition-all
-                  hover:bg-[var(--color-dashboard-cta-hover)]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-60
-                "
-              >
-                {recordingDonorId === donor.id && (
-                  <Loader2 size={12} className="animate-spin shrink-0" />
-                )}
-                <BilingualInline
-                  tKey="superAdmin.recordDonation"
-                  enClassName={ON_SOLID_EN_CLASS}
-                />
-              </button>
-            )}
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
+              {isOpen && (
+                <button
+                  type="button"
+                  onClick={() => onRecord(donor.id)}
+                  disabled={recordingDonorId !== null}
+                  className="
+                    flex
+                    min-h-10
+                    flex-1
+                    shrink-0
+                    items-center
+                    justify-center
+                    gap-1.5
+                    rounded-lg
+                    bg-[var(--color-primary)]
+                    px-3
+                    py-1.5
+                    sm:min-h-0
+                    sm:flex-none
+                    text-[11px]
+                    font-semibold
+                    text-white
+                    shadow-[0_4px_12px_rgba(255,59,63,0.18)]
+                    transition-all
+                    hover:bg-[var(--color-dashboard-cta-hover)]
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
+                >
+                  {recordingDonorId === donor.id && (
+                    <Loader2 size={12} className="animate-spin shrink-0" />
+                  )}
+                  <BilingualInline
+                    tKey="superAdmin.recordDonation"
+                    enClassName={ON_SOLID_EN_CLASS}
+                  />
+                </button>
+              )}
+
+              <DonorActionButtons
+                donor={donor}
+                labeled
+                onLock={() => onLock(donor)}
+                onDeactivate={() => onDeactivate(donor)}
+                onReactivate={() => onReactivate(donor)}
+              />
+            </div>
           </div>
         ))}
       </div>

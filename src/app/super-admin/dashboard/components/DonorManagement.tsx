@@ -6,11 +6,13 @@ import {
   ChevronDown,
   Droplets,
   Loader2,
+  Lock,
   MapPin,
   Phone,
   Plus,
   RefreshCw,
   Search,
+  ShieldOff,
   UserRound,
   Users,
   X,
@@ -23,6 +25,7 @@ import {
   getDonorLocations,
   getSuperAdminDonorsPage,
   getSuperAdminDonorStats,
+  reactivateDonor,
   type DonorFilter,
   type SuperAdminDonorStats,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
@@ -36,18 +39,43 @@ import {
   getDonorDobBounds,
   normalizeDonorForm,
 } from "@/schema/donor/donorRegistrationSchema";
-import type { DonorRegistrationInput } from "@/types/donor/donorTypes";
+import type {
+  DonorAvailabilityStatus,
+  DonorRegistrationInput,
+} from "@/types/donor/donorTypes";
 import type { MasterBloodGroup } from "@/types/master.types";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
+import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import { Pagination } from "@/app/components/ui/Pagination";
 import {
   Bilingual,
   BilingualInline,
   useBilingualText,
 } from "@/app/components/common/Bilingual";
+import {
+  DeactivateDonorModal,
+  DonorActionButtons,
+  DonorStatusBadge,
+  LockDonorModal,
+  ON_SOLID_EN_CLASS,
+  useReasonText,
+} from "./DonorAvailability";
 
 const ALL = "all";
+
+// The three statuses the list can filter on. Leaving all unselected is the
+// default view (currently-available donors only); selecting any reveals the
+// matching hidden donors.
+const STATUS_FILTER_OPTIONS: {
+  value: DonorAvailabilityStatus;
+  tKey: string;
+}[] = [
+  { value: "ACTIVE", tKey: "superAdmin.donorStatusActive" },
+  { value: "LOCKED", tKey: "superAdmin.donorStatusLocked" },
+  { value: "DEACTIVATED", tKey: "superAdmin.donorStatusDeactivated" },
+];
 
 const emptyDonorForm: DonorRegistrationInput = {
   fullName: "",
@@ -125,6 +153,25 @@ export function DonorManagement() {
   const [selectedDonor, setSelectedDonor] = useState<SuperAdminDonor | null>(
     null,
   );
+  // Availability-management flows. Each holds the donor the action targets (or
+  // null when the matching modal/dialog is closed).
+  const [donorToLock, setDonorToLock] = useState<SuperAdminDonor | null>(null);
+  const [donorToDeactivate, setDonorToDeactivate] =
+    useState<SuperAdminDonor | null>(null);
+  const [donorToReactivate, setDonorToReactivate] =
+    useState<SuperAdminDonor | null>(null);
+  const [reactivating, setReactivating] = useState(false);
+  const [reactivateError, setReactivateError] = useState("");
+  // Translation key for the confirmation shown after a successful action, or
+  // null when no SuccessModal is open.
+  const [successMessageKey, setSuccessMessageKey] = useState<string | null>(
+    null,
+  );
+  // Statuses selected in the multi-select filter. Empty = default view
+  // (currently-available donors only).
+  const [statusFilters, setStatusFilters] = useState<DonorAvailabilityStatus[]>(
+    [],
+  );
 
   // Debounce the search box so typing fires one request, not one per keystroke.
   useEffect(() => {
@@ -148,13 +195,26 @@ export function DonorManagement() {
     if (districtFilter !== ALL) {
       filter.districts = [districtFilter];
     }
+    if (statusFilters.length > 0) {
+      filter.statuses = statusFilters;
+    }
 
     return filter;
-  }, [debouncedSearch, bloodGroupFilter, cityFilter, districtFilter]);
+  }, [
+    debouncedSearch,
+    bloodGroupFilter,
+    cityFilter,
+    districtFilter,
+    statusFilters,
+  ]);
 
   // Any filter (or page-size) change sends us back to page 1. Done during
   // render — not in an effect — so we never fetch a stale page first.
-  const filterKey = `${debouncedSearch.trim()}|${bloodGroupFilter}|${cityFilter}|${districtFilter}|${pageSize}`;
+  const filterKey = `${debouncedSearch.trim()}|${bloodGroupFilter}|${cityFilter}|${districtFilter}|${[
+    ...statusFilters,
+  ]
+    .sort()
+    .join(",")}|${pageSize}`;
   const [priorFilterKey, setPriorFilterKey] = useState(filterKey);
 
   if (filterKey !== priorFilterKey) {
@@ -267,18 +327,60 @@ export function DonorManagement() {
   const totalDonors = stats?.totalDonors ?? 0;
   const distinctBloodGroupCount = stats?.distinctBloodGroupCount ?? 0;
   const recentDonationCount = stats?.recentDonationCount ?? 0;
+  const lockedDonorCount = stats?.lockedDonors ?? 0;
+  const deactivatedDonorCount = stats?.deactivatedDonors ?? 0;
 
   const isFiltering =
     search.trim().length > 0 ||
     bloodGroupFilter !== ALL ||
     cityFilter !== ALL ||
-    districtFilter !== ALL;
+    districtFilter !== ALL ||
+    statusFilters.length > 0;
 
   const clearFilters = () => {
     setSearch("");
     setBloodGroupFilter(ALL);
     setCityFilter(ALL);
     setDistrictFilter(ALL);
+    setStatusFilters([]);
+  };
+
+  const toggleStatusFilter = (status: DonorAvailabilityStatus) => {
+    setStatusFilters((current) =>
+      current.includes(status)
+        ? current.filter((value) => value !== status)
+        : [...current, status],
+    );
+  };
+
+  // Shared epilogue for a successful lock/deactivate/reactivate: close any open
+  // detail modal, reload the current page + stats (a now-hidden donor drops out
+  // of the default view), and show a confirmation.
+  const handleActionSuccess = (messageKey: string) => {
+    setSelectedDonor(null);
+    setReloadToken((token) => token + 1);
+    setSuccessMessageKey(messageKey);
+  };
+
+  const handleReactivateConfirm = async () => {
+    if (!donorToReactivate) {
+      return;
+    }
+
+    setReactivating(true);
+    setReactivateError("");
+
+    try {
+      await reactivateDonor(donorToReactivate.id);
+      setDonorToReactivate(null);
+      handleActionSuccess("superAdmin.donorReactivatedSuccess");
+    } catch (err) {
+      setReactivateError(
+        getApiErrorMessage(err, "Unable to reactivate this donor."),
+      );
+    } finally {
+      setReactivating(false);
+    }
   };
 
   const handleRefresh = () => {
@@ -293,7 +395,7 @@ export function DonorManagement() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      <StatGrid>
+      <StatGrid cols={5}>
         <StatTile
           icon={Users}
           value={String(totalDonors)}
@@ -334,6 +436,34 @@ export function DonorManagement() {
           }
           color="var(--color-stat-green)"
           index={2}
+        />
+
+        <StatTile
+          icon={Lock}
+          value={String(lockedDonorCount)}
+          label={
+            <Bilingual
+              tKey="superAdmin.lockedDonorsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-blue)"
+          index={3}
+        />
+
+        <StatTile
+          icon={ShieldOff}
+          value={String(deactivatedDonorCount)}
+          label={
+            <Bilingual
+              tKey="superAdmin.deactivatedDonorsStat"
+              as="span"
+              enClassName="mt-0.5 block text-[0.7em] font-normal leading-tight opacity-80"
+            />
+          }
+          color="var(--color-stat-gray)"
+          index={4}
         />
       </StatGrid>
 
@@ -492,6 +622,36 @@ export function DonorManagement() {
             )}
           </div>
         </div>
+
+        {/* Status multi-select. Unselected = the default view (available donors
+            only); toggling Locked/Deactivated reveals the hidden ones. */}
+        <div className="flex flex-wrap items-center gap-2 border-t border-[var(--color-border-lighter)] pt-2.5">
+          <Bilingual
+            tKey="superAdmin.filterByStatus"
+            as="span"
+            className="mr-1 text-[12px] font-semibold text-[var(--color-text-placeholder)]"
+          />
+
+          {STATUS_FILTER_OPTIONS.map((option) => {
+            const active = statusFilters.includes(option.value);
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => toggleStatusFilter(option.value)}
+                aria-pressed={active}
+                className={`inline-flex h-8 items-center rounded-full border px-3 text-[12px] font-semibold transition-all ${
+                  active
+                    ? "border-[var(--color-primary)] bg-[var(--color-icon-bg-soft)] text-[var(--color-primary)]"
+                    : "border-[var(--color-border-light)] bg-white text-[var(--color-text-muted)] hover:border-[var(--primary-200)] hover:text-[var(--color-primary)]"
+                }`}
+              >
+                <BilingualInline tKey={option.tKey} />
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {!loading && isFiltering && (
@@ -519,14 +679,16 @@ export function DonorManagement() {
           <table className="w-full table-fixed border-collapse">
             <colgroup>
               <col className="w-[4%]" />
-              <col className="w-[17%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[7%]" />
+              <col className="w-[13%]" />
               <col className="w-[9%]" />
-              <col className="w-[13%]" />
+              <col className="w-[9%]" />
+              <col className="w-[6%]" />
               <col className="w-[7%]" />
-              <col className="w-[13%]" />
+              <col className="w-[8%]" />
+              <col className="w-[6%]" />
+              <col className="w-[8%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
               <col className="w-[10%]" />
             </colgroup>
 
@@ -541,6 +703,8 @@ export function DonorManagement() {
                 <TableHeader tKey="common.address" />
                 <TableHeader tKey="superAdmin.pincode" />
                 <TableHeader tKey="superAdmin.lastBloodDonationDate" />
+                <TableHeader tKey="superAdmin.status" />
+                <TableHeader tKey="superAdmin.remarks" />
                 <TableHeader tKey="superAdmin.action" />
               </tr>
             </thead>
@@ -548,7 +712,7 @@ export function DonorManagement() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={10}>
+                  <td colSpan={12}>
                     <LoadingState />
                   </td>
                 </tr>
@@ -602,38 +766,34 @@ export function DonorManagement() {
                     </TableCell>
 
                     <TableCell>
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setSelectedDonor(donor);
-                        }}
-                        className="
-                          rounded-lg
-                          border
-                          border-[var(--color-border-lighter)]
-                          bg-white
-                          px-3
-                          py-1.5
-                          text-[11px]
-                          font-semibold
-                          text-[var(--color-primary)]
-                          shadow-sm
-                          transition-all
-                          duration-200
-                          hover:-translate-y-px
-                          hover:border-[var(--primary-200)]
-                          hover:bg-[var(--color-icon-bg-soft)]
-                        "
+                      <DonorStatusBadge donor={donor} />
+                    </TableCell>
+
+                    <TableCell>
+                      <span
+                        className="block truncate"
+                        title={donor.remarks ?? undefined}
                       >
-                        <BilingualInline tKey="superAdmin.view" />
-                      </button>
+                        {donor.remarks || "—"}
+                      </span>
+                    </TableCell>
+
+                    <TableCell>
+                      <DonorActionButtons
+                        donor={donor}
+                        onLock={() => setDonorToLock(donor)}
+                        onDeactivate={() => setDonorToDeactivate(donor)}
+                        onReactivate={() => {
+                          setReactivateError("");
+                          setDonorToReactivate(donor);
+                        }}
+                      />
                     </TableCell>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={10}>
+                  <td colSpan={12}>
                     <EmptyState tKey="superAdmin.noDonorDataFound" />
                   </td>
                 </tr>
@@ -675,7 +835,10 @@ export function DonorManagement() {
                     </div>
                   </div>
 
-                  <BloodGroupBadge value={donor?.bloodGroup} />
+                  <div className="flex shrink-0 flex-col items-end gap-1.5">
+                    <BloodGroupBadge value={donor?.bloodGroup} />
+                    <DonorStatusBadge donor={donor} />
+                  </div>
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-4">
@@ -697,16 +860,31 @@ export function DonorManagement() {
                     tKey="superAdmin.lastDonation"
                     value={formatDate(donor?.lastBloodDonationDate)}
                   />
+
+                  {donor.remarks && (
+                    <InfoItem tKey="superAdmin.remarks" value={donor.remarks} />
+                  )}
                 </div>
 
-                <div className="mt-4 flex justify-end">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                  <DonorActionButtons
+                    donor={donor}
+                    labeled
+                    onLock={() => setDonorToLock(donor)}
+                    onDeactivate={() => setDonorToDeactivate(donor)}
+                    onReactivate={() => {
+                      setReactivateError("");
+                      setDonorToReactivate(donor);
+                    }}
+                  />
+
                   <button
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
                       setSelectedDonor(donor);
                     }}
-                    className="inline-flex min-h-10 items-center rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[12px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
+                    className="ml-auto inline-flex min-h-10 items-center rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[12px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
                   >
                     <BilingualInline tKey="superAdmin.viewDetails" />
                   </button>
@@ -753,7 +931,10 @@ export function DonorManagement() {
                   </div>
                 </div>
 
-                <BloodGroupBadge value={donor.bloodGroup} />
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <BloodGroupBadge value={donor.bloodGroup} />
+                  <DonorStatusBadge donor={donor} />
+                </div>
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-3 border-t border-[var(--color-border-lighter)] pt-3">
@@ -788,6 +969,29 @@ export function DonorManagement() {
                     wrap
                   />
                 </div>
+
+                {donor.remarks && (
+                  <div className="col-span-2">
+                    <InfoItem
+                      tKey="superAdmin.remarks"
+                      value={donor.remarks}
+                      wrap
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3.5 flex flex-wrap items-center gap-2">
+                <DonorActionButtons
+                  donor={donor}
+                  labeled
+                  onLock={() => setDonorToLock(donor)}
+                  onDeactivate={() => setDonorToDeactivate(donor)}
+                  onReactivate={() => {
+                    setReactivateError("");
+                    setDonorToReactivate(donor);
+                  }}
+                />
               </div>
 
               <button
@@ -796,7 +1000,7 @@ export function DonorManagement() {
                   event.stopPropagation();
                   setSelectedDonor(donor);
                 }}
-                className="mt-3.5 flex min-h-[44px] w-full items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[13px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
+                className="mt-2.5 flex min-h-[44px] w-full items-center justify-center rounded-lg border border-[var(--color-border-lighter)] bg-white px-3.5 py-2 text-[13px] font-semibold text-[var(--color-primary)] shadow-sm transition-all duration-200 hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)]"
               >
                 <BilingualInline tKey="superAdmin.viewDetails" />
               </button>
@@ -836,6 +1040,67 @@ export function DonorManagement() {
           onClose={() => setSelectedDonor(null)}
         />
       )}
+
+      {donorToLock && (
+        <LockDonorModal
+          donor={donorToLock}
+          onClose={() => setDonorToLock(null)}
+          onSaved={() => {
+            setDonorToLock(null);
+            handleActionSuccess("superAdmin.donorLockedSuccess");
+          }}
+        />
+      )}
+
+      {donorToDeactivate && (
+        <DeactivateDonorModal
+          donor={donorToDeactivate}
+          onClose={() => setDonorToDeactivate(null)}
+          onSaved={() => {
+            setDonorToDeactivate(null);
+            handleActionSuccess("superAdmin.donorDeactivatedSuccess");
+          }}
+        />
+      )}
+
+      <ConfirmDialog
+        open={donorToReactivate !== null}
+        title={<BilingualInline tKey="superAdmin.confirmReactivateTitle" />}
+        description={
+          <>
+            <BilingualInline tKey="superAdmin.confirmReactivateDesc" />
+            {reactivateError && (
+              <span className="mt-2 block font-medium text-red-600">
+                {reactivateError}
+              </span>
+            )}
+          </>
+        }
+        confirmLabel={
+          <BilingualInline
+            tKey="superAdmin.reactivateDonor"
+            enClassName={ON_SOLID_EN_CLASS}
+          />
+        }
+        loading={reactivating}
+        onConfirm={handleReactivateConfirm}
+        onCancel={() => {
+          setDonorToReactivate(null);
+          setReactivateError("");
+        }}
+      />
+
+      <SuccessModal
+        open={successMessageKey !== null}
+        title={
+          successMessageKey ? (
+            <BilingualInline tKey={successMessageKey} />
+          ) : (
+            ""
+          )
+        }
+        onConfirm={() => setSuccessMessageKey(null)}
+      />
     </div>
   );
 }
@@ -1171,10 +1436,14 @@ function DonorDetailModal({
 }) {
   const { rendered, visible } = useExitTransition(true, 200);
   const closeLabel = useBilingualText("common.close");
+  const reasonText = useReasonText(donor.unavailabilityReason);
 
   if (!rendered) {
     return null;
   }
+
+  const showLockPeriod =
+    donor.status === "LOCKED" && (donor.lockedFrom || donor.lockedUntil);
 
   const locationLine = [donor.address, donor.city, donor.district]
     .filter((part, index, all) => Boolean(part) && all.indexOf(part) === index)
@@ -1234,6 +1503,36 @@ function DonorDetailModal({
             />
             <BloodGroupBadge value={donor.bloodGroup} />
           </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-3.5 py-2.5">
+            <Bilingual
+              tKey="superAdmin.availability"
+              as="span"
+              className="text-[12px] font-medium text-[var(--color-text-secondary)]"
+            />
+            <DonorStatusBadge donor={donor} />
+          </div>
+
+          {(showLockPeriod || reasonText || donor.remarks) && (
+            <div className="grid grid-cols-2 gap-3">
+              {donor.unavailabilityReason && (
+                <InfoItem tKey="superAdmin.reason" value={reasonText} />
+              )}
+              {showLockPeriod && (
+                <InfoItem
+                  tKey="superAdmin.lockedPeriod"
+                  value={`${formatDate(donor.lockedFrom)} – ${formatDate(
+                    donor.lockedUntil,
+                  )}`}
+                />
+              )}
+              {donor.remarks && (
+                <div className="col-span-2">
+                  <InfoItem tKey="superAdmin.remarks" value={donor.remarks} wrap />
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <InfoItem tKey="common.mobileNumber" value={donor.mobileNumber} wrap />

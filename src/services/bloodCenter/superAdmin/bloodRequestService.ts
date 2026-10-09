@@ -96,6 +96,12 @@ function toDonor(response: DonorRegistrationResponse): SuperAdminDonor {
     pincode: response.pincode,
     lastBloodDonationDate: response.lastBloodDonationDate,
     createdAt: response.createdAt,
+    status: response.status,
+    unavailabilityReason: response.unavailabilityReason,
+    remarks: response.remarks,
+    lockedFrom: response.lockedFrom,
+    lockedUntil: response.lockedUntil,
+    available: response.available,
   };
 }
 

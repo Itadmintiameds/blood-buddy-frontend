@@ -163,15 +163,21 @@ export function StatTile({
 
 // The KPI row the dashboards render. Three tiles across on every screen size by
 // default (compact on phones), so the Super Admin and Blood Centre dashboards
-// match. Pass cols={4} for a four-tile row that stacks two-per-row on phones.
+// match. Pass cols={4} for a four-tile row that stacks two-per-row on phones,
+// or cols={5} for a five-tile row (two-per-row on phones, three from sm, five
+// from lg).
 export function StatGrid({
   children,
   cols = 3,
 }: {
   children: ReactNode;
-  cols?: 3 | 4;
+  cols?: 3 | 4 | 5;
 }) {
   const colsClass =
-    cols === 4 ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-3";
+    cols === 5
+      ? "grid-cols-3 lg:grid-cols-5"
+      : cols === 4
+        ? "grid-cols-2 sm:grid-cols-4"
+        : "grid-cols-3";
   return <div className={`grid ${colsClass} gap-2.5 sm:gap-4`}>{children}</div>;
 }

@@ -1,4 +1,10 @@
 import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
+import type {
+  DonorAvailabilityStatus,
+  DonorDeactivationReason,
+  DonorLockReason,
+  DonorUnavailabilityReason,
+} from "@/types/donor/donorTypes";
 
 export type SuperAdminSection = "blood-bank" | "donor" | "recipient";
 
@@ -66,6 +72,30 @@ export interface SuperAdminDonor {
   pincode: string;
   lastBloodDonationDate: string | null;
   createdAt: string;
+  // Availability management (see DonorResponse). `available` drives the badge;
+  // `status`/`unavailabilityReason`/`lockedFrom`/`lockedUntil`/`remarks` drive
+  // the detail view and the row actions.
+  status: DonorAvailabilityStatus;
+  unavailabilityReason: DonorUnavailabilityReason | null;
+  remarks: string | null;
+  lockedFrom: string | null;
+  lockedUntil: string | null;
+  available: boolean;
+}
+
+// Sent to PATCH /admin/donors/{donorId}/lock. `lockedFrom` defaults to today on
+// the server when omitted; dates are YYYY-MM-DD.
+export interface LockDonorInput {
+  reason: DonorLockReason;
+  lockedFrom?: string;
+  lockedUntil: string;
+  remarks?: string;
+}
+
+// Sent to PATCH /admin/donors/{donorId}/deactivate.
+export interface DeactivateDonorInput {
+  reason: DonorDeactivationReason;
+  remarks?: string;
 }
 
 // Sent to POST /admin/blood-centres/{id}/inventory/add-availability

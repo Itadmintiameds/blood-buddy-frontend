@@ -2,12 +2,17 @@ import { api } from "@/services/api/client";
 import type { ApiEnvelope, PagedResponse } from "@/types/api.types";
 import type {
   AdminAddStockInput,
+  DeactivateDonorInput,
+  LockDonorInput,
   SuperAdminBloodBank,
   SuperAdminBloodCentreStats,
   SuperAdminDonor,
   UpdateBloodUnitsInput,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
-import type { DonorRegistrationResponse } from "@/types/donor/donorTypes";
+import type {
+  DonorAvailabilityStatus,
+  DonorRegistrationResponse,
+} from "@/types/donor/donorTypes";
 
 interface BloodCentreResponse {
   bloodCentreId: number;
@@ -262,6 +267,12 @@ function mapDonor(donor: DonorRegistrationResponse): SuperAdminDonor {
     pincode: donor.pincode,
     lastBloodDonationDate: donor.lastBloodDonationDate,
     createdAt: donor.createdAt,
+    status: donor.status,
+    unavailabilityReason: donor.unavailabilityReason,
+    remarks: donor.remarks,
+    lockedFrom: donor.lockedFrom,
+    lockedUntil: donor.lockedUntil,
+    available: donor.available,
   };
 }
 
@@ -285,6 +296,12 @@ export interface DonorFilter {
   districts?: string[];
   /** Free-text search across name, mobile, alternative mobile, address, city, district, pincode. */
   search?: string;
+  /**
+   * Match donors in any of these availability statuses. Omitting this (the
+   * default) returns only currently-available donors — locked and deactivated
+   * donors stay hidden until an explicit status is requested.
+   */
+  statuses?: DonorAvailabilityStatus[];
 }
 
 // Aggregate donor dashboard stats across ALL donors (not the current
@@ -293,6 +310,10 @@ export interface SuperAdminDonorStats {
   totalDonors: number;
   distinctBloodGroupCount: number;
   recentDonationCount: number;
+  // Donors currently locked (temporarily unavailable) and deactivated
+  // (permanently removed).
+  lockedDonors: number;
+  deactivatedDonors: number;
 }
 
 export async function getSuperAdminDonorStats(): Promise<SuperAdminDonorStats> {
@@ -320,6 +341,7 @@ export async function getSuperAdminDonorsPage(
   );
   filter.cities?.forEach((city) => params.append("cities", city));
   filter.districts?.forEach((district) => params.append("districts", district));
+  filter.statuses?.forEach((status) => params.append("statuses", status));
   if (filter.search?.trim()) {
     params.set("search", filter.search.trim());
   }
@@ -338,4 +360,56 @@ export async function getSuperAdminDonorsPage(
     totalPages: paged.totalPages,
     last: paged.last,
   };
+}
+
+// LOCK A DONOR (SUPERADMIN only) — a temporary, auto-expiring unavailability.
+// PATCH /admin/donors/{donorId}/lock. Returns the updated donor. The backend
+// 400s (surfaced to the caller) when the reason isn't a lock reason, the dates
+// are in the past, or lockedUntil precedes lockedFrom.
+export async function lockDonor(
+  donorId: number,
+  input: LockDonorInput,
+): Promise<SuperAdminDonor> {
+  const body: LockDonorInput = {
+    reason: input.reason,
+    lockedUntil: input.lockedUntil,
+  };
+  if (input.lockedFrom) body.lockedFrom = input.lockedFrom;
+  if (input.remarks) body.remarks = input.remarks;
+
+  const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
+    `/admin/donors/${donorId}/lock`,
+    body,
+  );
+
+  return mapDonor(data.data);
+}
+
+// DEACTIVATE A DONOR (SUPERADMIN only) — a permanent removal.
+// PATCH /admin/donors/{donorId}/deactivate. Returns the updated donor.
+export async function deactivateDonor(
+  donorId: number,
+  input: DeactivateDonorInput,
+): Promise<SuperAdminDonor> {
+  const body: DeactivateDonorInput = { reason: input.reason };
+  if (input.remarks) body.remarks = input.remarks;
+
+  const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
+    `/admin/donors/${donorId}/deactivate`,
+    body,
+  );
+
+  return mapDonor(data.data);
+}
+
+// REACTIVATE A DONOR (SUPERADMIN only) — restores to ACTIVE, clearing any lock
+// or deactivation. PATCH /admin/donors/{donorId}/reactivate (no body).
+export async function reactivateDonor(
+  donorId: number,
+): Promise<SuperAdminDonor> {
+  const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
+    `/admin/donors/${donorId}/reactivate`,
+  );
+
+  return mapDonor(data.data);
 }
