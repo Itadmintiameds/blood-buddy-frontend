@@ -119,7 +119,11 @@ export function Pagination({
       >
         {onPageSizeChange ? (
           <>
-            <div className="relative shrink-0">
+            {/* The global `select { font: inherit }` rule (globals.css) neutralises
+                any text-[..] on the <select> itself, so the size must come from an
+                ancestor — otherwise it inherits the panel's larger ambient font.
+                text-[12px] matches the non-compact pager's label wrapper. */}
+            <div className="relative shrink-0 text-[12px]">
               <select
                 value={pageSize}
                 onChange={(event) =>

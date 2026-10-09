@@ -603,15 +603,16 @@ export function RecipientManagement() {
         <table className="w-full table-fixed border-collapse">
           <colgroup>
             <col className="w-[5%]" />
-            <col className="w-[17%]" />
-            <col className="w-[11%]" />
-            <col className="w-[8%]" />
+            <col className="w-[15%]" />
+            <col className="w-[10%]" />
             <col className="w-[7%]" />
-            <col className="w-[8%]" />
             <col className="w-[11%]" />
-            <col className="w-[12%]" />
-            <col className="w-[12%]" />
+            <col className="w-[6%]" />
+            <col className="w-[7%]" />
             <col className="w-[9%]" />
+            <col className="w-[11%]" />
+            <col className="w-[11%]" />
+            <col className="w-[8%]" />
           </colgroup>
 
           <thead>
@@ -620,6 +621,7 @@ export function RecipientManagement() {
               <TableHeader tKey="recipient.patientName" />
               <TableHeader tKey="superAdmin.phoneNumber" />
               <TableHeader tKey="bloodCentre.bloodGroup" />
+              <TableHeader tKey="superAdmin.bloodComponent" />
               <TableHeader tKey="bloodCentre.units" />
               <TableHeader tKey="superAdmin.unitsFulfilled" />
               <TableHeader tKey="common.city" />
@@ -632,7 +634,7 @@ export function RecipientManagement() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={10}>
+                <td colSpan={11}>
                   <LoadingState />
                 </td>
               </tr>
@@ -667,6 +669,15 @@ export function RecipientManagement() {
 
                   <TableCell>
                     <BloodGroupBadge value={request.bloodGroup} />
+                  </TableCell>
+
+                  <TableCell>
+                    <span
+                      className="block truncate"
+                      title={request.bloodComponent}
+                    >
+                      {request.bloodComponent}
+                    </span>
                   </TableCell>
 
                   <TableCell>
@@ -729,7 +740,7 @@ export function RecipientManagement() {
               ))
             ) : (
               <tr>
-                <td colSpan={10}>
+                <td colSpan={11}>
                   <EmptyState tKey="superAdmin.noBloodRequestsFound" />
                 </td>
               </tr>
@@ -782,6 +793,11 @@ export function RecipientManagement() {
                   icon={Phone}
                   tKey="superAdmin.phoneNumber"
                   value={request.mobileNumber}
+                />
+                <MobileInfoRow
+                  icon={Droplets}
+                  tKey="superAdmin.bloodComponent"
+                  value={request.bloodComponent}
                 />
                 <MobileInfoRow
                   icon={Droplets}
