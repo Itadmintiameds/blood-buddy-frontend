@@ -981,7 +981,7 @@ function LogRequestModal({
         address: normalized.address || undefined,
         city: normalized.city,
         district: normalized.district,
-        pincode: normalized.pincode,
+        pincode: normalized.pincode || undefined,
       });
 
       onSaved();
@@ -1236,8 +1236,7 @@ function LogRequestModal({
 
             <FormInput
               icon={MapPin}
-              label="Pincode"
-              required
+              label="Pincode (optional)"
               inputMode="numeric"
               maxLength={6}
               placeholder={enter6DigitPinCode}

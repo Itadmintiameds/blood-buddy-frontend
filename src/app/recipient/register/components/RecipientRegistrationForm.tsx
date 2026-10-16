@@ -171,10 +171,12 @@ export function RecipientRegistrationForm() {
         address: data.address || undefined,
         city: data.city,
         district: data.district,
-        pincode: data.pincode,
+        pincode: data.pincode || undefined,
       });
 
-      saveLastRecipientPincode(data.pincode);
+      if (data.pincode) {
+        saveLastRecipientPincode(data.pincode);
+      }
       setSuccessResult(response);
     } catch (error) {
       console.error("Blood request submit error:", error);
@@ -478,7 +480,6 @@ export function RecipientRegistrationForm() {
             id="pincode"
             icon={MapPinned}
             label={<Bilingual tKey="common.pinCode" as="span" />}
-            required
             placeholder={enter6DigitPinCode}
             inputMode="numeric"
             maxLength={6}

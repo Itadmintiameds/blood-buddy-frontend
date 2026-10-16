@@ -26,7 +26,7 @@ export interface BloodRequestPayload {
   address?: string;
   city: string;
   district: string;
-  pincode: string;
+  pincode?: string;
 }
 
 // bloodbuddy.backend.dto.request.BloodRequestResponse

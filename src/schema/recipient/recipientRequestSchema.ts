@@ -72,7 +72,9 @@ export const recipientRequestSchema = z.object({
     .string()
     .trim()
     .regex(/^\d{6}$/, "Pincode must be exactly 6 digits")
-    .refine((value) => !/^0+$/.test(value), "Enter a valid pincode"),
+    .refine((value) => !/^0+$/.test(value), "Enter a valid pincode")
+    .optional()
+    .or(z.literal("")),
 });
 
 // Maximum units a single request may ask for, by blood component. Matched
