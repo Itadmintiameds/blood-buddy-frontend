@@ -83,9 +83,12 @@ export function SuperAdminDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--color-surface-alt)]">
-      {/* Full-width brand header — pinned to the top while the page scrolls */}
-      <div className="sticky top-0 z-40 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
+    // Fixed-height frame, as in BloodCentreShell: the header stays put and only
+    // the region *below* it scrolls, so the scrollbar never runs alongside the
+    // header. 100dvh so mobile browser chrome doesn't clip it.
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[var(--color-surface-alt)]">
+      {/* Full-width brand header — fixed at the top, outside the scroll area */}
+      <div className="z-40 shrink-0 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
         <BrandHeader welcomeName={adminName} />
       </div>
 
@@ -97,12 +100,6 @@ export function SuperAdminDashboard() {
         userName={adminName}
         footer={<SuperAdminLogoutButton />}
       >
-        <Bilingual
-          tKey="superAdmin.superAdminDashboard"
-          as="p"
-          className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-text-placeholder)] lg:text-[9px]"
-        />
-
         <div className="space-y-1.5 lg:space-y-1">
           {navigationItems.map((item) => {
             const active = activeSection === item.id;
@@ -136,46 +133,49 @@ export function SuperAdminDashboard() {
         </div>
       </SidebarShell>
 
-      <main className="flex-1 lg:ml-[260px]">
-        {/* Mobile bar — menu toggle plus the name of the open section */}
-        <div className="border-b border-[var(--color-border-lighter)] bg-white lg:hidden">
-          <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label={openMenuLabel}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] shadow-sm transition hover:bg-[var(--color-surface-hover)]"
-            >
-              <Menu size={19} />
-            </button>
+      {/* Scroll region — everything below the header scrolls here */}
+      <div className="flex flex-1 flex-col overflow-y-auto">
+        <main className="flex-1 lg:ml-[260px]">
+          {/* Mobile bar — menu toggle plus the name of the open section */}
+          <div className="border-b border-[var(--color-border-lighter)] bg-white lg:hidden">
+            <div className="flex items-center gap-3 px-4 py-3.5 sm:px-6">
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label={openMenuLabel}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] shadow-sm transition hover:bg-[var(--color-surface-hover)]"
+              >
+                <Menu size={19} />
+              </button>
 
-            <div className="min-w-0">
-              <Bilingual
-                tKey={activeItem.tKey}
-                as="h1"
-                className="truncate text-[16px] font-bold tracking-[-0.2px] text-[var(--color-text-primary)]"
-                enClassName="block truncate text-[0.7em] font-normal leading-tight text-[var(--color-text-muted)]"
-              />
-              <Bilingual
-                tKey={activeItem.subKey}
-                as="p"
-                className="mt-0.5 truncate text-[12px] text-[var(--color-text-muted)]"
-                enClassName="hidden"
-              />
+              <div className="min-w-0">
+                <Bilingual
+                  tKey={activeItem.tKey}
+                  as="h1"
+                  className="truncate text-[16px] font-bold tracking-[-0.2px] text-[var(--color-text-primary)]"
+                  enClassName="block truncate text-[0.7em] font-normal leading-tight text-[var(--color-text-muted)]"
+                />
+                <Bilingual
+                  tKey={activeItem.subKey}
+                  as="p"
+                  className="mt-0.5 truncate text-[12px] text-[var(--color-text-muted)]"
+                  enClassName="hidden"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <section className="px-4 py-5 sm:px-6 sm:py-7 lg:px-8 2xl:px-12">
-          <div className="mx-auto w-full max-w-[1600px]">
-            {renderActiveSection()}
-          </div>
-        </section>
-      </main>
+          {/* Content */}
+          <section className="px-4 py-5 sm:px-6 sm:py-7 lg:px-8 2xl:px-12">
+            <div className="mx-auto w-full max-w-[1600px]">
+              {renderActiveSection()}
+            </div>
+          </section>
+        </main>
 
-      {/* Offset by the fixed sidebar so it never slides underneath it */}
-      <PoweredByFooter className="lg:ml-[260px]" />
+        {/* Offset by the fixed sidebar so it never slides underneath it */}
+        <PoweredByFooter className="lg:ml-[260px]" />
+      </div>
     </div>
   );
 }

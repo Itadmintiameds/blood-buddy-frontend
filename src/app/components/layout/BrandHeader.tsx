@@ -48,39 +48,70 @@ export function BrandHeader({
 
   return (
     <header className="w-full bg-white">
-      <div className="bg-[var(--color-primary)] px-3 py-2.5 sm:px-5 sm:py-3">
-        <div className="mx-auto flex w-full max-w-[1600px] items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+      {/* Desktop height must stay 76px (16px padding + 60px badge): the
+          sidebar is positioned at lg:top-[76px] below it. */}
+      <div className="bg-[var(--color-primary)] px-3 py-2 sm:px-5">
+        <div
+          className={`mx-auto flex w-full max-w-[1600px] items-center justify-between gap-2 ${
+            welcomeName ? "lg:max-w-none" : ""
+          }`}
+        >
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3 lg:gap-0">
+            {/* With a sidebar below (welcomeName pages), the logo slot spans the
+                sidebar's 260px (240px + the bar's 20px padding) so the welcome
+                text starts where the page content does. */}
             <div
-              className="
-                flex
-                h-11
-                w-11
-                items-center
-                justify-center
-                rounded-full
-                bg-[var(--color-icon-bg-soft-2)]
-                sm:h-13
-                sm:w-13
-              "
+              className={`flex shrink-0 items-center gap-2.5 sm:gap-3 ${
+                welcomeName ? "lg:w-[240px]" : ""
+              }`}
             >
-              <Image
-                src="/images/blood-buddy-logo.png"
-                alt="Blood Buddy"
-                width={1112}
-                height={1650}
-                priority
+              {/* White badge shaped to the tall drop so the logo fills nearly
+                  all of it and stays readable against the red bar. */}
+              <div
                 className="
-                  h-[34px]
-                  w-auto
-                  object-contain
-                  sm:h-[42px]
+                  ml-1
+                  flex
+                  h-[52px]
+                  w-[44px]
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-white
+                  shadow-[0_4px_14px_rgba(0,0,0,0.18)]
+                  ring-1
+                  ring-black/5
+                  sm:ml-2
+                  sm:h-[60px]
+                  sm:w-[50px]
                 "
-              />
+              >
+                <Image
+                  src="/images/blood-buddy-logo.png"
+                  alt="Blood Buddy"
+                  width={1112}
+                  height={1650}
+                  priority
+                  className="
+                    h-[48px]
+                    w-auto
+                    object-contain
+                    sm:h-[56px]
+                  "
+                />
+              </div>
+
+              <div className="leading-none text-white">
+                <p className="text-[16px] font-extrabold tracking-[-0.3px] sm:text-[18px]">
+                  Blood Buddy
+                </p>
+                <p className="mt-1 whitespace-nowrap text-[9px] font-medium uppercase tracking-[0.04em] text-white/80 min-[380px]:text-[10px] min-[380px]:tracking-[0.08em] sm:text-[10.5px]">
+                  Network of Lifesavers
+                </p>
+              </div>
             </div>
 
             {welcomeName && (
-              <div className="ml-1 hidden min-w-0 items-center border-l border-white/25 pl-3 sm:flex">
+              <div className="ml-1 hidden min-w-0 items-center border-l border-white/25 pl-3 sm:flex lg:ml-0 lg:pl-8">
                 <p className="truncate text-[13px] font-medium text-white sm:text-[14px]">
                   Welcome,{" "}
                   <span className="font-semibold">{welcomeName}</span>
