@@ -8,6 +8,7 @@ import type {
   SuperAdminBloodCentreStats,
   SuperAdminDonor,
   UpdateBloodUnitsInput,
+  UpdateDonorInput,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import type {
   DonorAvailabilityStatus,
@@ -412,6 +413,20 @@ export async function lockDonor(
   const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
     `/admin/donors/${donorId}/lock`,
     body,
+  );
+
+  return mapDonor(data.data);
+}
+
+// EDIT A DONOR'S PROFILE (SUPERADMIN only) — a full replacement of the
+// editable fields. PUT /admin/donors/{donorId}. Returns the updated donor.
+export async function updateDonor(
+  donorId: number,
+  input: UpdateDonorInput,
+): Promise<SuperAdminDonor> {
+  const { data } = await api.put<ApiEnvelope<DonorRegistrationResponse>>(
+    `/admin/donors/${donorId}`,
+    input,
   );
 
   return mapDonor(data.data);

@@ -7,6 +7,7 @@ import type {
   SuperAdminBloodRequestStats,
   SuperAdminBloodRequestSummary,
   SuperAdminDonor,
+  UpdateBloodRequestInput,
 } from "@/types/bloodCenter/superAdmin/superAdminTypes";
 import type { PageRequest } from "@/services/bloodCenter/superAdmin/dashboardService";
 import type { DonorRegistrationResponse } from "@/types/donor/donorTypes";
@@ -239,6 +240,21 @@ export async function recordBloodRequestDonation(
   const { data } = await api.post<ApiEnvelope<BloodRequestDetailResponse>>(
     `/admin/blood-requests/${bloodRequestId}/donation`,
     { bloodDonorDetailsId },
+  );
+
+  return toDetail(data.data);
+}
+
+// EDIT A BLOOD REQUEST (SUPERADMIN only). The backend rejects edits to closed
+// (CLOSED / PARTIALLY_CLOSED) requests, and re-matches centres for an open
+// request whose blood group, component or location changed.
+export async function updateBloodRequest(
+  bloodRequestId: number,
+  input: UpdateBloodRequestInput,
+): Promise<SuperAdminBloodRequestDetail> {
+  const { data } = await api.put<ApiEnvelope<BloodRequestDetailResponse>>(
+    `/admin/blood-requests/${bloodRequestId}`,
+    input,
   );
 
   return toDetail(data.data);

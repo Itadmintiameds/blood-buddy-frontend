@@ -8,6 +8,7 @@ import {
   Droplets,
   Loader2,
   MapPin,
+  Pencil,
   Phone,
   Plus,
   RefreshCw,
@@ -35,6 +36,7 @@ import {
   getSuperAdminBloodRequestsPage,
   getSuperAdminBloodRequestStats,
   recordBloodRequestDonation,
+  updateBloodRequest,
   type BloodRequestFilter,
 } from "@/services/bloodCenter/superAdmin/bloodRequestService";
 import { submitBloodRequest } from "@/services/recipient/recipientRequestService";
@@ -47,6 +49,7 @@ import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { DEFAULT_PAGE_SIZE, usePagination } from "@/app/hooks/usePagination";
 import {
   buildComponentLimits,
+  makeBloodRequestEditSchema,
   makeRecipientRequestSchema,
   normalizeRecipientForm,
 } from "@/schema/recipient/recipientRequestSchema";
@@ -70,6 +73,7 @@ import {
   DeactivateDonorModal,
   DonorActionButtons,
   DonorStatusBadge,
+  HeaderEditButton,
   LockDonorModal,
 } from "./DonorAvailability";
 
@@ -878,12 +882,26 @@ export function RecipientManagement() {
       {openRequestId !== null && (
         <BloodRequestDetailModal
           bloodRequestId={openRequestId}
+          bloodGroups={masterGroups}
+          bloodComponents={masterComponents}
           onClose={() => setOpenRequestId(null)}
           onChanged={(updated) => {
             setRequests((current) =>
               current.map((request) =>
                 request.id === updated.id
-                  ? { ...request, status: updated.status }
+                  ? {
+                      ...request,
+                      recipientName: updated.recipientName,
+                      mobileNumber: updated.mobileNumber,
+                      bloodGroup: updated.bloodGroup,
+                      bloodComponent: updated.bloodComponent,
+                      units: updated.units,
+                      city: updated.city,
+                      district: updated.district,
+                      pincode: updated.pincode,
+                      status: updated.status,
+                      closedUnits: updated.closedUnits,
+                    }
                   : request,
               ),
             );
@@ -1286,15 +1304,429 @@ function LogRequestModal({
 }
 
 /* ============================================================
+   EDIT REQUEST MODAL — corrects the recipient details of an existing request
+   (PUT /admin/blood-requests/{id}). Blood group / component stay as matched.
+============================================================ */
+
+function EditBloodRequestModal({
+  detail,
+  bloodGroups,
+  bloodComponents,
+  onClose,
+  onSaved,
+}: {
+  detail: SuperAdminBloodRequestDetail;
+  bloodGroups: MasterBloodGroup[];
+  bloodComponents: MasterBloodComponent[];
+  onClose: () => void;
+  onSaved: (updated: SuperAdminBloodRequestDetail) => void;
+}) {
+  const { rendered, visible } = useExitTransition(true, 200);
+  const closeLabel = useBilingualText("common.close");
+  const enterFullName = useBilingualText("recipient.enterPatientName");
+  const enter10DigitMobile = useBilingualText("common.enter10DigitMobile");
+  const enterAge = useBilingualText("recipient.enterAge");
+  const enterHospitalAddress = useBilingualText(
+    "recipient.enterHospitalAddress",
+  );
+  const enterHospitalDistrict = useBilingualText(
+    "recipient.enterHospitalDistrict",
+  );
+  const enterHospitalCity = useBilingualText("recipient.enterHospitalCity");
+  const enter6DigitPinCode = useBilingualText("common.enter6DigitPinCode");
+
+  const [submitError, setSubmitError] = useState("");
+
+  // Only open requests are re-matched by the backend when matching inputs change.
+  const isOpenRequest =
+    detail.status === "CENTRES_FOUND" || detail.status === "NO_CENTRES_FOUND";
+
+  const componentLimits = useMemo(
+    () => buildComponentLimits(bloodComponents),
+    [bloodComponents],
+  );
+
+  const schema = useMemo(
+    () => makeBloodRequestEditSchema(componentLimits),
+    [componentLimits],
+  );
+
+  const {
+    register,
+    handleSubmit,
+    trigger,
+    getValues,
+    formState: { errors, isSubmitting },
+  } = useForm<RecipientRequestInput>({
+    resolver: zodResolver(schema) as Resolver<RecipientRequestInput>,
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    defaultValues: {
+      patientName: detail.recipientName ?? "",
+      mobileNumber: detail.mobileNumber ?? "",
+      bloodGroupId: detail.bloodGroupId ?? "",
+      bloodComponentId: detail.bloodComponentId ?? "",
+      requiredUnits: String(detail.units ?? ""),
+      age: detail.age != null ? String(detail.age) : "",
+      hospitalName: detail.hospitalName ?? "",
+      address: detail.address ?? "",
+      district: detail.district ?? "",
+      city: detail.city ?? "",
+      pincode: detail.pincode ?? "",
+    },
+  });
+
+  const onSubmit = handleSubmit(async (values) => {
+    setSubmitError("");
+
+    const normalized = normalizeRecipientForm(values);
+
+    try {
+      const updated = await updateBloodRequest(detail.id, {
+        recipientName: normalized.patientName,
+        mobileNumber: normalized.mobileNumber,
+        bloodGroupId: Number(normalized.bloodGroupId),
+        bloodComponentId: Number(normalized.bloodComponentId),
+        requiredUnits: Number(normalized.requiredUnits),
+        age: normalized.age ? Number(normalized.age) : undefined,
+        hospitalName: normalized.hospitalName || undefined,
+        address: normalized.address || undefined,
+        city: normalized.city,
+        district: normalized.district,
+        pincode: normalized.pincode || undefined,
+      });
+
+      onSaved(updated);
+    } catch (err) {
+      setSubmitError(getApiErrorMessage(err, "Unable to update this request."));
+    }
+  });
+
+  if (!rendered) {
+    return null;
+  }
+
+  return (
+    <div
+      className={`motion-scrim fixed inset-0 z-[100] flex items-center justify-center bg-black/45 px-4 py-4 backdrop-blur-md transition-opacity duration-200 ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-request-title"
+    >
+      <div
+        className={`motion-surface flex max-h-[calc(100dvh-2rem)] w-full max-w-[560px] flex-col overflow-hidden sm:max-h-[90dvh] rounded-2xl bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)] transition-[transform,opacity] duration-200 ${
+          visible
+            ? "translate-y-0 scale-100 opacity-100 [transition-timing-function:var(--ease-spring)]"
+            : "translate-y-2 scale-95 opacity-0 [transition-timing-function:var(--ease-spring-out)]"
+        }`}
+      >
+        <div className="flex shrink-0 items-start justify-between gap-2 border-b border-[var(--color-border-lighter)] px-4 py-4 sm:px-5 sm:py-5">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
+                <Pencil size={16} className="text-[var(--color-primary)]" />
+              </div>
+
+              <div className="min-w-0">
+                <h2
+                  id="edit-request-title"
+                  className="text-[14px] font-bold text-[var(--color-text-primary)]"
+                >
+                  Edit Request
+                </h2>
+                <Bilingual
+                  tKey="superAdmin.requestNumber"
+                  params={{ id: detail.id }}
+                  as="p"
+                  className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] disabled:cursor-not-allowed disabled:opacity-50 sm:m-0 sm:h-8 sm:w-8"
+            aria-label={closeLabel}
+          >
+            <X size={17} />
+          </button>
+        </div>
+
+        <form
+          onSubmit={onSubmit}
+          noValidate
+          className="flex min-h-0 flex-1 flex-col"
+        >
+          <div className="grid min-h-0 flex-1 grid-cols-1 content-start gap-4 overflow-y-auto overscroll-contain px-4 py-4 sm:grid-cols-2 sm:px-5 sm:py-5">
+            <div className="sm:col-span-2">
+              <FormInput
+                icon={UserRound}
+                label="Patient Name"
+                required
+                placeholder={enterFullName}
+                error={errors.patientName?.message}
+                {...register("patientName")}
+              />
+            </div>
+
+            <FormInput
+              icon={Phone}
+              label="Mobile Number"
+              required
+              inputMode="numeric"
+              maxLength={10}
+              placeholder={enter10DigitMobile}
+              error={errors.mobileNumber?.message}
+              {...register("mobileNumber")}
+            />
+
+            <FormInput
+              icon={CalendarDays}
+              label="Age (optional)"
+              inputMode="numeric"
+              maxLength={3}
+              placeholder={enterAge}
+              error={errors.age?.message}
+              {...register("age")}
+            />
+
+            <div>
+              <label
+                htmlFor="edit-request-blood-group"
+                className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              >
+                Blood Group<span className="text-red-500"> *</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  id="edit-request-blood-group"
+                  aria-invalid={errors.bloodGroupId ? true : undefined}
+                  aria-describedby={
+                    errors.bloodGroupId
+                      ? "edit-request-blood-group-error"
+                      : undefined
+                  }
+                  {...register("bloodGroupId", { valueAsNumber: true })}
+                  className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
+                    errors.bloodGroupId
+                      ? "border-red-400"
+                      : "border-[var(--color-border)]"
+                  } focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20`}
+                >
+                  <option value="">Select blood group</option>
+                  {bloodGroups.map((group) => (
+                    <option key={group.bloodGroupId} value={group.bloodGroupId}>
+                      {group.bloodGroupName}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)]"
+                />
+              </div>
+
+              {errors.bloodGroupId && (
+                <p
+                  id="edit-request-blood-group-error"
+                  role="alert"
+                  className="mt-1 text-[12px] text-red-500"
+                >
+                  {errors.bloodGroupId.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="edit-request-blood-type"
+                className="mb-1.5 block text-[13px] font-medium leading-4 text-[var(--color-text-body)]"
+              >
+                Blood Component<span className="text-red-500"> *</span>
+              </label>
+
+              <div className="relative">
+                <select
+                  id="edit-request-blood-type"
+                  aria-invalid={errors.bloodComponentId ? true : undefined}
+                  aria-describedby={
+                    errors.bloodComponentId
+                      ? "edit-request-blood-type-error"
+                      : undefined
+                  }
+                  {...register("bloodComponentId", {
+                    valueAsNumber: true,
+                    onChange: () => {
+                      // Re-check the units ceiling against the new component.
+                      if (getValues("requiredUnits")) {
+                        void trigger("requiredUnits");
+                      }
+                    },
+                  })}
+                  className={`h-11 w-full appearance-none rounded-lg border bg-white pl-3.5 pr-9 text-[14px] outline-none transition-all duration-200 ${
+                    errors.bloodComponentId
+                      ? "border-red-400"
+                      : "border-[var(--color-border)]"
+                  } focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20`}
+                >
+                  <option value="">Select blood component</option>
+                  {bloodComponents.map((component) => (
+                    <option
+                      key={component.bloodComponentId}
+                      value={component.bloodComponentId}
+                    >
+                      {component.bloodComponentName}
+                    </option>
+                  ))}
+                </select>
+
+                <ChevronDown
+                  size={16}
+                  strokeWidth={1.8}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-quaternary)]"
+                />
+              </div>
+
+              {errors.bloodComponentId && (
+                <p
+                  id="edit-request-blood-type-error"
+                  role="alert"
+                  className="mt-1 text-[12px] text-red-500"
+                >
+                  {errors.bloodComponentId.message}
+                </p>
+              )}
+            </div>
+
+            <FormInput
+              icon={Droplets}
+              label="Units Required"
+              required
+              inputMode="numeric"
+              placeholder="e.g. 2"
+              error={errors.requiredUnits?.message}
+              {...register("requiredUnits")}
+            />
+
+            <FormInput
+              icon={MapPin}
+              label="Hospital Name (optional)"
+              error={errors.hospitalName?.message}
+              {...register("hospitalName")}
+            />
+
+            <div className="sm:col-span-2">
+              <FormInput
+                icon={MapPin}
+                label="Hospital Address (optional)"
+                placeholder={enterHospitalAddress}
+                error={errors.address?.message}
+                {...register("address")}
+              />
+            </div>
+
+            <FormInput
+              icon={MapPin}
+              label="Hospital District"
+              required
+              placeholder={enterHospitalDistrict}
+              error={errors.district?.message}
+              {...register("district")}
+            />
+
+            <FormInput
+              icon={MapPin}
+              label="Hospital City"
+              required
+              placeholder={enterHospitalCity}
+              error={errors.city?.message}
+              {...register("city")}
+            />
+
+            <FormInput
+              icon={MapPin}
+              label="Pincode (optional)"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder={enter6DigitPinCode}
+              error={errors.pincode?.message}
+              {...register("pincode")}
+            />
+
+            {isOpenRequest && (
+              <p className="flex items-start gap-1.5 text-[12px] text-[var(--color-text-placeholder-alt)] sm:col-span-2">
+                <AlertCircle size={14} className="mt-px shrink-0" />
+                <span>
+                  Changing the blood group, component or location re-matches
+                  blood centres and sends the recipient the updated centre
+                  details.
+                </span>
+              </p>
+            )}
+
+            {submitError && (
+              <p role="alert" className="sm:col-span-2 text-[12px] text-red-500">
+                {submitError}
+              </p>
+            )}
+          </div>
+
+          <div className="flex shrink-0 gap-2 border-t border-[var(--color-border-lighter)] bg-[var(--color-surface-alt)] px-4 py-3 sm:px-5 sm:py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="min-h-[44px] flex-1 rounded-lg border border-[var(--color-border)] bg-white px-3 py-1.5 text-[13px] font-semibold text-[var(--color-text-quaternary)] transition hover:bg-[var(--color-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-[40px] sm:text-[11px]"
+            >
+              <BilingualInline tKey="common.cancel" />
+            </button>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all hover:bg-[var(--color-dashboard-cta-hover)] disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-[40px] sm:text-[11px]"
+            >
+              {isSubmitting && (
+                <Loader2 size={14} className="animate-spin shrink-0" />
+              )}
+              {isSubmitting ? (
+                <BilingualInline
+                  tKey="common.saving"
+                  enClassName={ON_SOLID_EN_CLASS}
+                />
+              ) : (
+                "Save Changes"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
    DETAIL MODAL
 ============================================================ */
 
 function BloodRequestDetailModal({
   bloodRequestId,
+  bloodGroups,
+  bloodComponents,
   onClose,
   onChanged,
 }: {
   bloodRequestId: number;
+  bloodGroups: MasterBloodGroup[];
+  bloodComponents: MasterBloodComponent[];
   onClose: () => void;
   onChanged: (detail: SuperAdminBloodRequestDetail) => void;
 }) {
@@ -1311,6 +1743,7 @@ function BloodRequestDetailModal({
   const [closeUnits, setCloseUnits] = useState("");
   const [showCloseForm, setShowCloseForm] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   // Donor availability actions, invoked from the candidate list.
   const [donorToLock, setDonorToLock] = useState<SuperAdminDonor | null>(null);
   const [donorToDeactivate, setDonorToDeactivate] =
@@ -1562,14 +1995,25 @@ function BloodRequestDetailModal({
             />
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:m-0 sm:h-8 sm:w-8"
-            aria-label={closeLabel}
-          >
-            <X size={17} />
-          </button>
+          <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-1.5 sm:m-0">
+            {/* Closed (fully or partially) requests are final — no edits. */}
+            {detail && !error && !isClosed && (
+              <HeaderEditButton
+                labelKey="superAdmin.editRequest"
+                onClick={() => setEditOpen(true)}
+                disabled={loading}
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:h-8 sm:w-8"
+              aria-label={closeLabel}
+            >
+              <X size={17} />
+            </button>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
@@ -1858,6 +2302,21 @@ function BloodRequestDetailModal({
         </div>
       </div>
     </div>
+
+      {editOpen && detail && (
+        <EditBloodRequestModal
+          detail={detail}
+          bloodGroups={bloodGroups}
+          bloodComponents={bloodComponents}
+          onClose={() => setEditOpen(false)}
+          onSaved={(updated) => {
+            setDetail(updated);
+            onChanged(updated);
+            setEditOpen(false);
+            setSuccessMessageKey("superAdmin.requestUpdatedSuccess");
+          }}
+        />
+      )}
 
       <ConfirmDialog
         open={confirmCloseOpen}

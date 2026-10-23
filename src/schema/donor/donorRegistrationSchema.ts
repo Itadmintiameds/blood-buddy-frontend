@@ -101,7 +101,7 @@ function isUnder65YearsOld(value: string): boolean {
   return dob > sixtyFiveYearsAgo;
 }
 
-export const donorRegistrationSchema = z
+const donorFieldsSchema = z
   .object({
     fullName: z
       .string()
@@ -174,19 +174,51 @@ export const donorRegistrationSchema = z
       )
       .optional()
       .or(z.literal("")),
-  })
-  .superRefine((data, ctx) => {
-    if (
-      data.alternativeMobileNumber &&
-      data.alternativeMobileNumber === data.mobileNumber
-    ) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["alternativeMobileNumber"],
-        message: "Alternate mobile number must be different from mobile number",
-      });
-    }
   });
+
+function refineAlternateMobile(
+  data: { mobileNumber: string; alternativeMobileNumber?: string },
+  ctx: z.RefinementCtx,
+) {
+  if (
+    data.alternativeMobileNumber &&
+    data.alternativeMobileNumber === data.mobileNumber
+  ) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["alternativeMobileNumber"],
+      message: "Alternate mobile number must be different from mobile number",
+    });
+  }
+}
+
+export const donorRegistrationSchema = donorFieldsSchema.superRefine(
+  refineAlternateMobile,
+);
+
+// Superadmin edit of an existing donor (PUT /admin/donors/{id}). Same rules as
+// registration except Date of Birth: the backend treats it as optional, and
+// donors registered years ago may since have aged past 65 — that mustn't block
+// correcting their other details. It still can't be in the future or under 18.
+export const donorEditSchema = donorFieldsSchema
+  .extend({
+    dob: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || parseIsoDate(value) !== null,
+        "Enter a valid date",
+      )
+      .refine(
+        (value) => value === "" || isNotFutureDate(value),
+        "Date of birth cannot be in the future",
+      )
+      .refine(
+        (value) => value === "" || isAtLeast18YearsOld(value),
+        "Donor must be at least 18 years old",
+      ),
+  })
+  .superRefine(refineAlternateMobile);
 
 export function normalizeDonorForm(
   data: DonorRegistrationInput,

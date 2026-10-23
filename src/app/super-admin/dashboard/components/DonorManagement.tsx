@@ -8,6 +8,7 @@ import {
   Loader2,
   Lock,
   MapPin,
+  Pencil,
   Phone,
   Plus,
   RefreshCw,
@@ -26,6 +27,7 @@ import {
   getSuperAdminDonorsPage,
   getSuperAdminDonorStats,
   reactivateDonor,
+  updateDonor,
   type DonorFilter,
   type SuperAdminDonorStats,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
@@ -35,6 +37,7 @@ import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { DEFAULT_PAGE_SIZE } from "@/app/hooks/usePagination";
 import {
+  donorEditSchema,
   donorRegistrationSchema,
   getDonorDobBounds,
   normalizeDonorForm,
@@ -58,6 +61,7 @@ import {
   DeactivateDonorModal,
   DonorActionButtons,
   DonorStatusBadge,
+  HeaderEditButton,
   LockDonorModal,
   ON_SOLID_EN_CLASS,
   useReasonText,
@@ -153,8 +157,9 @@ export function DonorManagement() {
   const [selectedDonor, setSelectedDonor] = useState<SuperAdminDonor | null>(
     null,
   );
-  // Availability-management flows. Each holds the donor the action targets (or
-  // null when the matching modal/dialog is closed).
+  // Availability-management (and profile edit) flows. Each holds the donor the
+  // action targets (or null when the matching modal/dialog is closed).
+  const [donorToEdit, setDonorToEdit] = useState<SuperAdminDonor | null>(null);
   const [donorToLock, setDonorToLock] = useState<SuperAdminDonor | null>(null);
   const [donorToDeactivate, setDonorToDeactivate] =
     useState<SuperAdminDonor | null>(null);
@@ -353,7 +358,7 @@ export function DonorManagement() {
     );
   };
 
-  // Shared epilogue for a successful lock/deactivate/reactivate: close any open
+  // Shared epilogue for a successful edit/lock/deactivate/reactivate: close any open
   // detail modal, reload the current page + stats (a now-hidden donor drops out
   // of the default view), and show a confirmation.
   const handleActionSuccess = (messageKey: string) => {
@@ -688,8 +693,8 @@ export function DonorManagement() {
               <col className="w-[6%]" />
               <col className="w-[8%]" />
               <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
+              <col className="w-[8%]" />
+              <col className="w-[12%]" />
             </colgroup>
 
             <thead>
@@ -705,7 +710,7 @@ export function DonorManagement() {
                 <TableHeader tKey="superAdmin.lastBloodDonationDate" />
                 <TableHeader tKey="superAdmin.status" />
                 <TableHeader tKey="superAdmin.remarks" />
-                <TableHeader tKey="superAdmin.action" />
+                <TableHeader tKey="superAdmin.action" align="center" />
               </tr>
             </thead>
 
@@ -781,6 +786,7 @@ export function DonorManagement() {
                     <TableCell>
                       <DonorActionButtons
                         donor={donor}
+                        onEdit={() => setDonorToEdit(donor)}
                         onLock={() => setDonorToLock(donor)}
                         onDeactivate={() => setDonorToDeactivate(donor)}
                         onReactivate={() => {
@@ -870,6 +876,7 @@ export function DonorManagement() {
                   <DonorActionButtons
                     donor={donor}
                     labeled
+                    onEdit={() => setDonorToEdit(donor)}
                     onLock={() => setDonorToLock(donor)}
                     onDeactivate={() => setDonorToDeactivate(donor)}
                     onReactivate={() => {
@@ -985,6 +992,7 @@ export function DonorManagement() {
                 <DonorActionButtons
                   donor={donor}
                   labeled
+                  onEdit={() => setDonorToEdit(donor)}
                   onLock={() => setDonorToLock(donor)}
                   onDeactivate={() => setDonorToDeactivate(donor)}
                   onReactivate={() => {
@@ -1024,7 +1032,7 @@ export function DonorManagement() {
       )}
 
       {addDonorOpen && (
-        <AddDonorModal
+        <DonorFormModal
           bloodGroups={masterGroups}
           onClose={() => setAddDonorOpen(false)}
           onSaved={() => {
@@ -1038,6 +1046,19 @@ export function DonorManagement() {
         <DonorDetailModal
           donor={selectedDonor}
           onClose={() => setSelectedDonor(null)}
+          onEdit={() => setDonorToEdit(selectedDonor)}
+        />
+      )}
+
+      {donorToEdit && (
+        <DonorFormModal
+          bloodGroups={masterGroups}
+          donor={donorToEdit}
+          onClose={() => setDonorToEdit(null)}
+          onSaved={() => {
+            setDonorToEdit(null);
+            handleActionSuccess("superAdmin.donorUpdatedSuccess");
+          }}
         />
       )}
 
@@ -1105,15 +1126,40 @@ export function DonorManagement() {
   );
 }
 
-function AddDonorModal({
+// Prefills the edit form from a listed donor. The list maps a missing alternate
+// mobile to "—" for display, so that's turned back into an empty field.
+function toDonorForm(donor: SuperAdminDonor): DonorRegistrationInput {
+  return {
+    fullName: donor.donorName ?? "",
+    mobileNumber: donor.mobileNumber ?? "",
+    alternativeMobileNumber:
+      donor.alternateMobileNumber && donor.alternateMobileNumber !== "—"
+        ? donor.alternateMobileNumber
+        : "",
+    bloodGroupId: donor.bloodGroupId ?? "",
+    dob: donor.dateOfBirth ?? "",
+    address: donor.address ?? "",
+    district: donor.district ?? "",
+    city: donor.city ?? "",
+    pincode: donor.pincode ?? "",
+    lastBloodDonationDate: donor.lastBloodDonationDate ?? "",
+  };
+}
+
+// Add Donor (registers via the public endpoint) or, when `donor` is given,
+// Edit Donor (PUT /admin/donors/{id}, a full replacement of the profile).
+function DonorFormModal({
   bloodGroups,
+  donor,
   onClose,
   onSaved,
 }: {
   bloodGroups: MasterBloodGroup[];
+  donor?: SuperAdminDonor;
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const isEdit = donor !== undefined;
   const { rendered, visible } = useExitTransition(true, 200);
   const closeLabel = useBilingualText("common.close");
   const enterFullName = useBilingualText("common.enterFullName");
@@ -1137,17 +1183,41 @@ function AddDonorModal({
     formState: { errors, isSubmitting },
   } = useForm<DonorRegistrationInput>({
     resolver: zodResolver(
-      donorRegistrationSchema,
+      isEdit ? donorEditSchema : donorRegistrationSchema,
     ) as Resolver<DonorRegistrationInput>,
     mode: "onBlur",
     reValidateMode: "onChange",
-    defaultValues: emptyDonorForm,
+    defaultValues: donor ? toDonorForm(donor) : emptyDonorForm,
   });
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError("");
 
     const normalized = normalizeDonorForm(values);
+
+    if (donor) {
+      try {
+        await updateDonor(donor.id, {
+          fullName: normalized.fullName,
+          mobileNumber: normalized.mobileNumber,
+          alternativeMobileNumber:
+            normalized.alternativeMobileNumber || undefined,
+          bloodGroupId: Number(normalized.bloodGroupId),
+          dob: normalized.dob || undefined,
+          address: normalized.address || undefined,
+          city: normalized.city,
+          district: normalized.district,
+          pincode: normalized.pincode,
+          lastBloodDonationDate:
+            normalized.lastBloodDonationDate || undefined,
+        });
+
+        onSaved();
+      } catch (err) {
+        setSubmitError(getApiErrorMessage(err, "Unable to update this donor."));
+      }
+      return;
+    }
 
     try {
       await registerDonor({
@@ -1193,7 +1263,11 @@ function AddDonorModal({
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-icon-bg-soft)]">
-                <UserRound size={17} className="text-[var(--color-primary)]" />
+                {isEdit ? (
+                  <Pencil size={16} className="text-[var(--color-primary)]" />
+                ) : (
+                  <UserRound size={17} className="text-[var(--color-primary)]" />
+                )}
               </div>
 
               <div className="min-w-0">
@@ -1201,10 +1275,12 @@ function AddDonorModal({
                   id="add-donor-title"
                   className="text-[14px] font-bold text-[var(--color-text-primary)]"
                 >
-                  Add Donor
+                  {isEdit ? "Edit Donor" : "Add Donor"}
                 </h2>
-                <p className="mt-0.5 text-[12px] text-[var(--color-text-placeholder-alt)]">
-                  Register a donor on their behalf
+                <p className="mt-0.5 break-words text-[12px] text-[var(--color-text-placeholder-alt)]">
+                  {donor
+                    ? `Update ${donor.donorName}'s details (Donor #${donor.id})`
+                    : "Register a donor on their behalf"}
                 </p>
               </div>
             </div>
@@ -1312,10 +1388,12 @@ function AddDonorModal({
 
             <FormInput
               icon={CalendarDays}
-              label="Date of Birth"
-              required
+              label={isEdit ? "Date of Birth (optional)" : "Date of Birth"}
+              required={!isEdit}
               type="date"
-              min={dobBounds.min}
+              // An existing donor may have aged past the registration window,
+              // so editing only enforces the 18+ ceiling.
+              min={isEdit ? undefined : dobBounds.min}
               max={dobBounds.max}
               error={errors.dob?.message}
               {...register("dob")}
@@ -1410,6 +1488,8 @@ function AddDonorModal({
                 )}
                 {isSubmitting ? (
                   <BilingualInline tKey="common.saving" />
+                ) : isEdit ? (
+                  "Save Changes"
                 ) : (
                   "Add Donor"
                 )}
@@ -1430,9 +1510,11 @@ function AddDonorModal({
 function DonorDetailModal({
   donor,
   onClose,
+  onEdit,
 }: {
   donor: SuperAdminDonor;
   onClose: () => void;
+  onEdit: () => void;
 }) {
   const { rendered, visible } = useExitTransition(true, 200);
   const closeLabel = useBilingualText("common.close");
@@ -1484,14 +1566,18 @@ function DonorDetailModal({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="-mr-1 -mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:m-0 sm:h-8 sm:w-8"
-            aria-label={closeLabel}
-          >
-            <X size={17} />
-          </button>
+          <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-1.5 sm:m-0">
+            <HeaderEditButton labelKey="superAdmin.editDonor" onClick={onEdit} />
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-[var(--color-text-placeholder-alt)] transition hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-secondary)] sm:h-8 sm:w-8"
+              aria-label={closeLabel}
+            >
+              <X size={17} />
+            </button>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 sm:py-5">
@@ -1582,9 +1668,19 @@ function DonorDetailModal({
   );
 }
 
-function TableHeader({ tKey }: { tKey: string }) {
+function TableHeader({
+  tKey,
+  align = "left",
+}: {
+  tKey: string;
+  align?: "left" | "center";
+}) {
   return (
-    <th className="px-3 py-4 text-left text-[11px] font-bold uppercase tracking-[0.02em] text-[var(--color-text-secondary)]">
+    <th
+      className={`px-3 py-4 text-[11px] font-bold uppercase tracking-[0.02em] text-[var(--color-text-secondary)] ${
+        align === "center" ? "text-center" : "text-left"
+      }`}
+    >
       <Bilingual
         tKey={tKey}
         as="span"

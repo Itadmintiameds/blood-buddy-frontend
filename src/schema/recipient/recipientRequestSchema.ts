@@ -122,32 +122,40 @@ export function makeRecipientRequestSchema(
     return recipientRequestSchema;
   }
 
-  return recipientRequestSchema.superRefine((data, ctx) => {
-    const componentId =
-      typeof data.bloodComponentId === "number"
-        ? data.bloodComponentId
-        : Number(data.bloodComponentId);
+  return recipientRequestSchema.superRefine((data, ctx) =>
+    checkComponentUnitLimit(data, ctx, componentLimits),
+  );
+}
 
-    if (!componentId) {
-      return;
-    }
+function checkComponentUnitLimit(
+  data: { bloodComponentId: unknown; requiredUnits: string },
+  ctx: z.RefinementCtx,
+  componentLimits: Map<number, { name: string; max: number }>,
+) {
+  const componentId =
+    typeof data.bloodComponentId === "number"
+      ? data.bloodComponentId
+      : Number(data.bloodComponentId);
 
-    const limit = componentLimits.get(componentId);
+  if (!componentId) {
+    return;
+  }
 
-    if (!limit) {
-      return;
-    }
+  const limit = componentLimits.get(componentId);
 
-    const units = Number(data.requiredUnits);
+  if (!limit) {
+    return;
+  }
 
-    if (Number.isFinite(units) && units > limit.max) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["requiredUnits"],
-        message: `Maximum ${limit.max} units allowed for ${limit.name}`,
-      });
-    }
-  });
+  const units = Number(data.requiredUnits);
+
+  if (Number.isFinite(units) && units > limit.max) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["requiredUnits"],
+      message: `Maximum ${limit.max} units allowed for ${limit.name}`,
+    });
+  }
 }
 
 // Builds the componentId → { name, max } map the schema expects from a master
@@ -169,6 +177,35 @@ export function buildComponentLimits(
   }
 
   return map;
+}
+
+// Superadmin edit of an existing request (PUT /admin/blood-requests/{id}).
+// Same rules as the request form — including the per-component units ceiling
+// for whichever component is selected — except age is optional (the backend
+// only requires it to be positive when given). Closed requests can't be edited.
+export function makeBloodRequestEditSchema(
+  componentLimits?: Map<number, { name: string; max: number }>,
+) {
+  return recipientRequestSchema
+    .extend({
+      age: z
+        .string()
+        .trim()
+        .regex(/^\d*$/, "Enter the age in whole years")
+        .refine(
+          (value) =>
+            value === "" ||
+            (Number(value) >= 1 && Number(value) <= MAX_RECIPIENT_AGE_YEARS),
+          {
+            message: `Enter an age between 1 and ${MAX_RECIPIENT_AGE_YEARS}`,
+          },
+        ),
+    })
+    .superRefine((data, ctx) => {
+      if (componentLimits && componentLimits.size > 0) {
+        checkComponentUnitLimit(data, ctx, componentLimits);
+      }
+    });
 }
 
 export function normalizeRecipientForm(

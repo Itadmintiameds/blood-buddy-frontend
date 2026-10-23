@@ -448,6 +448,10 @@ export const translations = {
       donorLockedSuccess: "Donor locked",
       donorDeactivatedSuccess: "Donor deactivated",
       donorReactivatedSuccess: "Donor reactivated",
+      editDonor: "Edit",
+      donorUpdatedSuccess: "Donor details updated",
+      editRequest: "Edit",
+      requestUpdatedSuccess: "Request details updated",
     },
 
     validation: {
@@ -933,6 +937,10 @@ export const translations = {
       donorLockedSuccess: "ದಾನಿಯನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ",
       donorDeactivatedSuccess: "ದಾನಿಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ",
       donorReactivatedSuccess: "ದಾನಿಯನ್ನು ಮರು-ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ",
+      editDonor: "ತಿದ್ದು",
+      donorUpdatedSuccess: "ದಾನಿಯ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ",
+      editRequest: "ತಿದ್ದು",
+      requestUpdatedSuccess: "ಮನವಿಯ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ",
     },
 
     validation: {

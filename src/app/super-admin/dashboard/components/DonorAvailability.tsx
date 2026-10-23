@@ -5,6 +5,7 @@ import {
   ChevronDown,
   Loader2,
   Lock,
+  Pencil,
   UserCheck,
   UserX,
   X,
@@ -166,7 +167,9 @@ export function DonorStatusBadge({ donor }: { donor: SuperAdminDonor }) {
    ROW ACTIONS
 ============================================================ */
 
-const ACTION_TONE: Record<"amber" | "red" | "green", string> = {
+const ACTION_TONE: Record<"primary" | "amber" | "red" | "green", string> = {
+  primary:
+    "hover:border-[var(--primary-200)] hover:bg-[var(--color-icon-bg-soft)] hover:text-[var(--color-primary)]",
   amber: "hover:border-amber-200 hover:bg-amber-50 hover:text-amber-600",
   red: "hover:border-red-200 hover:bg-red-50 hover:text-red-600",
   green: "hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600",
@@ -221,18 +224,49 @@ function LabeledAction({
   );
 }
 
-// Lock / Deactivate / Reactivate, shown by lifecycle status. `labeled` renders
+// "Edit" text button that sits beside a detail modal's close button.
+export function HeaderEditButton({
+  labelKey,
+  onClick,
+  disabled = false,
+}: {
+  labelKey: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  // Single-line label so the button keeps the close button's height (the
+  // stacked bilingual label made it taller than everything beside it).
+  const label = useBilingualText(labelKey);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      // Brand-red primary, same as the dashboard's Add Donor / Log Request CTAs.
+      className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-[var(--color-primary)] px-4 text-[12px] font-semibold leading-none text-white transition-all hover:bg-[var(--color-dashboard-cta-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:h-8 sm:px-3.5"
+    >
+      {label}
+    </button>
+  );
+}
+
+// Edit (when onEdit is given), then Lock / Deactivate / Reactivate, shown by
+// lifecycle status. `labeled` renders
 // text buttons for the card/list views; otherwise compact icon buttons for the
 // table.
 export function DonorActionButtons({
   donor,
   labeled = false,
+  onEdit,
   onLock,
   onDeactivate,
   onReactivate,
 }: {
   donor: SuperAdminDonor;
   labeled?: boolean;
+  /** Profile edit; the button is omitted when not provided. */
+  onEdit?: () => void;
   onLock: () => void;
   onDeactivate: () => void;
   onReactivate: () => void;
@@ -262,9 +296,17 @@ export function DonorActionButtons({
       className={
         labeled
           ? "flex flex-wrap items-center gap-2"
-          : "flex flex-wrap items-center gap-1.5"
+          : // Icon layout is only used in the donor table's centred Action column.
+            "flex flex-wrap items-center justify-center gap-1.5"
       }
     >
+      {onEdit && (
+        <Action
+          icon={Pencil}
+          {...actionProps("superAdmin.editDonor", "primary", stop(onEdit))}
+        />
+      )}
+
       {canLock && (
         <Action
           icon={Lock}

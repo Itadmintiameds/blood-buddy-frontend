@@ -92,6 +92,23 @@ export interface LockDonorInput {
   remarks?: string;
 }
 
+// Sent to PUT /admin/donors/{donorId} (bloodbuddy.backend.dto.donor.DonorUpdateRequest).
+// A full replacement of the editable profile fields — omitted optional fields
+// are cleared. Availability (lock/deactivate) is managed separately. Dates are
+// YYYY-MM-DD.
+export interface UpdateDonorInput {
+  fullName: string;
+  mobileNumber: string;
+  alternativeMobileNumber?: string;
+  bloodGroupId: number;
+  dob?: string;
+  address?: string;
+  city: string;
+  district: string;
+  pincode: string;
+  lastBloodDonationDate?: string;
+}
+
 // Sent to PATCH /admin/donors/{donorId}/deactivate.
 export interface DeactivateDonorInput {
   reason: DonorDeactivationReason;
@@ -158,6 +175,25 @@ export interface SuperAdminBloodRequestCentre {
   address: string;
   city: string;
   phoneNumber: string;
+}
+
+// Sent to PUT /admin/blood-requests/{bloodRequestId}
+// (bloodbuddy.backend.dto.request.BloodRequestUpdateRequest). A full
+// replacement — omitted optional fields are cleared. Changing the blood group,
+// component or location of an open request makes the backend re-match centres
+// and re-send the recipient the centre details.
+export interface UpdateBloodRequestInput {
+  recipientName: string;
+  mobileNumber: string;
+  bloodGroupId: number;
+  bloodComponentId: number;
+  requiredUnits: number;
+  age?: number;
+  hospitalName?: string;
+  address?: string;
+  city: string;
+  district: string;
+  pincode?: string;
 }
 
 // bloodbuddy.backend.dto.bloodrequest.BloodRequestDetailResponse
