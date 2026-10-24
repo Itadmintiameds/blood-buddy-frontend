@@ -452,6 +452,8 @@ export const translations = {
       donorUpdatedSuccess: "Donor details updated",
       editRequest: "Edit",
       requestUpdatedSuccess: "Request details updated",
+      editCentre: "Edit",
+      centreUpdatedSuccess: "Blood centre details updated",
     },
 
     validation: {
@@ -941,6 +943,8 @@ export const translations = {
       donorUpdatedSuccess: "ದಾನಿಯ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ",
       editRequest: "ತಿದ್ದು",
       requestUpdatedSuccess: "ಮನವಿಯ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ",
+      editCentre: "ತಿದ್ದು",
+      centreUpdatedSuccess: "ರಕ್ತ ಕೇಂದ್ರದ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ",
     },
 
     validation: {

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, UserRound } from "lucide-react";
 
 import { routes } from "@/config/routes";
 import { BloodCentreAuthGuard } from "@/app/components/auth/BloodCentreAuthGuard";
@@ -23,6 +24,11 @@ const mobilePageTitles = [
     href: routes.bloodCentreHistory,
     title: "Group History",
     subtitle: "Per-group movements",
+  },
+  {
+    href: routes.bloodCentreProfile,
+    title: "Profile",
+    subtitle: "Centre details",
   },
 ];
 
@@ -61,7 +67,12 @@ export function BloodCentreShell({
       <div className="flex h-[100dvh] flex-col overflow-hidden bg-[var(--color-surface-alt)]">
         {/* Full-width brand header — fixed at the top, outside the scroll area */}
         <div className="z-40 shrink-0 shadow-[0_2px_10px_rgba(0,0,0,0.06)]">
-          <BrandHeader welcomeName={centreName} />
+          <BrandHeader
+            welcomeName={centreName}
+            barAction={
+              <ProfileLink active={pathname === routes.bloodCentreProfile} />
+            }
+          />
         </div>
 
         <BloodCentreSidebar
@@ -137,5 +148,24 @@ export function BloodCentreShell({
         </div>
       </div>
     </BloodCentreAuthGuard>
+  );
+}
+
+// Top-right entry to the centre's own profile (details + Edit).
+function ProfileLink({ active }: { active: boolean }) {
+  return (
+    <Link
+      href={routes.bloodCentreProfile}
+      aria-label="Profile"
+      aria-current={active ? "page" : undefined}
+      title="Profile"
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 ${
+        active
+          ? "border-white bg-white text-[var(--color-primary)]"
+          : "border-white/40 bg-white/15 text-white hover:bg-white/25"
+      }`}
+    >
+      <UserRound size={18} strokeWidth={2} />
+    </Link>
   );
 }

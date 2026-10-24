@@ -26,7 +26,10 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
+import type {
+  BloodCentreEditInput,
+  StockMovement,
+} from "@/types/bloodCenter/bloodCenterTypes";
 import type {
   BloodAvailability,
   SuperAdminBloodBank,
@@ -39,10 +42,17 @@ import {
   getSuperAdminBloodBankDetail,
   getSuperAdminBloodCentreStats,
   getSuperAdminBloodCentresPage,
+  updateSuperAdminBloodCentre,
   updateSuperAdminBloodUnits,
   type BloodCentreFilter,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
 import { InventoryHistoryModal } from "@/app/blood-centre/components/InventoryHistoryModal";
+import {
+  BloodCentreEditModal,
+  toBloodCentrePayload,
+} from "@/app/blood-centre/components/BloodCentreEditModal";
+import { SuccessModal } from "@/app/components/ui/SuccessModal";
+import { HeaderEditButton } from "@/app/components/ui/HeaderEditButton";
 import {
   getBloodComponents,
   getBloodGroups,
@@ -186,6 +196,12 @@ export default function BloodBankManagement() {
   const [newBloodRemarks, setNewBloodRemarks] = useState("");
   const [newBloodSaving, setNewBloodSaving] = useState(false);
   const [newBloodError, setNewBloodError] = useState("");
+
+  // The centre whose profile/licence edit form is open, or null.
+  const [centreToEdit, setCentreToEdit] = useState<SuperAdminBloodBank | null>(
+    null,
+  );
+  const [centreSavedOpen, setCentreSavedOpen] = useState(false);
 
   // The inventory item whose movement history is open (read-only), or null.
   const [historyInfo, setHistoryInfo] = useState<{
@@ -486,6 +502,26 @@ export default function BloodBankManagement() {
       .catch(() => {
         // Non-critical: tiles just stay at their last values.
       });
+  };
+
+  // Save a centre edit: the response has no stock, so keep the cached
+  // availability. Then reload the list (the name/location may have changed its
+  // place in the sorted page and the filter dropdowns).
+  const saveCentre = async (values: BloodCentreEditInput) => {
+    if (!centreToEdit) {
+      return;
+    }
+
+    const updated = await updateSuperAdminBloodCentre(
+      centreToEdit.id,
+      toBloodCentrePayload(values, true),
+      centreToEdit.availability,
+    );
+
+    setDetailCache((prev) => new Map(prev).set(updated.id, updated));
+    setReloadToken((token) => token + 1);
+    setCentreToEdit(null);
+    setCentreSavedOpen(true);
   };
 
   const openUpdateModal = (
@@ -1218,6 +1254,7 @@ export default function BloodBankManagement() {
             <BankDetailPanel
               bank={activeBank}
               onBack={() => showMobileView("list")}
+              onEdit={() => setCentreToEdit(activeBank)}
               onUpdate={(availabilityId) =>
                 openUpdateModal(activeBank, availabilityId)
               }
@@ -1305,6 +1342,23 @@ export default function BloodBankManagement() {
         />
       )}
 
+      {/* EDIT CENTRE MODAL */}
+      {centreToEdit && (
+        <BloodCentreEditModal
+          initialValues={toCentreEditForm(centreToEdit)}
+          email={centreToEdit.email}
+          includeLicence
+          onClose={() => setCentreToEdit(null)}
+          onSubmit={saveCentre}
+        />
+      )}
+
+      <SuccessModal
+        open={centreSavedOpen}
+        title={<BilingualInline tKey="superAdmin.centreUpdatedSuccess" />}
+        onConfirm={() => setCentreSavedOpen(false)}
+      />
+
       {/* INVENTORY HISTORY MODAL (read-only) */}
       {historyInfo && (
         <InventoryHistoryModal
@@ -1316,6 +1370,24 @@ export default function BloodBankManagement() {
       )}
     </section>
   );
+}
+
+// Prefills the edit form from a loaded centre. The list mapping shows a
+// missing address as "—", so that's turned back into an empty field.
+function toCentreEditForm(bank: SuperAdminBloodBank): BloodCentreEditInput {
+  return {
+    bloodCentreName: bank.bloodBankName ?? "",
+    mobileNumber: bank.phoneNumber ?? "",
+    address: bank.address && bank.address !== "—" ? bank.address : "",
+    district: bank.district ?? "",
+    city: bank.city ?? "",
+    pinCode: bank.pincode ?? "",
+    latitude: bank.latitude != null ? String(bank.latitude) : "",
+    longitude: bank.longitude != null ? String(bank.longitude) : "",
+    locationUrl: bank.locationUrl ?? "",
+    licenseNumber: bank.licenceNumber ?? "",
+    dateOfExpiry: bank.licenceExpiryDate ?? "",
+  };
 }
 
 // BLOOD BANK LIST ROW
@@ -1366,6 +1438,7 @@ function BankListRow({
 function BankDetailPanel({
   bank,
   onBack,
+  onEdit,
   onUpdate,
   onAddStock,
   onHistory,
@@ -1375,6 +1448,7 @@ function BankDetailPanel({
 }: {
   bank: SuperAdminBloodBank;
   onBack: () => void;
+  onEdit: () => void;
   onUpdate: (availabilityId: number) => void;
   onAddStock: (availabilityId: number) => void;
   onHistory: (availabilityId: number) => void;
@@ -1465,6 +1539,8 @@ function BankDetailPanel({
               )}
             </div>
           </div>
+
+          <HeaderEditButton labelKey="superAdmin.editCentre" onClick={onEdit} />
         </div>
 
         {/* DETAILS */}

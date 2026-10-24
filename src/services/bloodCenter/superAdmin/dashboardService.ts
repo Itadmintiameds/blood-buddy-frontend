@@ -15,6 +15,7 @@ import type {
   DonorRegistrationResponse,
 } from "@/types/donor/donorTypes";
 import type { InventoryAuditResponse } from "@/services/bloodCenter/historyService";
+import type { BloodCentreAdminUpdatePayload } from "@/types/bloodCenter/bloodCenterTypes";
 
 interface BloodCentreResponse {
   bloodCentreId: number;
@@ -166,6 +167,22 @@ export async function getSuperAdminBloodBankDetail(
       units: item.availableUnits,
     })),
   );
+}
+
+// EDIT A CENTRE'S PROFILE + LICENCE (SUPERADMIN only) — a full replacement of
+// the editable fields. PUT /admin/blood-centres/{id}. The response carries no
+// stock, so the caller keeps the centre's existing availability.
+export async function updateSuperAdminBloodCentre(
+  bloodCentreId: number,
+  payload: BloodCentreAdminUpdatePayload,
+  availability: SuperAdminBloodBank["availability"],
+): Promise<SuperAdminBloodBank> {
+  const { data } = await api.put<ApiEnvelope<BloodCentreResponse>>(
+    `/admin/blood-centres/${bloodCentreId}`,
+    payload,
+  );
+
+  return mapCentreToBank(data.data, availability);
 }
 
 // Distinct cities + districts across all centres, for the filter dropdowns.

@@ -41,6 +41,68 @@ export interface BloodCentreRegistrationResponse {
   role: string;
 }
 
+/* ============================================================
+   CENTRE PROFILE EDIT
+============================================================ */
+
+// bloodbuddy.backend.dto.centre.BloodCentreResponse, as returned by
+// GET/PUT /blood-centre/profile and PUT /admin/blood-centres/{id}.
+export interface BloodCentreProfile {
+  bloodCentreId: number;
+  bloodCentreName: string;
+  mobileNumber: string;
+  email: string;
+  address: string | null;
+  district: string;
+  city: string;
+  pincode: string;
+  latitude: number | null;
+  longitude: number | null;
+  locationUrl: string | null;
+  bloodCentreLicenceNumber: string | null;
+  licenceExpiryDate: string | null;
+  isActive: boolean;
+}
+
+// The edit form's values (all strings, as typed). The licence fields are only
+// shown to the superadmin; a centre can't change its own licence.
+export interface BloodCentreEditInput {
+  bloodCentreName: string;
+  mobileNumber: string;
+  address: string;
+  district: string;
+  city: string;
+  pinCode: string;
+  latitude: string;
+  longitude: string;
+  locationUrl: string;
+  licenseNumber: string;
+  dateOfExpiry: string;
+}
+
+// Sent to PUT /blood-centre/profile (bloodbuddy.backend.dto.centre.BloodCentreProfileUpdateRequest).
+// A full replacement — omitted optional fields are cleared. Email, licence and
+// active status aren't editable here.
+export interface BloodCentreProfileUpdatePayload {
+  bloodCentreName: string;
+  mobileNumber: string;
+  address?: string;
+  district: string;
+  city: string;
+  pincode: string;
+  latitude?: number;
+  longitude?: number;
+  locationUrl?: string;
+}
+
+// Sent to PUT /admin/blood-centres/{id} (bloodbuddy.backend.dto.centre.BloodCentreUpdateRequest):
+// the profile fields plus licence details.
+export interface BloodCentreAdminUpdatePayload
+  extends BloodCentreProfileUpdatePayload {
+  bloodCentreLicenceNumber?: string;
+  licenceExpiryDate?: string;
+}
+
 export interface SendOtpPayload {
   email: string;
 }

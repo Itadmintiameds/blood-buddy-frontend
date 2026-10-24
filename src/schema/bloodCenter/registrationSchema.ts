@@ -1,5 +1,8 @@
 import { z } from "zod";
-import type { BloodCentreRegistrationInput } from "@/types/bloodCenter/bloodCenterTypes";
+import type {
+  BloodCentreEditInput,
+  BloodCentreRegistrationInput,
+} from "@/types/bloodCenter/bloodCenterTypes";
 
 const knownInvalidMobileNumbers = new Set([
   "0000000000",
@@ -37,7 +40,9 @@ function isFutureDate(value: string) {
   return date >= today;
 }
 
-export const bloodCentreRegistrationSchema = z
+// The registration fields without the password-match refinement, so the edit
+// schema can pick from them (Zod 4 won't .pick() a refined object).
+const bloodCentreFieldsSchema = z
   .object({
     bloodCentreName: z
       .string()
@@ -123,8 +128,10 @@ export const bloodCentreRegistrationSchema = z
       .trim()
       .min(1, "Location URL is required")
       .url("Enter a valid URL"),
-  })
-  .superRefine((data, ctx) => {
+  });
+
+export const bloodCentreRegistrationSchema = bloodCentreFieldsSchema.superRefine(
+  (data, ctx) => {
     if (data.password !== data.confirmPassword) {
       ctx.addIssue({
         code: "custom",
@@ -132,7 +139,72 @@ export const bloodCentreRegistrationSchema = z
         message: "Passwords do not match",
       });
     }
+  },
+);
+
+// Edit of an existing centre (PUT /blood-centre/profile or, with licence
+// fields, PUT /admin/blood-centres/{id}). Same rules as registration for the
+// fields both share, but the backend treats address, coordinates and location
+// URL as optional, so they're optional here too. Licence fields are optional
+// and the expiry may already be past — an expired licence mustn't block
+// correcting a centre's other details.
+export const bloodCentreEditSchema = bloodCentreFieldsSchema
+  .pick({
+    bloodCentreName: true,
+    mobileNumber: true,
+    district: true,
+    city: true,
+    pinCode: true,
+    latitude: true,
+    longitude: true,
+  })
+  .extend({
+    address: z
+      .string()
+      .trim()
+      .max(200, "Address must not exceed 200 characters"),
+    locationUrl: z
+      .string()
+      .trim()
+      .refine(
+        (value) => value === "" || z.string().url().safeParse(value).success,
+        "Enter a valid URL",
+      ),
+    licenseNumber: z
+      .string()
+      .trim()
+      .max(30, "License Number must not exceed 30 characters")
+      .refine(
+        (value) => value === "" || /^[A-Za-z0-9][A-Za-z0-9./_-]*$/.test(value),
+        "Enter a valid license number",
+      ),
+    dateOfExpiry: z
+      .string()
+      .trim()
+      .refine(
+        (value) =>
+          value === "" || !Number.isNaN(new Date(`${value}T00:00:00`).getTime()),
+        "Enter a valid date",
+      ),
   });
+
+export function normalizeBloodCentreEditForm(
+  data: BloodCentreEditInput,
+): BloodCentreEditInput {
+  return {
+    bloodCentreName: data.bloodCentreName.trim().replace(/\s+/g, " "),
+    mobileNumber: data.mobileNumber.replace(/\D/g, "").slice(-10),
+    address: data.address.trim().replace(/\s+/g, " "),
+    district: data.district.trim().replace(/\s+/g, " "),
+    city: data.city.trim().replace(/\s+/g, " "),
+    pinCode: data.pinCode.replace(/\D/g, "").slice(0, 6),
+    latitude: data.latitude.trim(),
+    longitude: data.longitude.trim(),
+    locationUrl: data.locationUrl.trim(),
+    licenseNumber: data.licenseNumber.trim().toUpperCase(),
+    dateOfExpiry: data.dateOfExpiry.trim(),
+  };
+}
 
 export function normalizeBloodCentreForm(
   data: BloodCentreRegistrationInput,

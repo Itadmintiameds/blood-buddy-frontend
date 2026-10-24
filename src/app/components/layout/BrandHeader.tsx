@@ -18,6 +18,8 @@ interface BrandHeaderProps {
   showBackButton?: boolean;
   backHref?: string;
   welcomeName?: string | null;
+  /** Rendered at the right end of the red bar, after the language selector. */
+  barAction?: ReactNode;
   /**
    * When true, the title row is constrained to the same width/padding as a
    * registration content column, so the title (and its right-side action) line
@@ -32,6 +34,7 @@ export function BrandHeader({
   showBackButton = false,
   backHref = "/welcome",
   welcomeName,
+  barAction,
   alignTitleToContent = false,
 }: BrandHeaderProps) {
   const goBackLabel = useBilingualText("accessibility.goBack");
@@ -120,7 +123,10 @@ export function BrandHeader({
             )}
           </div>
 
-          {!dual && <LanguageSelector />}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            {!dual && <LanguageSelector />}
+            {barAction}
+          </div>
         </div>
       </div>
 

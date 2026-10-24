@@ -8,6 +8,7 @@ export const routes = {
   addAvailability: "/blood-centre/availability/add",
   availability: "/blood-centre/availability",
   bloodCentreHistory: "/blood-centre/history",
+  bloodCentreProfile: "/blood-centre/profile",
   donor: "/donor",
   donorRegister: "/donor/register",
   recipient: "/recipient",

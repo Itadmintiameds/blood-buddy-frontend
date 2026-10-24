@@ -224,33 +224,6 @@ function LabeledAction({
   );
 }
 
-// "Edit" text button that sits beside a detail modal's close button.
-export function HeaderEditButton({
-  labelKey,
-  onClick,
-  disabled = false,
-}: {
-  labelKey: string;
-  onClick: () => void;
-  disabled?: boolean;
-}) {
-  // Single-line label so the button keeps the close button's height (the
-  // stacked bilingual label made it taller than everything beside it).
-  const label = useBilingualText(labelKey);
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      // Brand-red primary, same as the dashboard's Add Donor / Log Request CTAs.
-      className="inline-flex h-10 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-[var(--color-primary)] px-4 text-[12px] font-semibold leading-none text-white transition-all hover:bg-[var(--color-dashboard-cta-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60 sm:h-8 sm:px-3.5"
-    >
-      {label}
-    </button>
-  );
-}
-
 // Edit (when onEdit is given), then Lock / Deactivate / Reactivate, shown by
 // lifecycle status. `labeled` renders
 // text buttons for the card/list views; otherwise compact icon buttons for the
