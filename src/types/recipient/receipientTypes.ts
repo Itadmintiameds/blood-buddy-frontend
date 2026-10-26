@@ -12,6 +12,14 @@ export interface RecipientRequestInput {
   district: string;
   city: string;
   pincode: string;
+  // Client-side-only consent gate for the PUBLIC self-service request form
+  // only (makePublicRecipientRequestSchema). Optional here so the shared type
+  // still fits the super-admin add/edit request forms, which don't show this
+  // checkbox and validate against makeRecipientRequestSchema /
+  // makeBloodRequestEditSchema. Not part of BloodRequestPayload below: the
+  // backend has no field to persist it yet, so this only blocks submission in
+  // the UI today.
+  consentAccepted?: boolean;
 }
 
 // Sent to POST /public/blood-requests (bloodbuddy.backend.dto.request.BloodRequestSubmission).

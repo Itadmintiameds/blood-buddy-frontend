@@ -196,6 +196,18 @@ export const donorRegistrationSchema = donorFieldsSchema.superRefine(
   refineAlternateMobile,
 );
 
+// Public self-registration only: same fields as donorRegistrationSchema plus a
+// required consent checkbox. The super-admin add/edit donor forms (which enter
+// details on someone else's behalf and show no checkbox) keep using
+// donorRegistrationSchema / donorEditSchema above, unchanged.
+export const donorPublicRegistrationSchema = donorFieldsSchema
+  .extend({
+    consentAccepted: z.boolean().refine((value) => value === true, {
+      message: "Please accept the consent statement to continue",
+    }),
+  })
+  .superRefine(refineAlternateMobile);
+
 // Superadmin edit of an existing donor (PUT /admin/donors/{id}). Same rules as
 // registration except Date of Birth: the backend treats it as optional, and
 // donors registered years ago may since have aged past 65 — that mustn't block

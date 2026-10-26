@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ChevronDown,
   Droplets,
+  Hash,
   MapPin,
   MapPinned,
   Phone,
@@ -19,9 +20,10 @@ import {
   StickySubmitBar,
 } from "@/app/components/ui/StickySubmitBar";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { ConsentCheckbox } from "@/app/components/ui/ConsentCheckbox";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import {
-  donorRegistrationSchema,
+  donorPublicRegistrationSchema,
   getDonorDobBounds,
   normalizeDonorForm,
 } from "@/schema/donor/donorRegistrationSchema";
@@ -33,6 +35,7 @@ import { registerDonor } from "@/services/donor/donorRegistrationService";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import type { MasterBloodGroup } from "@/types/master.types";
+import { translations } from "@/translations/translations";
 import {
   Bilingual,
   BilingualInline,
@@ -50,6 +53,7 @@ const defaultValues: DonorRegistrationInput = {
   city: "",
   pincode: "",
   lastBloodDonationDate: "",
+  consentAccepted: false,
 };
 
 // Today as YYYY-MM-DD in the user's local timezone. toISOString() is UTC, which
@@ -80,6 +84,9 @@ export function DonorRegistrationForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [registeredDonor, setRegisteredDonor] =
     useState<DonorRegistrationResponse | null>(null);
+  // Picked once per successful registration (not on every render) so each
+  // donor sees one of several messages instead of the same line every time.
+  const [motivationalMessageIndex, setMotivationalMessageIndex] = useState(0);
   const [bloodGroups, setBloodGroups] = useState<MasterBloodGroup[]>([]);
   const [mastersLoading, setMastersLoading] = useState(true);
   const [selectedBloodGroupId, setSelectedBloodGroupId] = useState<
@@ -92,7 +99,7 @@ export function DonorRegistrationForm() {
     formState: { errors, isSubmitting, isValid },
   } = useForm<DonorRegistrationInput>({
     resolver: zodResolver(
-      donorRegistrationSchema,
+      donorPublicRegistrationSchema,
     ) as Resolver<DonorRegistrationInput>,
     mode: "onBlur",
     reValidateMode: "onChange",
@@ -141,6 +148,11 @@ export function DonorRegistrationForm() {
       });
 
       setRegisteredDonor(response);
+      setMotivationalMessageIndex(
+        Math.floor(
+          Math.random() * translations.en.donor.donorMotivationalMessages.length,
+        ),
+      );
     } catch (error) {
       console.error("Donor registration error:", error);
 
@@ -363,6 +375,16 @@ export function DonorRegistrationForm() {
           />
         </div>
 
+        <div className="mt-5">
+          <ConsentCheckbox
+            id="consentAccepted"
+            statementKey="donor.consentStatement"
+            detailsKey="donor.consentDetails"
+            {...register("consentAccepted")}
+            error={errors.consentAccepted?.message}
+          />
+        </div>
+
         {submitError && (
           <div
             role="alert"
@@ -382,22 +404,43 @@ export function DonorRegistrationForm() {
 
       <SuccessModal
         open={registeredDonor !== null}
-        title={<Bilingual tKey="bloodCentre.registrationSuccess" as="span" />}
+        title={
+          <Bilingual
+            tKey="bloodCentre.registrationSuccess"
+            as="span"
+            enClassName="mt-1 block text-[clamp(13.5px,3.8vw,14.5px)] font-medium leading-snug text-[var(--color-text-muted)]"
+          />
+        }
         description={
           <>
             <Bilingual
               tKey="donor.donorRegisteredSuccessfully"
               as="span"
               className="block"
+              enClassName="mt-1 block text-[clamp(12.5px,3.4vw,13.5px)] font-medium leading-relaxed text-[var(--color-text-muted)]"
             />
             {registeredDonor && (
-              <Bilingual
-                tKey="donor.donorReferenceId"
-                params={{ id: registeredDonor.bloodDonorDetailsId }}
-                as="span"
-                className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
-              />
+              <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-gray-100 bg-gray-50 px-3.5 py-2.5 text-left">
+                <Hash
+                  size={16}
+                  strokeWidth={2.25}
+                  className="mt-0.5 shrink-0 text-[var(--color-text-muted)]"
+                />
+                <Bilingual
+                  tKey="donor.donorReferenceId"
+                  params={{ id: registeredDonor.bloodDonorDetailsId }}
+                  as="span"
+                  className="block font-semibold text-[var(--color-text-body)]"
+                  enClassName="mt-1 block text-[clamp(12.5px,3.4vw,13.5px)] font-medium leading-relaxed text-[var(--color-text-muted)]"
+                />
+              </div>
             )}
+            <Bilingual
+              tKey={`donor.donorMotivationalMessages.${motivationalMessageIndex}`}
+              as="span"
+              className="mt-3 block rounded-xl bg-[var(--color-primary)]/5 px-3.5 py-3 font-medium text-[var(--color-primary)]"
+              enClassName="mt-1 block text-[clamp(12px,3.3vw,13px)] font-medium leading-relaxed text-[var(--color-primary)]/80"
+            />
           </>
         }
         onConfirm={handleSuccessConfirm}

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ChevronDown,
   Droplets,
+  Hash,
   Hospital,
   MapPin,
   MapPinned,
@@ -21,10 +22,11 @@ import {
   StickySubmitBar,
 } from "@/app/components/ui/StickySubmitBar";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { ConsentCheckbox } from "@/app/components/ui/ConsentCheckbox";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
 import {
   buildComponentLimits,
-  makeRecipientRequestSchema,
+  makePublicRecipientRequestSchema,
   normalizeRecipientForm,
 } from "@/schema/recipient/recipientRequestSchema";
 import type {
@@ -91,6 +93,7 @@ export function RecipientRegistrationForm() {
     district: "",
     city: "",
     pincode: "",
+    consentAccepted: false,
   };
 
   const [selectedBloodGroupId, setSelectedBloodGroupId] = useState<
@@ -108,7 +111,7 @@ export function RecipientRegistrationForm() {
   );
 
   const schema = useMemo(
-    () => makeRecipientRequestSchema(componentLimits),
+    () => makePublicRecipientRequestSchema(componentLimits),
     [componentLimits],
   );
 
@@ -495,6 +498,16 @@ export function RecipientRegistrationForm() {
           />
         </div>
 
+        <div className="mt-5">
+          <ConsentCheckbox
+            id="consentAccepted"
+            statementKey="recipient.consentStatement"
+            detailsKey="recipient.consentDetails"
+            {...register("consentAccepted")}
+            error={errors.consentAccepted?.message}
+          />
+        </div>
+
         {submitError && (
           <div
             role="alert"
@@ -514,7 +527,13 @@ export function RecipientRegistrationForm() {
 
       <SuccessModal
         open={successResult !== null}
-        title={<Bilingual tKey="recipient.requestSubmitted" as="span" />}
+        title={
+          <Bilingual
+            tKey="recipient.requestSubmitted"
+            as="span"
+            enClassName="mt-1 block text-[clamp(13.5px,3.8vw,14.5px)] font-medium leading-snug text-[var(--color-text-muted)]"
+          />
+        }
         description={
           successResult && (
             <>
@@ -525,20 +544,37 @@ export function RecipientRegistrationForm() {
                   tKey="recipient.noCentreMatched"
                   as="span"
                   className="block"
+                  enClassName="mt-1 block text-[clamp(12.5px,3.4vw,13.5px)] font-medium leading-relaxed text-[var(--color-text-muted)]"
                 />
               )}
-              <Bilingual
-                tKey="recipient.requestReferenceId"
-                params={{ id: successResult.bloodRequestId }}
-                as="span"
-                className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
-              />
-              <Bilingual
-                tKey="recipient.helplineCall"
-                params={{ number: HELPLINE_NUMBER }}
-                as="span"
-                className="mt-1.5 block font-semibold text-[var(--color-text-body)]"
-              />
+              <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-gray-100 bg-gray-50 px-3.5 py-2.5 text-left">
+                <Hash
+                  size={16}
+                  strokeWidth={2.25}
+                  className="mt-0.5 shrink-0 text-[var(--color-text-muted)]"
+                />
+                <Bilingual
+                  tKey="recipient.requestReferenceId"
+                  params={{ id: successResult.bloodRequestId }}
+                  as="span"
+                  className="block font-semibold text-[var(--color-text-body)]"
+                  enClassName="mt-1 block text-[clamp(12.5px,3.4vw,13.5px)] font-medium leading-relaxed text-[var(--color-text-muted)]"
+                />
+              </div>
+              <div className="mt-2.5 flex items-start gap-2.5 rounded-xl bg-[var(--color-primary)]/5 px-3.5 py-3 text-left">
+                <Phone
+                  size={16}
+                  strokeWidth={2.25}
+                  className="mt-0.5 shrink-0 text-[var(--color-primary)]"
+                />
+                <Bilingual
+                  tKey="recipient.helplineCall"
+                  params={{ number: HELPLINE_NUMBER }}
+                  as="span"
+                  className="block font-semibold text-[var(--color-primary)]"
+                  enClassName="mt-1 block text-[clamp(12.5px,3.4vw,13.5px)] font-medium leading-relaxed text-[var(--color-primary)]/80"
+                />
+              </div>
             </>
           )
         }

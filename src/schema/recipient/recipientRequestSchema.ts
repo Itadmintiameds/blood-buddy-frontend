@@ -127,6 +127,30 @@ export function makeRecipientRequestSchema(
   );
 }
 
+// Same base fields plus a required consent checkbox, for the public
+// self-service request form only.
+const recipientRequestWithConsentSchema = recipientRequestSchema.extend({
+  consentAccepted: z.boolean().refine((value) => value === true, {
+    message: "Please accept the consent statement to continue",
+  }),
+});
+
+// Public self-service request only: same rules as makeRecipientRequestSchema
+// plus the consent checkbox above. The super-admin add/edit request forms
+// (entered on someone else's behalf, no checkbox shown) keep using
+// makeRecipientRequestSchema / makeBloodRequestEditSchema below, unchanged.
+export function makePublicRecipientRequestSchema(
+  componentLimits?: Map<number, { name: string; max: number }>,
+) {
+  if (!componentLimits || componentLimits.size === 0) {
+    return recipientRequestWithConsentSchema;
+  }
+
+  return recipientRequestWithConsentSchema.superRefine((data, ctx) =>
+    checkComponentUnitLimit(data, ctx, componentLimits),
+  );
+}
+
 function checkComponentUnitLimit(
   data: { bloodComponentId: unknown; requiredUnits: string },
   ctx: z.RefinementCtx,

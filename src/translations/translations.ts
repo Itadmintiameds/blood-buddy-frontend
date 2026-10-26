@@ -58,6 +58,8 @@ export const translations = {
       enterEmail: "Enter your email",
       enterPassword: "Enter your password",
       registerNow: "Register Now",
+      viewDetails: "View details",
+      hideDetails: "Hide details",
     },
 
     welcome: {
@@ -222,6 +224,24 @@ export const translations = {
       lastBloodDonationDateOptional: "Last Blood Donation Date (Optional)",
       donorRegisteredSuccessfully: "Donor registered successfully.",
       donorReferenceId: "Your donor reference ID is #{id}.",
+      // One of these is picked at random after a successful registration so
+      // donors don't all see the same line (see DonorRegistrationForm).
+      donorMotivationalMessages: [
+        "You're officially part of the lifesaving club! When someone needs your blood group, we'll be in touch.",
+        "Thank you for joining as a donor. You're now just one call away from saving a life.",
+        "Welcome aboard! Your willingness to donate could be someone's miracle tomorrow.",
+        "You've taken the first step toward saving lives. Thank you for signing up as a blood donor.",
+        "Every registered donor is a life waiting to be saved. Thank you for being one of them.",
+        "You're now part of a community ready to help when it matters most. Thank you for registering.",
+        "Thanks for stepping up! Your blood group is now on standby to help someone in need.",
+        "One registration, countless possibilities to save a life. Welcome to the BloodBuddy family.",
+        "You're just one step away from being someone's lifesaver. Thank you for joining us.",
+        "Heroes don't wait for an emergency to decide to help — you already have. Thank you for registering.",
+      ],
+      consentStatement:
+        "I voluntarily agree to support blood donation activities and to donate blood, and I confirm the details above are accurate.",
+      consentDetails:
+        "By registering as a donor, you confirm that:\n• You voluntarily express your willingness to support blood donation activities in the future and to donate blood in critical needs or requests for voluntary blood donation.\n• You understand that Rotary BloodBuddy may contact you when there is an urgent requirement for this service, subject to your availability and eligibility.\n• The details you've entered are true and accurate to the best of your knowledge.\n• Your name, mobile number, blood group and location will be shared only with blood banks and hospitals to arrange donation.\n• You can ask for your details to be removed at any time by contacting our helpline.",
     },
 
     recipient: {
@@ -258,6 +278,10 @@ export const translations = {
       noCentreMatched:
         "No blood centre has matched your request yet. Our team will arrange a donor for you.",
       helplineCall: "For urgent help, call our helpline: {number}",
+      consentStatement:
+        "I confirm the details above are accurate and I agree to them being shared to arrange this blood request.",
+      consentDetails:
+        "By submitting this request, you confirm that:\n• The patient and hospital details you've entered are true and accurate to the best of your knowledge.\n• This request will be shared only with nearby blood banks and donors to help arrange the blood needed.\n• Submitting this request does not guarantee blood availability — for urgent needs, also contact the hospital or blood bank directly.",
 
       searchTitle: "Search Blood Banks & Donors",
       searchByPincode: "Search by pin code or area",
@@ -547,6 +571,8 @@ export const translations = {
       enterEmail: "ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ",
       enterPassword: "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
       registerNow: "ಈಗ ನೋಂದಾಯಿಸಿ",
+      viewDetails: "ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+      hideDetails: "ವಿವರಗಳನ್ನು ಮರೆಮಾಡಿ",
     },
 
     welcome: {
@@ -713,6 +739,22 @@ export const translations = {
       lastBloodDonationDateOptional: "ಕೊನೆಯ ರಕ್ತದಾನ ದಿನಾಂಕ (ಐಚ್ಛಿಕ)",
       donorRegisteredSuccessfully: "ರಕ್ತದಾನಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ.",
       donorReferenceId: "ನಿಮ್ಮ ರಕ್ತದಾನಿ ಉಲ್ಲೇಖ ಐಡಿ #{id}.",
+      donorMotivationalMessages: [
+        "ನೀವು ಈಗ ಅಧಿಕೃತವಾಗಿ ಜೀವರಕ್ಷಕರ ಬಳಗದ ಭಾಗವಾಗಿದ್ದೀರಿ! ನಿಮ್ಮ ರಕ್ತದ ಗುಂಪು ಅಗತ್ಯವಿದ್ದಾಗ ನಾವು ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.",
+        "ದಾನಿಯಾಗಿ ಸೇರಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು. ನೀವು ಈಗ ಒಂದು ಕರೆಯಷ್ಟೇ ದೂರದಲ್ಲಿ ಒಂದು ಜೀವ ಉಳಿಸಲು ಸಿದ್ಧರಿದ್ದೀರಿ.",
+        "ಸ್ವಾಗತ! ರಕ್ತದಾನ ಮಾಡುವ ನಿಮ್ಮ ಸಿದ್ಧತೆ ನಾಳೆ ಯಾರದೋ ಪವಾಡವಾಗಬಹುದು.",
+        "ಜೀವಗಳನ್ನು ಉಳಿಸುವ ಮೊದಲ ಹೆಜ್ಜೆಯನ್ನು ನೀವು ಇಟ್ಟಿದ್ದೀರಿ. ರಕ್ತದಾನಿಯಾಗಿ ನೋಂದಾಯಿಸಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+        "ಪ್ರತಿಯೊಬ್ಬ ನೋಂದಾಯಿತ ದಾನಿಯೂ ಉಳಿಸಲು ಕಾಯುತ್ತಿರುವ ಒಂದು ಜೀವ. ಅವರಲ್ಲಿ ಒಬ್ಬರಾಗಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+        "ಅಗತ್ಯವಿದ್ದಾಗ ಸಹಾಯ ಮಾಡಲು ಸಿದ್ಧವಾಗಿರುವ ಸಮುದಾಯದ ಭಾಗ ನೀವು ಈಗ ಆಗಿದ್ದೀರಿ. ನೋಂದಾಯಿಸಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+        "ಮುಂದೆ ಬಂದಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು! ಅಗತ್ಯವಿರುವವರಿಗೆ ಸಹಾಯ ಮಾಡಲು ನಿಮ್ಮ ರಕ್ತದ ಗುಂಪು ಈಗ ಸಿದ್ಧವಾಗಿದೆ.",
+        "ಒಂದು ನೋಂದಣಿ, ಜೀವ ಉಳಿಸುವ ಅಸಂಖ್ಯ ಸಾಧ್ಯತೆಗಳು. BloodBuddy ಕುಟುಂಬಕ್ಕೆ ಸ್ವಾಗತ.",
+        "ಯಾರೋ ಒಬ್ಬರ ಜೀವರಕ್ಷಕರಾಗಲು ನೀವು ಕೇವಲ ಒಂದು ಹೆಜ್ಜೆ ದೂರದಲ್ಲಿದ್ದೀರಿ. ನಮ್ಮೊಂದಿಗೆ ಸೇರಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+        "ವೀರರು ಸಹಾಯ ಮಾಡಲು ತುರ್ತು ಪರಿಸ್ಥಿತಿಗಾಗಿ ಕಾಯುವುದಿಲ್ಲ — ನೀವು ಈಗಾಗಲೇ ಅದನ್ನು ನಿರ್ಧರಿಸಿದ್ದೀರಿ. ನೋಂದಾಯಿಸಿದ್ದಕ್ಕೆ ಧನ್ಯವಾದಗಳು.",
+      ],
+      consentStatement:
+        "ರಕ್ತದಾನ ಚಟುವಟಿಕೆಗಳನ್ನು ಬೆಂಬಲಿಸಲು ಮತ್ತು ರಕ್ತದಾನ ಮಾಡಲು ನಾನು ಸ್ವಯಂಪ್ರೇರಣೆಯಿಂದ ಒಪ್ಪುತ್ತೇನೆ ಮತ್ತು ಮೇಲಿನ ವಿವರಗಳು ನಿಖರವಾಗಿವೆ ಎಂದು ದೃಢೀಕರಿಸುತ್ತೇನೆ.",
+      consentDetails:
+        "ರಕ್ತದಾನಿಯಾಗಿ ನೋಂದಾಯಿಸುವ ಮೂಲಕ, ನೀವು ಈ ಕೆಳಗಿನವುಗಳನ್ನು ದೃಢೀಕರಿಸುತ್ತೀರಿ:\n• ಭವಿಷ್ಯದಲ್ಲಿ ರಕ್ತದಾನ ಚಟುವಟಿಕೆಗಳನ್ನು ಬೆಂಬಲಿಸಲು ಮತ್ತು ತುರ್ತು ಅಗತ್ಯ ಅಥವಾ ಸ್ವಯಂಪ್ರೇರಿತ ರಕ್ತದಾನದ ಮನವಿಗಳಿಗೆ ರಕ್ತದಾನ ಮಾಡಲು ನೀವು ಸ್ವಯಂಪ್ರೇರಣೆಯಿಂದ ಸಿದ್ಧರಿದ್ದೀರಿ ಎಂದು ವ್ಯಕ್ತಪಡಿಸುತ್ತೀರಿ.\n• ಈ ಸೇವೆಗೆ ತುರ್ತು ಅಗತ್ಯವಿದ್ದಾಗ Rotary BloodBuddy ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಬಹುದು ಎಂಬುದನ್ನು ನೀವು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುತ್ತೀರಿ, ಇದು ನಿಮ್ಮ ಲಭ್ಯತೆ ಮತ್ತು ಅರ್ಹತೆಗೆ ಒಳಪಟ್ಟಿರುತ್ತದೆ.\n• ನೀವು ನಮೂದಿಸಿದ ವಿವರಗಳು ನಿಮ್ಮ ಅರಿವಿನ ಪ್ರಕಾರ ನಿಜ ಮತ್ತು ನಿಖರವಾಗಿವೆ.\n• ನಿಮ್ಮ ಹೆಸರು, ಮೊಬೈಲ್ ಸಂಖ್ಯೆ, ರಕ್ತದ ಗುಂಪು ಮತ್ತು ಸ್ಥಳವನ್ನು ರಕ್ತದಾನವನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡಲು ಮಾತ್ರ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ಆಸ್ಪತ್ರೆಗಳೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.\n• ನಮ್ಮ ಸಹಾಯವಾಣಿಯನ್ನು ಸಂಪರ್ಕಿಸುವ ಮೂಲಕ ನೀವು ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ ವಿವರಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಕೇಳಬಹುದು.",
     },
 
     recipient: {
@@ -749,6 +791,10 @@ export const translations = {
       noCentreMatched:
         "ನಿಮ್ಮ ಮನವಿಗೆ ಇನ್ನೂ ಯಾವುದೇ ರಕ್ತ ಕೇಂದ್ರ ಹೊಂದಿಕೆಯಾಗಿಲ್ಲ. ನಮ್ಮ ತಂಡವು ನಿಮಗಾಗಿ ರಕ್ತದಾನಿಯನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡುತ್ತದೆ.",
       helplineCall: "ತುರ್ತು ಸಹಾಯಕ್ಕಾಗಿ ನಮ್ಮ ಸಹಾಯವಾಣಿಗೆ ಕರೆ ಮಾಡಿ: {number}",
+      consentStatement:
+        "ಮೇಲಿನ ವಿವರಗಳು ನಿಖರವಾಗಿವೆ ಎಂದು ನಾನು ದೃಢೀಕರಿಸುತ್ತೇನೆ ಮತ್ತು ಈ ರಕ್ತದ ಮನವಿಯನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡಲು ಅವುಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ನಾನು ಒಪ್ಪುತ್ತೇನೆ.",
+      consentDetails:
+        "ಈ ಮನವಿಯನ್ನು ಸಲ್ಲಿಸುವ ಮೂಲಕ, ನೀವು ಈ ಕೆಳಗಿನವುಗಳನ್ನು ದೃಢೀಕರಿಸುತ್ತೀರಿ:\n• ನೀವು ನಮೂದಿಸಿದ ರೋಗಿ ಮತ್ತು ಆಸ್ಪತ್ರೆಯ ವಿವರಗಳು ನಿಮ್ಮ ಅರಿವಿನ ಪ್ರಕಾರ ನಿಜ ಮತ್ತು ನಿಖರವಾಗಿವೆ.\n• ಅಗತ್ಯವಿರುವ ರಕ್ತವನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡಲು ಸಹಾಯ ಮಾಡಲು ಈ ಮನವಿಯನ್ನು ಹತ್ತಿರದ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳೊಂದಿಗೆ ಮಾತ್ರ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.\n• ಈ ಮನವಿಯನ್ನು ಸಲ್ಲಿಸುವುದರಿಂದ ರಕ್ತದ ಲಭ್ಯತೆಯ ಖಾತರಿಯಾಗುವುದಿಲ್ಲ — ತುರ್ತು ಅಗತ್ಯಗಳಿಗಾಗಿ, ದಯವಿಟ್ಟು ಆಸ್ಪತ್ರೆ ಅಥವಾ ರಕ್ತ ಬ್ಯಾಂಕ್ ಅನ್ನು ನೇರವಾಗಿ ಸಂಪರ್ಕಿಸಿ.",
 
       searchTitle: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳನ್ನು ಹುಡುಕಿ",
       searchByPincode: "ಪಿನ್ ಕೋಡ್ ಅಥವಾ ಪ್ರದೇಶದ ಮೂಲಕ ಹುಡುಕಿ",

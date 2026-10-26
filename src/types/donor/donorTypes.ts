@@ -9,6 +9,13 @@ export interface DonorRegistrationInput {
   city: string;
   pincode: string;
   lastBloodDonationDate: string;
+  // Client-side-only consent gate for the PUBLIC self-registration form only
+  // (donorPublicRegistrationSchema). Optional here so the shared type still
+  // fits the super-admin add/edit donor forms, which don't show this checkbox
+  // and validate against the plain donorRegistrationSchema / donorEditSchema.
+  // Not part of DonorRegistrationPayload below: the backend has no field to
+  // persist it yet, so this only blocks submission in the UI today.
+  consentAccepted?: boolean;
 }
 // Sent to POST /public/donors/register (bloodbuddy.backend.dto.donor.DonorRegistrationRequest).
 export interface DonorRegistrationPayload {
