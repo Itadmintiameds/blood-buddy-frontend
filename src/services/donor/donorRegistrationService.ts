@@ -1,5 +1,5 @@
 import { api } from "@/services/api/client";
-import type { ApiEnvelope } from "@/types/api.types";
+import type { ApiEnvelope, ConsentForm } from "@/types/api.types";
 import type {
   DonorRegistrationPayload,
   DonorRegistrationResponse,
@@ -13,6 +13,15 @@ export async function registerDonor(
   const { data } = await api.post<ApiEnvelope<DonorRegistrationResponse>>(
     "/public/donors/register",
     payload,
+  );
+  return data.data;
+}
+
+// GET /public/donors/consent — the active donor consent wording. Its version
+// must be sent back as `consentVersion` when registering.
+export async function getDonorConsentForm(): Promise<ConsentForm> {
+  const { data } = await api.get<ApiEnvelope<ConsentForm>>(
+    "/public/donors/consent",
   );
   return data.data;
 }

@@ -1,10 +1,11 @@
 "use client";
 
 import type { InputHTMLAttributes } from "react";
-import { forwardRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { forwardRef } from "react";
+import { Loader2 } from "lucide-react";
 
-import { Bilingual, useBilingualText } from "@/app/components/common/Bilingual";
+import { Bilingual } from "@/app/components/common/Bilingual";
+import type { ConsentForm } from "@/types/api.types";
 
 interface ConsentCheckboxProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "id"> {
@@ -12,27 +13,40 @@ interface ConsentCheckboxProps
   error?: string;
   /** Short statement shown next to the checkbox, e.g. "donor.consentStatement". */
   statementKey: string;
-  /** Longer explanation revealed by the "View details" toggle, e.g. "donor.consentDetails". */
-  detailsKey: string;
+  /**
+   * The active consent wording from the backend, always shown above the
+   * checkbox. Null while loading or if loading failed; the checkbox is
+   * disabled until it arrives, since the submit must carry its version.
+   */
+  consent: ConsentForm | null;
+  consentLoading?: boolean;
+  /** Called from the "Retry" link shown when the consent wording failed to load. */
+  onRetry?: () => void;
 }
 
-// A required "I agree" checkbox for the donor / recipient forms. The short
-// statement sits next to the box; a "View details" toggle reveals the fuller
-// explanation of what the user is agreeing to, without needing a modal.
+// A required "I agree" checkbox for the donor / recipient forms. The exact
+// consent wording (title + text) served by the backend is always visible
+// above the box, so anyone who ticks it has had that text on screen.
 export const ConsentCheckbox = forwardRef<HTMLInputElement, ConsentCheckboxProps>(
-  ({ id, error, statementKey, detailsKey, className = "", ...props }, ref) => {
-    const [expanded, setExpanded] = useState(false);
-    const viewDetailsText = useBilingualText("common.viewDetails");
-    const hideDetailsText = useBilingualText("common.hideDetails");
-
+  (
+    {
+      id,
+      error,
+      statementKey,
+      consent,
+      consentLoading = false,
+      onRetry,
+      className = "",
+      disabled,
+      ...props
+    },
+    ref,
+  ) => {
     return (
       <div className="w-full">
         <div
           className={`
-            flex
             w-full
-            items-start
-            gap-3
             rounded-lg
             border
             bg-[var(--color-white)]
@@ -47,33 +61,67 @@ export const ConsentCheckbox = forwardRef<HTMLInputElement, ConsentCheckboxProps
             }
           `}
         >
-          <input
-            ref={ref}
-            id={id}
-            type="checkbox"
-            aria-invalid={Boolean(error)}
-            className={`
-              mt-0.5
-              h-[18px]
-              w-[18px]
-              shrink-0
-              cursor-pointer
-              rounded
-              border-[var(--color-border)]
-              text-[var(--color-primary)]
-              outline-none
-              focus-visible:ring-2
-              focus-visible:ring-[var(--color-primary)]/30
+          {consent ? (
+            <div
+              id={`${id}-text`}
+              className="text-[12px] leading-5 text-[var(--color-text-tertiary)]"
+            >
+              <p className="font-semibold text-[var(--color-text-body)]">
+                {consent.title}
+              </p>
+              <p className="mt-1 whitespace-pre-line">{consent.content}</p>
+            </div>
+          ) : consentLoading ? (
+            <p className="flex items-center gap-1.5 text-[12px] text-[var(--color-text-tertiary)]">
+              <Loader2 size={12} className="animate-spin" />
+              <Bilingual tKey="common.consentLoading" as="span" />
+            </p>
+          ) : (
+            <p className="text-[12px] text-red-500">
+              <Bilingual tKey="common.consentLoadFailed" as="span" />
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="mt-0.5 block font-medium text-[var(--color-primary)] underline"
+                >
+                  <Bilingual tKey="common.retry" as="span" />
+                </button>
+              )}
+            </p>
+          )}
 
-              ${className}
-            `}
-            {...props}
-          />
+          <div className="mt-3 flex items-start gap-3 border-t border-[var(--color-border)] pt-3">
+            <input
+              ref={ref}
+              id={id}
+              type="checkbox"
+              aria-invalid={Boolean(error)}
+              aria-describedby={consent ? `${id}-text` : undefined}
+              disabled={disabled || !consent}
+              className={`
+                mt-0.5
+                h-[18px]
+                w-[18px]
+                shrink-0
+                cursor-pointer
+                rounded
+                disabled:cursor-not-allowed
+                disabled:opacity-50
+                border-[var(--color-border)]
+                text-[var(--color-primary)]
+                outline-none
+                focus-visible:ring-2
+                focus-visible:ring-[var(--color-primary)]/30
 
-          <div className="min-w-0 flex-1">
+                ${className}
+              `}
+              {...props}
+            />
+
             <label
               htmlFor={id}
-              className="cursor-pointer text-[13px] font-medium leading-5 text-[var(--color-text-body)]"
+              className="min-w-0 flex-1 cursor-pointer text-[13px] font-medium leading-5 text-[var(--color-text-body)]"
             >
               <Bilingual
                 tKey={statementKey}
@@ -81,29 +129,6 @@ export const ConsentCheckbox = forwardRef<HTMLInputElement, ConsentCheckboxProps
                 enClassName="mt-1 block text-[12px] font-normal leading-5 text-[var(--color-text-tertiary)]"
               />
             </label>
-
-            <button
-              type="button"
-              onClick={() => setExpanded((value) => !value)}
-              aria-expanded={expanded}
-              className="mt-1 flex items-center gap-1 text-[12px] font-medium text-[var(--color-primary)]"
-            >
-              {expanded ? hideDetailsText : viewDetailsText}
-              <ChevronDown
-                size={14}
-                strokeWidth={2}
-                className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-              />
-            </button>
-
-            {expanded && (
-              <Bilingual
-                tKey={detailsKey}
-                as="p"
-                className="mt-2 whitespace-pre-line text-[12px] leading-5 text-[var(--color-text-tertiary)]"
-                enClassName="mt-2 block border-t border-[var(--color-border)] pt-2 text-[12px] font-normal leading-5 text-[var(--color-text-tertiary)]"
-              />
-            )}
           </div>
         </div>
 

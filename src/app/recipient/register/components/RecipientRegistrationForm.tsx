@@ -33,7 +33,11 @@ import type {
   BloodRequestResponse,
   RecipientRequestInput,
 } from "@/types/recipient/receipientTypes";
-import { submitBloodRequest } from "@/services/recipient/recipientRequestService";
+import {
+  getRecipientConsentForm,
+  submitBloodRequest,
+} from "@/services/recipient/recipientRequestService";
+import { useConsentForm } from "@/app/hooks/useConsentForm";
 import { saveLastRecipientPincode } from "@/services/recipient/recipientSessionStorage";
 import {
   getBloodComponents,
@@ -116,10 +120,17 @@ export function RecipientRegistrationForm() {
   );
 
   const {
+    consent,
+    loading: consentLoading,
+    reload: reloadConsent,
+  } = useConsentForm(getRecipientConsentForm);
+
+  const {
     register,
     handleSubmit,
     trigger,
     getValues,
+    setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<RecipientRequestInput>({
     resolver: zodResolver(schema) as Resolver<RecipientRequestInput>,
@@ -160,6 +171,8 @@ export function RecipientRegistrationForm() {
   const onSubmit = async (rawData: RecipientRequestInput) => {
     setSubmitError(null);
 
+    if (!consent) return;
+
     const data = normalizeRecipientForm(rawData);
 
     try {
@@ -175,6 +188,8 @@ export function RecipientRegistrationForm() {
         city: data.city,
         district: data.district,
         pincode: data.pincode || undefined,
+        consentAccepted: data.consentAccepted === true,
+        consentVersion: consent.version,
       });
 
       if (data.pincode) {
@@ -183,6 +198,14 @@ export function RecipientRegistrationForm() {
       setSuccessResult(response);
     } catch (error) {
       console.error("Blood request submit error:", error);
+
+      // The consent wording may have changed since the page loaded (the
+      // backend rejects a stale version): show the latest text and make the
+      // requester accept it again.
+      const latest = await reloadConsent();
+      if (latest && latest.version !== consent.version) {
+        setValue("consentAccepted", false, { shouldValidate: true });
+      }
 
       setSubmitError(
         getApiErrorMessage(
@@ -502,7 +525,9 @@ export function RecipientRegistrationForm() {
           <ConsentCheckbox
             id="consentAccepted"
             statementKey="recipient.consentStatement"
-            detailsKey="recipient.consentDetails"
+            consent={consent}
+            consentLoading={consentLoading}
+            onRetry={() => void reloadConsent()}
             {...register("consentAccepted")}
             error={errors.consentAccepted?.message}
           />

@@ -39,7 +39,11 @@ import {
   updateBloodRequest,
   type BloodRequestFilter,
 } from "@/services/bloodCenter/superAdmin/bloodRequestService";
-import { submitBloodRequest } from "@/services/recipient/recipientRequestService";
+import {
+  getRecipientConsentForm,
+  submitBloodRequest,
+} from "@/services/recipient/recipientRequestService";
+import { useConsentForm } from "@/app/hooks/useConsentForm";
 import {
   getBloodComponents,
   getBloodGroups,
@@ -50,7 +54,7 @@ import { DEFAULT_PAGE_SIZE, usePagination } from "@/app/hooks/usePagination";
 import {
   buildComponentLimits,
   makeBloodRequestEditSchema,
-  makeRecipientRequestSchema,
+  makePublicRecipientRequestSchema,
   normalizeRecipientForm,
 } from "@/schema/recipient/recipientRequestSchema";
 import type { RecipientRequestInput } from "@/types/recipient/receipientTypes";
@@ -61,6 +65,7 @@ import type {
 import { reactivateDonor } from "@/services/bloodCenter/superAdmin/dashboardService";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { ConsentCheckbox } from "@/app/components/ui/ConsentCheckbox";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
 import { HeaderEditButton } from "@/app/components/ui/HeaderEditButton";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
@@ -965,25 +970,35 @@ function LogRequestModal({
   );
 
   const schema = useMemo(
-    () => makeRecipientRequestSchema(componentLimits),
+    () => makePublicRecipientRequestSchema(componentLimits),
     [componentLimits],
   );
+
+  // The public endpoint requires the requester's consent.
+  const {
+    consent,
+    loading: consentLoading,
+    reload: reloadConsent,
+  } = useConsentForm(getRecipientConsentForm);
 
   const {
     register,
     handleSubmit,
     trigger,
     getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RecipientRequestInput>({
     resolver: zodResolver(schema) as Resolver<RecipientRequestInput>,
     mode: "onBlur",
     reValidateMode: "onChange",
-    defaultValues: emptyRecipientForm,
+    defaultValues: { ...emptyRecipientForm, consentAccepted: false },
   });
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError("");
+
+    if (!consent) return;
 
     const normalized = normalizeRecipientForm(values);
 
@@ -1000,11 +1015,19 @@ function LogRequestModal({
         city: normalized.city,
         district: normalized.district,
         pincode: normalized.pincode || undefined,
+        consentAccepted: normalized.consentAccepted === true,
+        consentVersion: consent.version,
       });
 
       onSaved();
     } catch (err) {
       setSubmitError(getApiErrorMessage(err, "Unable to log this request."));
+
+      // Pick up a newer consent version if that's why it was rejected.
+      const latest = await reloadConsent();
+      if (latest && latest.version !== consent.version) {
+        setValue("consentAccepted", false, { shouldValidate: true });
+      }
     }
   });
 
@@ -1261,6 +1284,18 @@ function LogRequestModal({
               error={errors.pincode?.message}
               {...register("pincode")}
             />
+
+            <div className="sm:col-span-2">
+              <ConsentCheckbox
+                id="consentAccepted"
+                statementKey="superAdmin.recipientConsentStatement"
+                consent={consent}
+                consentLoading={consentLoading}
+                onRetry={() => void reloadConsent()}
+                {...register("consentAccepted")}
+                error={errors.consentAccepted?.message}
+              />
+            </div>
 
             {submitError && (
               <p role="alert" className="sm:col-span-2 text-[12px] text-red-500">

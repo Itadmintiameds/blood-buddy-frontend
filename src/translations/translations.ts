@@ -58,8 +58,9 @@ export const translations = {
       enterEmail: "Enter your email",
       enterPassword: "Enter your password",
       registerNow: "Register Now",
-      viewDetails: "View details",
-      hideDetails: "Hide details",
+      consentLoading: "Loading consent form…",
+      consentLoadFailed: "Couldn't load the consent form.",
+      retry: "Retry",
     },
 
     welcome: {
@@ -240,8 +241,6 @@ export const translations = {
       ],
       consentStatement:
         "I voluntarily agree to support blood donation activities and to donate blood, and I confirm the details above are accurate.",
-      consentDetails:
-        "By registering as a donor, you confirm that:\n• You voluntarily express your willingness to support blood donation activities in the future and to donate blood in critical needs or requests for voluntary blood donation.\n• You understand that Rotary BloodBuddy may contact you when there is an urgent requirement for this service, subject to your availability and eligibility.\n• The details you've entered are true and accurate to the best of your knowledge.\n• Your name, mobile number, blood group and location will be shared only with blood banks and hospitals to arrange donation.\n• You can ask for your details to be removed at any time by contacting our helpline.",
     },
 
     recipient: {
@@ -280,8 +279,6 @@ export const translations = {
       helplineCall: "For urgent help, call our helpline: {number}",
       consentStatement:
         "I confirm the details above are accurate and I agree to them being shared to arrange this blood request.",
-      consentDetails:
-        "By submitting this request, you confirm that:\n• The patient and hospital details you've entered are true and accurate to the best of your knowledge.\n• This request will be shared only with nearby blood banks and donors to help arrange the blood needed.\n• Submitting this request does not guarantee blood availability — for urgent needs, also contact the hospital or blood bank directly.",
 
       searchTitle: "Search Blood Banks & Donors",
       searchByPincode: "Search by pin code or area",
@@ -297,6 +294,10 @@ export const translations = {
     },
 
     superAdmin: {
+      donorConsentStatement:
+        "The donor has read and agreed to the consent form.",
+      recipientConsentStatement:
+        "The requester has read and agreed to the consent form.",
       superAdmin: "Super Admin",
       administrator: "Administrator",
       management: "Management",
@@ -571,8 +572,9 @@ export const translations = {
       enterEmail: "ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ",
       enterPassword: "ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ",
       registerNow: "ಈಗ ನೋಂದಾಯಿಸಿ",
-      viewDetails: "ವಿವರಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
-      hideDetails: "ವಿವರಗಳನ್ನು ಮರೆಮಾಡಿ",
+      consentLoading: "ಒಪ್ಪಿಗೆ ನಮೂನೆ ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+      consentLoadFailed: "ಒಪ್ಪಿಗೆ ನಮೂನೆಯನ್ನು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.",
+      retry: "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
     },
 
     welcome: {
@@ -753,8 +755,6 @@ export const translations = {
       ],
       consentStatement:
         "ರಕ್ತದಾನ ಚಟುವಟಿಕೆಗಳನ್ನು ಬೆಂಬಲಿಸಲು ಮತ್ತು ರಕ್ತದಾನ ಮಾಡಲು ನಾನು ಸ್ವಯಂಪ್ರೇರಣೆಯಿಂದ ಒಪ್ಪುತ್ತೇನೆ ಮತ್ತು ಮೇಲಿನ ವಿವರಗಳು ನಿಖರವಾಗಿವೆ ಎಂದು ದೃಢೀಕರಿಸುತ್ತೇನೆ.",
-      consentDetails:
-        "ರಕ್ತದಾನಿಯಾಗಿ ನೋಂದಾಯಿಸುವ ಮೂಲಕ, ನೀವು ಈ ಕೆಳಗಿನವುಗಳನ್ನು ದೃಢೀಕರಿಸುತ್ತೀರಿ:\n• ಭವಿಷ್ಯದಲ್ಲಿ ರಕ್ತದಾನ ಚಟುವಟಿಕೆಗಳನ್ನು ಬೆಂಬಲಿಸಲು ಮತ್ತು ತುರ್ತು ಅಗತ್ಯ ಅಥವಾ ಸ್ವಯಂಪ್ರೇರಿತ ರಕ್ತದಾನದ ಮನವಿಗಳಿಗೆ ರಕ್ತದಾನ ಮಾಡಲು ನೀವು ಸ್ವಯಂಪ್ರೇರಣೆಯಿಂದ ಸಿದ್ಧರಿದ್ದೀರಿ ಎಂದು ವ್ಯಕ್ತಪಡಿಸುತ್ತೀರಿ.\n• ಈ ಸೇವೆಗೆ ತುರ್ತು ಅಗತ್ಯವಿದ್ದಾಗ Rotary BloodBuddy ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಬಹುದು ಎಂಬುದನ್ನು ನೀವು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುತ್ತೀರಿ, ಇದು ನಿಮ್ಮ ಲಭ್ಯತೆ ಮತ್ತು ಅರ್ಹತೆಗೆ ಒಳಪಟ್ಟಿರುತ್ತದೆ.\n• ನೀವು ನಮೂದಿಸಿದ ವಿವರಗಳು ನಿಮ್ಮ ಅರಿವಿನ ಪ್ರಕಾರ ನಿಜ ಮತ್ತು ನಿಖರವಾಗಿವೆ.\n• ನಿಮ್ಮ ಹೆಸರು, ಮೊಬೈಲ್ ಸಂಖ್ಯೆ, ರಕ್ತದ ಗುಂಪು ಮತ್ತು ಸ್ಥಳವನ್ನು ರಕ್ತದಾನವನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡಲು ಮಾತ್ರ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ಆಸ್ಪತ್ರೆಗಳೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.\n• ನಮ್ಮ ಸಹಾಯವಾಣಿಯನ್ನು ಸಂಪರ್ಕಿಸುವ ಮೂಲಕ ನೀವು ಯಾವುದೇ ಸಮಯದಲ್ಲಿ ನಿಮ್ಮ ವಿವರಗಳನ್ನು ತೆಗೆದುಹಾಕಲು ಕೇಳಬಹುದು.",
     },
 
     recipient: {
@@ -793,8 +793,6 @@ export const translations = {
       helplineCall: "ತುರ್ತು ಸಹಾಯಕ್ಕಾಗಿ ನಮ್ಮ ಸಹಾಯವಾಣಿಗೆ ಕರೆ ಮಾಡಿ: {number}",
       consentStatement:
         "ಮೇಲಿನ ವಿವರಗಳು ನಿಖರವಾಗಿವೆ ಎಂದು ನಾನು ದೃಢೀಕರಿಸುತ್ತೇನೆ ಮತ್ತು ಈ ರಕ್ತದ ಮನವಿಯನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡಲು ಅವುಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಲು ನಾನು ಒಪ್ಪುತ್ತೇನೆ.",
-      consentDetails:
-        "ಈ ಮನವಿಯನ್ನು ಸಲ್ಲಿಸುವ ಮೂಲಕ, ನೀವು ಈ ಕೆಳಗಿನವುಗಳನ್ನು ದೃಢೀಕರಿಸುತ್ತೀರಿ:\n• ನೀವು ನಮೂದಿಸಿದ ರೋಗಿ ಮತ್ತು ಆಸ್ಪತ್ರೆಯ ವಿವರಗಳು ನಿಮ್ಮ ಅರಿವಿನ ಪ್ರಕಾರ ನಿಜ ಮತ್ತು ನಿಖರವಾಗಿವೆ.\n• ಅಗತ್ಯವಿರುವ ರಕ್ತವನ್ನು ವ್ಯವಸ್ಥೆ ಮಾಡಲು ಸಹಾಯ ಮಾಡಲು ಈ ಮನವಿಯನ್ನು ಹತ್ತಿರದ ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳೊಂದಿಗೆ ಮಾತ್ರ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.\n• ಈ ಮನವಿಯನ್ನು ಸಲ್ಲಿಸುವುದರಿಂದ ರಕ್ತದ ಲಭ್ಯತೆಯ ಖಾತರಿಯಾಗುವುದಿಲ್ಲ — ತುರ್ತು ಅಗತ್ಯಗಳಿಗಾಗಿ, ದಯವಿಟ್ಟು ಆಸ್ಪತ್ರೆ ಅಥವಾ ರಕ್ತ ಬ್ಯಾಂಕ್ ಅನ್ನು ನೇರವಾಗಿ ಸಂಪರ್ಕಿಸಿ.",
 
       searchTitle: "ರಕ್ತ ಬ್ಯಾಂಕ್‌ಗಳು ಮತ್ತು ರಕ್ತದಾನಿಗಳನ್ನು ಹುಡುಕಿ",
       searchByPincode: "ಪಿನ್ ಕೋಡ್ ಅಥವಾ ಪ್ರದೇಶದ ಮೂಲಕ ಹುಡುಕಿ",
@@ -810,6 +808,10 @@ export const translations = {
     },
 
     superAdmin: {
+      donorConsentStatement:
+        "ರಕ್ತದಾನಿಯು ಒಪ್ಪಿಗೆ ನಮೂನೆಯನ್ನು ಓದಿ ಒಪ್ಪಿದ್ದಾರೆ.",
+      recipientConsentStatement:
+        "ಮನವಿದಾರರು ಒಪ್ಪಿಗೆ ನಮೂನೆಯನ್ನು ಓದಿ ಒಪ್ಪಿದ್ದಾರೆ.",
       superAdmin: "ಸೂಪರ್ ಅಡ್ಮಿನ್",
       administrator: "ನಿರ್ವಾಹಕ",
       management: "ನಿರ್ವಹಣೆ",

@@ -196,10 +196,9 @@ export const donorRegistrationSchema = donorFieldsSchema.superRefine(
   refineAlternateMobile,
 );
 
-// Public self-registration only: same fields as donorRegistrationSchema plus a
-// required consent checkbox. The super-admin add/edit donor forms (which enter
-// details on someone else's behalf and show no checkbox) keep using
-// donorRegistrationSchema / donorEditSchema above, unchanged.
+// New-donor registration (public form and super-admin "Add Donor"): same
+// fields as donorRegistrationSchema plus the consent checkbox the backend
+// requires. The super-admin edit form keeps using donorEditSchema below.
 export const donorPublicRegistrationSchema = donorFieldsSchema
   .extend({
     consentAccepted: z.boolean().refine((value) => value === true, {
@@ -248,5 +247,6 @@ export function normalizeDonorForm(
     city: data.city.trim().replace(/\s+/g, " "),
     pincode: data.pincode.replace(/\D/g, "").slice(0, 6),
     lastBloodDonationDate: data.lastBloodDonationDate.trim(),
+    consentAccepted: data.consentAccepted,
   };
 }

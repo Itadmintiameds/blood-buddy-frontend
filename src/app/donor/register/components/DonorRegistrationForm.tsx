@@ -31,7 +31,11 @@ import type {
   DonorRegistrationInput,
   DonorRegistrationResponse,
 } from "@/types/donor/donorTypes";
-import { registerDonor } from "@/services/donor/donorRegistrationService";
+import {
+  getDonorConsentForm,
+  registerDonor,
+} from "@/services/donor/donorRegistrationService";
+import { useConsentForm } from "@/app/hooks/useConsentForm";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import type { MasterBloodGroup } from "@/types/master.types";
@@ -94,8 +98,15 @@ export function DonorRegistrationForm() {
   >("");
 
   const {
+    consent,
+    loading: consentLoading,
+    reload: reloadConsent,
+  } = useConsentForm(getDonorConsentForm);
+
+  const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<DonorRegistrationInput>({
     resolver: zodResolver(
@@ -131,6 +142,8 @@ export function DonorRegistrationForm() {
   const onSubmit = async (rawData: DonorRegistrationInput) => {
     setSubmitError(null);
 
+    if (!consent) return;
+
     const data = normalizeDonorForm(rawData);
 
     try {
@@ -145,6 +158,8 @@ export function DonorRegistrationForm() {
         district: data.district,
         pincode: data.pincode,
         lastBloodDonationDate: data.lastBloodDonationDate || undefined,
+        consentAccepted: data.consentAccepted === true,
+        consentVersion: consent.version,
       });
 
       setRegisteredDonor(response);
@@ -155,6 +170,14 @@ export function DonorRegistrationForm() {
       );
     } catch (error) {
       console.error("Donor registration error:", error);
+
+      // The consent wording may have changed since the page loaded (the
+      // backend rejects a stale version): show the latest text and make the
+      // donor accept it again.
+      const latest = await reloadConsent();
+      if (latest && latest.version !== consent.version) {
+        setValue("consentAccepted", false, { shouldValidate: true });
+      }
 
       setSubmitError(
         getApiErrorMessage(error, "Unable to register. Please try again."),
@@ -379,7 +402,9 @@ export function DonorRegistrationForm() {
           <ConsentCheckbox
             id="consentAccepted"
             statementKey="donor.consentStatement"
-            detailsKey="donor.consentDetails"
+            consent={consent}
+            consentLoading={consentLoading}
+            onRetry={() => void reloadConsent()}
             {...register("consentAccepted")}
             error={errors.consentAccepted?.message}
           />

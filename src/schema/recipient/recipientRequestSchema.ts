@@ -127,18 +127,17 @@ export function makeRecipientRequestSchema(
   );
 }
 
-// Same base fields plus a required consent checkbox, for the public
-// self-service request form only.
+// Same base fields plus the consent checkbox the backend requires on every new
+// request.
 const recipientRequestWithConsentSchema = recipientRequestSchema.extend({
   consentAccepted: z.boolean().refine((value) => value === true, {
     message: "Please accept the consent statement to continue",
   }),
 });
 
-// Public self-service request only: same rules as makeRecipientRequestSchema
-// plus the consent checkbox above. The super-admin add/edit request forms
-// (entered on someone else's behalf, no checkbox shown) keep using
-// makeRecipientRequestSchema / makeBloodRequestEditSchema below, unchanged.
+// New-request submission (public form and super-admin "Log Request"): same
+// rules as makeRecipientRequestSchema plus the consent checkbox above. The
+// super-admin edit form keeps using makeBloodRequestEditSchema below.
 export function makePublicRecipientRequestSchema(
   componentLimits?: Map<number, { name: string; max: number }>,
 ) {
@@ -247,5 +246,6 @@ export function normalizeRecipientForm(
     district: data.district.trim().replace(/\s+/g, " "),
     city: data.city.trim().replace(/\s+/g, " "),
     pincode: data.pincode.replace(/\D/g, "").slice(0, 6),
+    consentAccepted: data.consentAccepted,
   };
 }

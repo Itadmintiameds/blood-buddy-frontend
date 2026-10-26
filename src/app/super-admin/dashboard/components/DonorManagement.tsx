@@ -31,14 +31,18 @@ import {
   type DonorFilter,
   type SuperAdminDonorStats,
 } from "@/services/bloodCenter/superAdmin/dashboardService";
-import { registerDonor } from "@/services/donor/donorRegistrationService";
+import {
+  getDonorConsentForm,
+  registerDonor,
+} from "@/services/donor/donorRegistrationService";
+import { useConsentForm } from "@/app/hooks/useConsentForm";
 import { getBloodGroups } from "@/services/master/masterService";
 import { getApiErrorMessage } from "@/services/api/client";
 import { useExitTransition } from "@/app/hooks/useExitTransition";
 import { DEFAULT_PAGE_SIZE } from "@/app/hooks/usePagination";
 import {
   donorEditSchema,
-  donorRegistrationSchema,
+  donorPublicRegistrationSchema,
   getDonorDobBounds,
   normalizeDonorForm,
 } from "@/schema/donor/donorRegistrationSchema";
@@ -49,6 +53,7 @@ import type {
 import type { MasterBloodGroup } from "@/types/master.types";
 import { StatGrid, StatTile } from "@/app/components/ui/StatTile";
 import { FormInput } from "@/app/components/ui/FormInput";
+import { ConsentCheckbox } from "@/app/components/ui/ConsentCheckbox";
 import { ConfirmDialog } from "@/app/components/ui/ConfirmDialog";
 import { HeaderEditButton } from "@/app/components/ui/HeaderEditButton";
 import { SuccessModal } from "@/app/components/ui/SuccessModal";
@@ -92,6 +97,7 @@ const emptyDonorForm: DonorRegistrationInput = {
   city: "",
   pincode: "",
   lastBloodDonationDate: "",
+  consentAccepted: false,
 };
 
 function formatDate(value: string | null): string {
@@ -1177,13 +1183,22 @@ function DonorFormModal({
   const [dobBounds] = useState(getDonorDobBounds);
   const [todayIso] = useState(getTodayIsoDate);
 
+  // Adding a donor goes through the public registration endpoint, which
+  // requires the donor's consent; editing doesn't.
+  const {
+    consent,
+    loading: consentLoading,
+    reload: reloadConsent,
+  } = useConsentForm(getDonorConsentForm, !isEdit);
+
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<DonorRegistrationInput>({
     resolver: zodResolver(
-      isEdit ? donorEditSchema : donorRegistrationSchema,
+      isEdit ? donorEditSchema : donorPublicRegistrationSchema,
     ) as Resolver<DonorRegistrationInput>,
     mode: "onBlur",
     reValidateMode: "onChange",
@@ -1219,6 +1234,8 @@ function DonorFormModal({
       return;
     }
 
+    if (!consent) return;
+
     try {
       await registerDonor({
         fullName: normalized.fullName,
@@ -1231,11 +1248,19 @@ function DonorFormModal({
         district: normalized.district,
         pincode: normalized.pincode,
         lastBloodDonationDate: normalized.lastBloodDonationDate || undefined,
+        consentAccepted: normalized.consentAccepted === true,
+        consentVersion: consent.version,
       });
 
       onSaved();
     } catch (err) {
       setSubmitError(getApiErrorMessage(err, "Unable to register this donor."));
+
+      // Pick up a newer consent version if that's why it was rejected.
+      const latest = await reloadConsent();
+      if (latest && latest.version !== consent.version) {
+        setValue("consentAccepted", false, { shouldValidate: true });
+      }
     }
   });
 
@@ -1450,6 +1475,20 @@ function DonorFormModal({
               error={errors.pincode?.message}
               {...register("pincode")}
             />
+
+            {!isEdit && (
+              <div className="sm:col-span-2">
+                <ConsentCheckbox
+                  id="consentAccepted"
+                  statementKey="superAdmin.donorConsentStatement"
+                  consent={consent}
+                  consentLoading={consentLoading}
+                  onRetry={() => void reloadConsent()}
+                  {...register("consentAccepted")}
+                  error={errors.consentAccepted?.message}
+                />
+              </div>
+            )}
 
             {submitError && (
               <p

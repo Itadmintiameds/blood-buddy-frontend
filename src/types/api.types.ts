@@ -22,3 +22,12 @@ export interface PagedResponse<T> {
   totalPages: number;
   last: boolean;
 }
+
+// Matches bloodbuddy.backend.dto.common.ConsentFormResponse: the consent
+// wording a public donor / blood-request form must display. `version` is sent
+// back on submit so the backend records exactly which wording was accepted.
+export interface ConsentForm {
+  version: string;
+  title: string;
+  content: string;
+}
