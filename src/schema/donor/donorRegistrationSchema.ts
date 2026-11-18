@@ -207,7 +207,7 @@ export const donorPublicRegistrationSchema = donorFieldsSchema
   })
   .superRefine(refineAlternateMobile);
 
-// Superadmin edit of an existing donor (PUT /admin/donors/{id}). Same rules as
+// Superadmin edit of an existing donor (PUT /donors/{id}). Same rules as
 // registration except Date of Birth: the backend treats it as optional, and
 // donors registered years ago may since have aged past 65 — that mustn't block
 // correcting their other details. It still can't be in the future or under 18.

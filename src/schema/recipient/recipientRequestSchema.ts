@@ -202,7 +202,7 @@ export function buildComponentLimits(
   return map;
 }
 
-// Superadmin edit of an existing request (PUT /admin/blood-requests/{id}).
+// Superadmin edit of an existing request (PUT /blood-requests/{id}).
 // Same rules as the request form — including the per-component units ceiling
 // for whichever component is selected — except age is optional (the backend
 // only requires it to be positive when given). Closed requests can't be edited.

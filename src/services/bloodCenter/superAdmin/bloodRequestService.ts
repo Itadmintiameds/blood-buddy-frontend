@@ -128,13 +128,13 @@ export async function getSuperAdminBloodRequests(): Promise<
   SuperAdminBloodRequestSummary[]
 > {
   const { data } = await api.get<ApiEnvelope<BloodRequestSummaryResponse[]>>(
-    "/admin/blood-requests",
+    "/blood-requests",
   );
 
   return (data.data ?? []).map(toSummary);
 }
 
-// Sent as query params to GET /admin/blood-requests/paginated
+// Sent as query params to GET /blood-requests/paginated
 // (bloodbuddy.backend.dto.bloodrequest.BloodRequestFilterRequest). Every field
 // is optional; an unset field means "don't filter on this".
 export interface BloodRequestFilter {
@@ -181,7 +181,7 @@ export async function getSuperAdminBloodRequestsPage(
 
   const { data } = await api.get<
     ApiEnvelope<PagedResponse<BloodRequestSummaryResponse>>
-  >("/admin/blood-requests/paginated", { params });
+  >("/blood-requests/paginated", { params });
 
   const paged = data.data;
 
@@ -204,7 +204,7 @@ export interface BloodRequestLocationOptions {
 
 export async function getBloodRequestLocations(): Promise<BloodRequestLocationOptions> {
   const { data } = await api.get<ApiEnvelope<BloodRequestLocationOptions>>(
-    "/admin/blood-requests/locations",
+    "/blood-requests/locations",
   );
   return {
     cities: data.data?.cities ?? [],
@@ -216,7 +216,7 @@ export async function getBloodRequestLocations(): Promise<BloodRequestLocationOp
 // for the dashboard stat tiles.
 export async function getSuperAdminBloodRequestStats(): Promise<SuperAdminBloodRequestStats> {
   const { data } = await api.get<ApiEnvelope<SuperAdminBloodRequestStats>>(
-    "/admin/blood-requests/stats",
+    "/blood-requests/stats",
   );
   return data.data;
 }
@@ -226,7 +226,7 @@ export async function getSuperAdminBloodRequestDetail(
   bloodRequestId: number,
 ): Promise<SuperAdminBloodRequestDetail> {
   const { data } = await api.get<ApiEnvelope<BloodRequestDetailResponse>>(
-    `/admin/blood-requests/${bloodRequestId}`,
+    `/blood-requests/${bloodRequestId}`,
   );
 
   return toDetail(data.data);
@@ -238,7 +238,7 @@ export async function recordBloodRequestDonation(
   bloodDonorDetailsId: number,
 ): Promise<SuperAdminBloodRequestDetail> {
   const { data } = await api.post<ApiEnvelope<BloodRequestDetailResponse>>(
-    `/admin/blood-requests/${bloodRequestId}/donation`,
+    `/blood-requests/${bloodRequestId}/donation`,
     { bloodDonorDetailsId },
   );
 
@@ -253,7 +253,7 @@ export async function updateBloodRequest(
   input: UpdateBloodRequestInput,
 ): Promise<SuperAdminBloodRequestDetail> {
   const { data } = await api.put<ApiEnvelope<BloodRequestDetailResponse>>(
-    `/admin/blood-requests/${bloodRequestId}`,
+    `/blood-requests/${bloodRequestId}`,
     input,
   );
 
@@ -271,7 +271,7 @@ export async function closeBloodRequest(
   if (closedUnits !== undefined) body.closedUnits = closedUnits;
 
   const { data } = await api.patch<ApiEnvelope<BloodRequestDetailResponse>>(
-    `/admin/blood-requests/${bloodRequestId}/close`,
+    `/blood-requests/${bloodRequestId}/close`,
     Object.keys(body).length > 0 ? body : undefined,
   );
 

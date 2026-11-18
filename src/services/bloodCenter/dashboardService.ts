@@ -1,4 +1,5 @@
 import { api } from "@/services/api/client";
+import { getOwnBloodCentreId } from "@/services/auth/authStorage";
 import type { ApiEnvelope } from "@/types/api.types";
 import type { BloodAvailabilityItem } from "@/types/bloodCenter/bloodCenterTypes";
 
@@ -25,12 +26,13 @@ export interface AvailabilitySnapshot {
   items: BloodAvailabilityItem[];
 }
 
-// GET /inventory returns the caller's own centre stock plus its own centre
-// details (centre id comes from the JWT) — there is no separate "my profile"
-// endpoint for Blood Centre accounts, so the centre name is read from here.
+// GET /blood-centres/{id}/inventory returns the caller's own centre stock plus
+// its own centre details; the centre name is read from here.
 export async function getAvailability(): Promise<AvailabilitySnapshot> {
   const { data } =
-    await api.get<ApiEnvelope<CentreInventoryResponse>>("/inventory");
+    await api.get<ApiEnvelope<CentreInventoryResponse>>(
+      `/blood-centres/${getOwnBloodCentreId()}/inventory`,
+    );
 
   return {
     bloodCentreName: data.data?.bloodCentre?.bloodCentreName ?? null,

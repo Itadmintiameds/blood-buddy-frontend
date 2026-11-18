@@ -1,4 +1,5 @@
 import { api } from "@/services/api/client";
+import { getOwnBloodCentreId } from "@/services/auth/authStorage";
 import type { ApiEnvelope } from "@/types/api.types";
 import type {
   BloodAvailabilityItem,
@@ -19,13 +20,13 @@ interface CentreInventoryResponse {
   inventory: InventoryResponse[];
 }
 
-// POST /inventory/stock-adjustment issues/discards/corrects the caller's own
-// centre stock (centre id comes from the JWT); returns the updated inventory.
+// POST /blood-centres/{id}/inventory/stock-adjustment issues/discards/corrects
+// the caller's own centre stock; returns the updated inventory.
 export async function adjustStock(
   payload: StockAdjustmentPayload,
 ): Promise<BloodAvailabilityItem[]> {
   const { data } = await api.post<ApiEnvelope<CentreInventoryResponse>>(
-    "/inventory/stock-adjustment",
+    `/blood-centres/${getOwnBloodCentreId()}/inventory/stock-adjustment`,
     payload,
   );
 

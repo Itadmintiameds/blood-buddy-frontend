@@ -37,7 +37,7 @@ export interface SuperAdminBloodBank {
 }
 
 // Aggregate dashboard stats across all centres, from
-// GET /admin/blood-centres/stats.
+// GET /blood-centres/stats.
 export interface SuperAdminBloodCentreStats {
   totalBloodCentres: number;
   /**
@@ -83,7 +83,7 @@ export interface SuperAdminDonor {
   available: boolean;
 }
 
-// Sent to PATCH /admin/donors/{donorId}/lock. `lockedFrom` defaults to today on
+// Sent to PATCH /donors/{donorId}/lock. `lockedFrom` defaults to today on
 // the server when omitted; dates are YYYY-MM-DD.
 export interface LockDonorInput {
   reason: DonorLockReason;
@@ -92,7 +92,7 @@ export interface LockDonorInput {
   remarks?: string;
 }
 
-// Sent to PUT /admin/donors/{donorId} (bloodbuddy.backend.dto.donor.DonorUpdateRequest).
+// Sent to PUT /donors/{donorId} (bloodbuddy.backend.dto.donor.DonorUpdateRequest).
 // A full replacement of the editable profile fields — omitted optional fields
 // are cleared. Availability (lock/deactivate) is managed separately. Dates are
 // YYYY-MM-DD.
@@ -109,13 +109,13 @@ export interface UpdateDonorInput {
   lastBloodDonationDate?: string;
 }
 
-// Sent to PATCH /admin/donors/{donorId}/deactivate.
+// Sent to PATCH /donors/{donorId}/deactivate.
 export interface DeactivateDonorInput {
   reason: DonorDeactivationReason;
   remarks?: string;
 }
 
-// Sent to POST /admin/blood-centres/{id}/inventory/add-availability
+// Sent to POST /blood-centres/{id}/inventory/add-availability
 // (bloodbuddy.backend.dto.inventory.AddAvailabilityRequest) — SUPERADMIN
 // adding stock directly to a specific centre.
 export interface AdminAddStockInput {
@@ -139,7 +139,7 @@ export type BloodRequestStatus =
   | "CANCELLED";
 
 // Aggregate blood-request dashboard stats across all requests, from
-// GET /admin/blood-requests/stats.
+// GET /blood-requests/stats.
 export interface SuperAdminBloodRequestStats {
   totalRequests: number;
   openRequests: number;
@@ -177,7 +177,7 @@ export interface SuperAdminBloodRequestCentre {
   phoneNumber: string;
 }
 
-// Sent to PUT /admin/blood-requests/{bloodRequestId}
+// Sent to PUT /blood-requests/{bloodRequestId}
 // (bloodbuddy.backend.dto.request.BloodRequestUpdateRequest). A full
 // replacement — omitted optional fields are cleared. Changing the blood group,
 // component or location of an open request makes the backend re-match centres

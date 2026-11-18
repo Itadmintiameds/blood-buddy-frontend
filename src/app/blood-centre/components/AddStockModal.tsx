@@ -13,7 +13,7 @@ import {
 } from "@/app/components/common/Bilingual";
 
 // Adds units to an existing inventory row (blood group + component already
-// known) via POST /inventory/add-availability.
+// known) via POST /blood-centres/{id}/inventory/add-availability.
 export function AddStockModal({
   row,
   onClose,

@@ -142,8 +142,8 @@ export const bloodCentreRegistrationSchema = bloodCentreFieldsSchema.superRefine
   },
 );
 
-// Edit of an existing centre (PUT /blood-centre/profile or, with licence
-// fields, PUT /admin/blood-centres/{id}). Same rules as registration for the
+// Edit of an existing centre (PUT /blood-centres/me or, with licence
+// fields, PUT /blood-centres/{id}). Same rules as registration for the
 // fields both share, but the backend treats address, coordinates and location
 // URL as optional, so they're optional here too. Licence fields are optional
 // and the expiry may already be past — an expired licence mustn't block

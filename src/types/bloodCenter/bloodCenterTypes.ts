@@ -46,7 +46,7 @@ export interface BloodCentreRegistrationResponse {
 ============================================================ */
 
 // bloodbuddy.backend.dto.centre.BloodCentreResponse, as returned by
-// GET/PUT /blood-centre/profile and PUT /admin/blood-centres/{id}.
+// GET/PUT /blood-centres/me and PUT /blood-centres/{id}.
 export interface BloodCentreProfile {
   bloodCentreId: number;
   bloodCentreName: string;
@@ -80,7 +80,7 @@ export interface BloodCentreEditInput {
   dateOfExpiry: string;
 }
 
-// Sent to PUT /blood-centre/profile (bloodbuddy.backend.dto.centre.BloodCentreProfileUpdateRequest).
+// Sent to PUT /blood-centres/me (bloodbuddy.backend.dto.centre.BloodCentreProfileUpdateRequest).
 // A full replacement — omitted optional fields are cleared. Email, licence and
 // active status aren't editable here.
 export interface BloodCentreProfileUpdatePayload {
@@ -95,7 +95,7 @@ export interface BloodCentreProfileUpdatePayload {
   locationUrl?: string;
 }
 
-// Sent to PUT /admin/blood-centres/{id} (bloodbuddy.backend.dto.centre.BloodCentreUpdateRequest):
+// Sent to PUT /blood-centres/{id} (bloodbuddy.backend.dto.centre.BloodCentreUpdateRequest):
 // the profile fields plus licence details.
 export interface BloodCentreAdminUpdatePayload
   extends BloodCentreProfileUpdatePayload {
@@ -134,7 +134,7 @@ export interface BloodAvailabilityItem {
   unitsAvailable: number;
 }
 
-// Sent to POST /inventory/add-availability (bloodbuddy.backend.dto.inventory.AddAvailabilityRequest).
+// Sent to POST /blood-centres/{id}/inventory/add-availability (bloodbuddy.backend.dto.inventory.AddAvailabilityRequest).
 export interface AddAvailabilityPayload {
   bloodGroupId: number;
   bloodComponentId: number;
@@ -145,7 +145,7 @@ export interface AddAvailabilityPayload {
 // bloodbuddy.backend.model.StockMovement
 export type StockMovement = "ADD" | "ISSUE" | "DISCARD" | "CORRECTION";
 
-// Sent to POST /inventory/stock-adjustment (bloodbuddy.backend.dto.inventory.StockAdjustmentRequest).
+// Sent to POST /blood-centres/{id}/inventory/stock-adjustment (bloodbuddy.backend.dto.inventory.StockAdjustmentRequest).
 export interface StockAdjustmentPayload {
   bloodGroupId: number;
   bloodComponentId: number;

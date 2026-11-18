@@ -105,6 +105,19 @@ export function getBloodCentreSession(): BloodCentreSession | null {
   return session as BloodCentreSession;
 }
 
+// The signed-in Blood Centre's own centre id (stored as the session `id` at
+// login). Used for /blood-centres/{id}/inventory/* — the backend rejects any
+// id other than the one in the token.
+export function getOwnBloodCentreId(): number {
+  const id = getBloodCentreSession()?.id;
+
+  if (!id) {
+    throw new Error("This account is not linked to a blood centre.");
+  }
+
+  return id;
+}
+
 // Super Admin Session
 export interface SuperAdminSession {
   isLoggedIn: true;

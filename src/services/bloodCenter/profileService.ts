@@ -5,11 +5,11 @@ import type {
   BloodCentreProfileUpdatePayload,
 } from "@/types/bloodCenter/bloodCenterTypes";
 
-// The signed-in centre's own profile. The centre id comes from the JWT on the
-// server, so there's no id in the path.
+// The signed-in centre's own profile (GET /blood-centres/me). The centre id
+// comes from the JWT on the server, so there's no id in the path.
 export async function getCentreProfile(): Promise<BloodCentreProfile> {
   const { data } = await api.get<ApiEnvelope<BloodCentreProfile>>(
-    "/blood-centre/profile",
+    "/blood-centres/me",
   );
 
   return data.data;
@@ -21,7 +21,7 @@ export async function updateCentreProfile(
   payload: BloodCentreProfileUpdatePayload,
 ): Promise<BloodCentreProfile> {
   const { data } = await api.put<ApiEnvelope<BloodCentreProfile>>(
-    "/blood-centre/profile",
+    "/blood-centres/me",
     payload,
   );
 

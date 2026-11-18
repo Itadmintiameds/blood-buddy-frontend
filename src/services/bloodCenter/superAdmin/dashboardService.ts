@@ -49,7 +49,7 @@ interface CentreInventoryResponse {
   inventory: InventoryResponse[];
 }
 
-// Sent as query params to GET /admin/blood-centres/paginated
+// Sent as query params to GET /blood-centres/paginated
 // (bloodbuddy.backend.dto.centre.BloodCentreFilterRequest). Every field is
 // optional; an unset field means "don't filter on this".
 export interface BloodCentreFilter {
@@ -131,7 +131,7 @@ export async function getSuperAdminBloodCentresPage(
 
   const { data } = await api.get<
     ApiEnvelope<PagedResponse<BloodCentreResponse>>
-  >("/admin/blood-centres/paginated", { params });
+  >("/blood-centres/paginated", { params });
 
   const paged = data.data;
 
@@ -150,7 +150,7 @@ export async function getSuperAdminBloodBankDetail(
   bloodCentreId: number,
 ): Promise<SuperAdminBloodBank> {
   const { data } = await api.get<ApiEnvelope<CentreInventoryResponse>>(
-    `/admin/blood-centres/${bloodCentreId}/inventory`,
+    `/blood-centres/${bloodCentreId}/inventory`,
   );
 
   const centre = data.data.bloodCentre;
@@ -170,7 +170,7 @@ export async function getSuperAdminBloodBankDetail(
 }
 
 // EDIT A CENTRE'S PROFILE + LICENCE (SUPERADMIN only) — a full replacement of
-// the editable fields. PUT /admin/blood-centres/{id}. The response carries no
+// the editable fields. PUT /blood-centres/{id}. The response carries no
 // stock, so the caller keeps the centre's existing availability.
 export async function updateSuperAdminBloodCentre(
   bloodCentreId: number,
@@ -178,7 +178,7 @@ export async function updateSuperAdminBloodCentre(
   availability: SuperAdminBloodBank["availability"],
 ): Promise<SuperAdminBloodBank> {
   const { data } = await api.put<ApiEnvelope<BloodCentreResponse>>(
-    `/admin/blood-centres/${bloodCentreId}`,
+    `/blood-centres/${bloodCentreId}`,
     payload,
   );
 
@@ -194,7 +194,7 @@ export interface BloodCentreLocationOptions {
 
 export async function getBloodCentreLocations(): Promise<BloodCentreLocationOptions> {
   const { data } = await api.get<ApiEnvelope<BloodCentreLocationOptions>>(
-    "/admin/blood-centres/locations",
+    "/blood-centres/locations",
   );
   return {
     cities: data.data?.cities ?? [],
@@ -205,7 +205,7 @@ export async function getBloodCentreLocations(): Promise<BloodCentreLocationOpti
 // Dashboard aggregate stats across ALL centres (not the current page/filter).
 export async function getSuperAdminBloodCentreStats(): Promise<SuperAdminBloodCentreStats> {
   const { data } = await api.get<ApiEnvelope<SuperAdminBloodCentreStats>>(
-    "/admin/blood-centres/stats",
+    "/blood-centres/stats",
   );
   return data.data;
 }
@@ -224,7 +224,7 @@ export async function updateSuperAdminBloodUnits(
   }
 
   const { data } = await api.post<ApiEnvelope<unknown>>(
-    `/admin/blood-centres/${payload.bloodBankId}/inventory/stock-adjustment`,
+    `/blood-centres/${payload.bloodBankId}/inventory/stock-adjustment`,
     {
       bloodGroupId: payload.bloodGroupId,
       bloodComponentId: payload.bloodComponentId,
@@ -247,7 +247,7 @@ export async function addStockToCentre(
   message: string;
 }> {
   const { data } = await api.post<ApiEnvelope<unknown>>(
-    `/admin/blood-centres/${payload.bloodCentreId}/inventory/add-availability`,
+    `/blood-centres/${payload.bloodCentreId}/inventory/add-availability`,
     {
       bloodGroupId: payload.bloodGroupId,
       bloodComponentId: payload.bloodComponentId,
@@ -274,7 +274,7 @@ export async function getAdminInventoryHistory(
 
   const { data } = await api.get<
     ApiEnvelope<PagedResponse<InventoryAuditResponse>>
-  >(`/admin/blood-centres/${bloodCentreId}/inventory/${inventoryId}/history`, {
+  >(`/blood-centres/${bloodCentreId}/inventory/${inventoryId}/history`, {
     params,
   });
 
@@ -294,7 +294,7 @@ export async function getAdminInventoryHistory(
 // Same shape as the blood-centre locations response.
 export async function getDonorLocations(): Promise<BloodCentreLocationOptions> {
   const { data } = await api.get<ApiEnvelope<BloodCentreLocationOptions>>(
-    "/admin/donors/locations",
+    "/donors/locations",
   );
   return {
     cities: data.data?.cities ?? [],
@@ -329,12 +329,12 @@ function mapDonor(donor: DonorRegistrationResponse): SuperAdminDonor {
 // GET ALL DONORS (SUPERADMIN only).
 export async function getSuperAdminDonors(): Promise<SuperAdminDonor[]> {
   const { data } =
-    await api.get<ApiEnvelope<DonorRegistrationResponse[]>>("/admin/donors");
+    await api.get<ApiEnvelope<DonorRegistrationResponse[]>>("/donors");
 
   return (data.data ?? []).map(mapDonor);
 }
 
-// Sent as query params to GET /admin/donors/paginated
+// Sent as query params to GET /donors/paginated
 // (bloodbuddy.backend.dto.donor.DonorFilterRequest). Every field is optional;
 // an unset field means "don't filter on this".
 export interface DonorFilter {
@@ -355,7 +355,7 @@ export interface DonorFilter {
 }
 
 // Aggregate donor dashboard stats across ALL donors (not the current
-// page/filter). Matches GET /admin/donors/stats.
+// page/filter). Matches GET /donors/stats.
 export interface SuperAdminDonorStats {
   totalDonors: number;
   distinctBloodGroupCount: number;
@@ -368,7 +368,7 @@ export interface SuperAdminDonorStats {
 
 export async function getSuperAdminDonorStats(): Promise<SuperAdminDonorStats> {
   const { data } = await api.get<ApiEnvelope<SuperAdminDonorStats>>(
-    "/admin/donors/stats",
+    "/donors/stats",
   );
   return data.data;
 }
@@ -398,7 +398,7 @@ export async function getSuperAdminDonorsPage(
 
   const { data } = await api.get<
     ApiEnvelope<PagedResponse<DonorRegistrationResponse>>
-  >("/admin/donors/paginated", { params });
+  >("/donors/paginated", { params });
 
   const paged = data.data;
 
@@ -413,7 +413,7 @@ export async function getSuperAdminDonorsPage(
 }
 
 // LOCK A DONOR (SUPERADMIN only) — a temporary, auto-expiring unavailability.
-// PATCH /admin/donors/{donorId}/lock. Returns the updated donor. The backend
+// PATCH /donors/{donorId}/lock. Returns the updated donor. The backend
 // 400s (surfaced to the caller) when the reason isn't a lock reason, the dates
 // are in the past, or lockedUntil precedes lockedFrom.
 export async function lockDonor(
@@ -428,7 +428,7 @@ export async function lockDonor(
   if (input.remarks) body.remarks = input.remarks;
 
   const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
-    `/admin/donors/${donorId}/lock`,
+    `/donors/${donorId}/lock`,
     body,
   );
 
@@ -436,13 +436,13 @@ export async function lockDonor(
 }
 
 // EDIT A DONOR'S PROFILE (SUPERADMIN only) — a full replacement of the
-// editable fields. PUT /admin/donors/{donorId}. Returns the updated donor.
+// editable fields. PUT /donors/{donorId}. Returns the updated donor.
 export async function updateDonor(
   donorId: number,
   input: UpdateDonorInput,
 ): Promise<SuperAdminDonor> {
   const { data } = await api.put<ApiEnvelope<DonorRegistrationResponse>>(
-    `/admin/donors/${donorId}`,
+    `/donors/${donorId}`,
     input,
   );
 
@@ -450,7 +450,7 @@ export async function updateDonor(
 }
 
 // DEACTIVATE A DONOR (SUPERADMIN only) — a permanent removal.
-// PATCH /admin/donors/{donorId}/deactivate. Returns the updated donor.
+// PATCH /donors/{donorId}/deactivate. Returns the updated donor.
 export async function deactivateDonor(
   donorId: number,
   input: DeactivateDonorInput,
@@ -459,7 +459,7 @@ export async function deactivateDonor(
   if (input.remarks) body.remarks = input.remarks;
 
   const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
-    `/admin/donors/${donorId}/deactivate`,
+    `/donors/${donorId}/deactivate`,
     body,
   );
 
@@ -467,12 +467,12 @@ export async function deactivateDonor(
 }
 
 // REACTIVATE A DONOR (SUPERADMIN only) — restores to ACTIVE, clearing any lock
-// or deactivation. PATCH /admin/donors/{donorId}/reactivate (no body).
+// or deactivation. PATCH /donors/{donorId}/reactivate (no body).
 export async function reactivateDonor(
   donorId: number,
 ): Promise<SuperAdminDonor> {
   const { data } = await api.patch<ApiEnvelope<DonorRegistrationResponse>>(
-    `/admin/donors/${donorId}/reactivate`,
+    `/donors/${donorId}/reactivate`,
   );
 
   return mapDonor(data.data);

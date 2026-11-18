@@ -138,7 +138,7 @@ export function DonorManagement() {
 
   // One page of donors (table rows), filtered + sorted server-side.
   const [donors, setDonors] = useState<SuperAdminDonor[]>([]);
-  // Aggregate stat-tile figures across all donors, from /admin/donors/stats.
+  // Aggregate stat-tile figures across all donors, from /donors/stats.
   const [stats, setStats] = useState<SuperAdminDonorStats | null>(null);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [districtOptions, setDistrictOptions] = useState<string[]>([]);
@@ -1153,7 +1153,7 @@ function toDonorForm(donor: SuperAdminDonor): DonorRegistrationInput {
 }
 
 // Add Donor (registers via the public endpoint) or, when `donor` is given,
-// Edit Donor (PUT /admin/donors/{id}, a full replacement of the profile).
+// Edit Donor (PUT /donors/{id}, a full replacement of the profile).
 function DonorFormModal({
   bloodGroups,
   donor,

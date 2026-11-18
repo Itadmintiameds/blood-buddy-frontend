@@ -50,7 +50,7 @@ export type DonorUnavailabilityReason =
   | DonorDeactivationReason;
 
 // bloodbuddy.backend.dto.donor.DonorResponse — shared by the registration
-// response and the SUPERADMIN donor list (GET /admin/donors).
+// response and the SUPERADMIN donor list (GET /donors).
 export interface DonorRegistrationResponse {
   bloodDonorDetailsId: number;
   fullName: string;

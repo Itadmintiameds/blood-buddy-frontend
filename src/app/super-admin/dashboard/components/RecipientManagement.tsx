@@ -166,7 +166,7 @@ export function RecipientManagement() {
   // One page of requests (table rows), filtered + sorted server-side.
   const [requests, setRequests] = useState<SuperAdminBloodRequestSummary[]>([]);
   // Aggregate stat-tile figures across all requests, from
-  // /admin/blood-requests/stats.
+  // /blood-requests/stats.
   const [stats, setStats] = useState<SuperAdminBloodRequestStats | null>(null);
   const [cityOptions, setCityOptions] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -1340,7 +1340,7 @@ function LogRequestModal({
 
 /* ============================================================
    EDIT REQUEST MODAL — corrects the recipient details of an existing request
-   (PUT /admin/blood-requests/{id}). Blood group / component stay as matched.
+   (PUT /blood-requests/{id}). Blood group / component stay as matched.
 ============================================================ */
 
 function EditBloodRequestModal({

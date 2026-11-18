@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/services/api/client";
+import { getOwnBloodCentreId } from "@/services/auth/authStorage";
 import type { ApiEnvelope, PagedResponse } from "@/types/api.types";
 import type { StockMovement } from "@/types/bloodCenter/bloodCenterTypes";
 
@@ -22,7 +23,7 @@ export interface InventoryAuditResponse {
   createdBy: string;
 }
 
-// GET /inventory/{inventoryId}/history — one page of the movement trail for a
+// GET /blood-centres/{id}/inventory/{inventoryId}/history — one page of the movement trail for a
 // single inventory item (blood group + component). Newest-first by default
 // (the backend keeps ORDER BY createdAt DESC). `page` is zero-based.
 export async function getInventoryHistory(
@@ -35,7 +36,9 @@ export async function getInventoryHistory(
 
   const { data } = await api.get<
     ApiEnvelope<PagedResponse<InventoryAuditResponse>>
-  >(`/inventory/${inventoryId}/history`, { params });
+  >(`/blood-centres/${getOwnBloodCentreId()}/inventory/${inventoryId}/history`, {
+    params,
+  });
 
   const paged = data.data;
 
