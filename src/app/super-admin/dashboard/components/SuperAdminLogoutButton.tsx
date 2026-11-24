@@ -7,17 +7,25 @@ import { useState } from "react";
 import { logout } from "@/services/auth/authStorage";
 import { logoutServerSide } from "@/services/auth/authService";
 import { BilingualInline } from "@/app/components/common/Bilingual";
+import { useNavigationGuard } from "@/contexts/NavigationGuardContext";
 
 export function SuperAdminLogoutButton() {
   const router = useRouter();
+  // Unfinished work (e.g. a donor import under review) gets a "Stay / Discard"
+  // prompt before logging out.
+  const { requestNavigation } = useNavigationGuard();
 
   const [loading, setLoading] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (loading) {
       return;
     }
 
+    requestNavigation(performLogout);
+  };
+
+  const performLogout = async () => {
     setLoading(true);
 
     await logoutServerSide();

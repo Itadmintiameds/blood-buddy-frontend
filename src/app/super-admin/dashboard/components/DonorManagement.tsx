@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Search,
   ShieldOff,
+  Upload,
   UserRound,
   Users,
   X,
@@ -71,6 +72,7 @@ import {
   ON_SOLID_EN_CLASS,
   useReasonText,
 } from "./DonorAvailability";
+import { DonorImport, PendingImportBanner } from "./DonorImport";
 
 const ALL = "all";
 
@@ -159,6 +161,8 @@ export function DonorManagement() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addDonorOpen, setAddDonorOpen] = useState(false);
+  // "import" swaps the list for the CSV import flow.
+  const [view, setView] = useState<"list" | "import">("list");
   const [masterGroups, setMasterGroups] = useState<MasterBloodGroup[]>([]);
   const [selectedDonor, setSelectedDonor] = useState<SuperAdminDonor | null>(
     null,
@@ -404,8 +408,25 @@ export function DonorManagement() {
   // Rows before this page — add to the in-page index for continuous S.No.
   const startIndex = (page - 1) * pageSize;
 
+  // The CSV import replaces the list until the admin leaves it; donors it
+  // added show up once the list reloads.
+  if (view === "import") {
+    return (
+      <DonorImport
+        onExit={(imported) => {
+          setView("list");
+          if (imported) {
+            setReloadToken((token) => token + 1);
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
+      <PendingImportBanner onContinue={() => setView("import")} />
+
       <StatGrid cols={5}>
         <StatTile
           icon={Users}
@@ -508,14 +529,25 @@ export function DonorManagement() {
             )}
           </div>
 
-          <button
-            type="button"
-            onClick={() => setAddDonorOpen(true)}
-            className="flex h-11 w-full shrink-0 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:ml-auto sm:w-auto sm:text-[14px]"
-          >
-            <Plus size={16} className="shrink-0" />
-            Add Donor
-          </button>
+          <div className="flex w-full shrink-0 gap-2 sm:ml-auto sm:w-auto">
+            <button
+              type="button"
+              onClick={() => setView("import")}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-[var(--primary-200)] bg-white px-4 text-[13px] font-semibold text-[var(--color-primary)] transition-all duration-200 hover:-translate-y-px hover:border-[var(--color-primary)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:flex-none sm:text-[14px]"
+            >
+              <Upload size={16} className="shrink-0" />
+              <BilingualInline tKey="donorImport.importDonors" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAddDonorOpen(true)}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-4 text-[13px] font-semibold text-white shadow-[0_5px_15px_rgba(255,59,63,0.18)] transition-all duration-200 hover:-translate-y-px hover:bg-[var(--color-dashboard-cta-hover)] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] focus-visible:ring-offset-2 sm:flex-none sm:text-[14px]"
+            >
+              <Plus size={16} className="shrink-0" />
+              Add Donor
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">

@@ -15,6 +15,10 @@ import {
 import { SuperAdminLogoutButton } from "./SuperAdminLogoutButton";
 import { getSuperAdminSession } from "@/services/auth/authStorage";
 import { Bilingual, useBilingualText } from "@/app/components/common/Bilingual";
+import {
+  NavigationGuardProvider,
+  useNavigationGuard,
+} from "@/contexts/NavigationGuardContext";
 
 type ActiveSection = "blood-bank" | "donor" | "recipient";
 
@@ -46,11 +50,22 @@ const navigationItems: NavigationItem[] = [
   },
 ];
 
+// The provider lets a section with unfinished work (the donor CSV import)
+// intercept sidebar navigation and logout with a "Stay / Discard" prompt.
+export function SuperAdminDashboard() {
+  return (
+    <NavigationGuardProvider>
+      <SuperAdminDashboardContent />
+    </NavigationGuardProvider>
+  );
+}
+
 // Mirrors the Blood Centre shell: a full-width brand header pinned on top,
 // a sidebar below it on the left (fixed on desktop, drawer on mobile), and
 // the active section's content to the right.
-export function SuperAdminDashboard() {
+function SuperAdminDashboardContent() {
   const openMenuLabel = useBilingualText("accessibility.openMenu");
+  const { requestNavigation } = useNavigationGuard();
 
   const [activeSection, setActiveSection] =
     useState<ActiveSection>("blood-bank");
@@ -64,8 +79,11 @@ export function SuperAdminDashboard() {
     navigationItems[0];
 
   const handleSectionChange = (section: ActiveSection) => {
-    setActiveSection(section);
     setMobileMenuOpen(false);
+    if (section === activeSection) {
+      return;
+    }
+    requestNavigation(() => setActiveSection(section));
   };
 
   const renderActiveSection = () => {
